@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import SocialFloating from "@/components/social-floating";
 import "./globals.css";
 
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body className={`${playfair.variable} ${inter.variable} antialiased`}>
         {children}
         <SocialFloating />
+        <Analytics />
       </body>
     </html>
   );
