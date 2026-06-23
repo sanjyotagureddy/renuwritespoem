@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
+html {
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  min-height: calc(100vh + 40px);
+  padding-bottom: 40px;
+}
