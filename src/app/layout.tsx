@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Playfair_Display, Inter, Geist } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import SocialFloating from "@/components/social-floating";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -15,14 +20,40 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Renu Writes Poem - Poetry & Books",
+  title: {
+    default: "Renu Writes Poem - Poetry & Books",
+    template: "%s | Renu Writes Poem",
+  },
   description:
     "Discover heartfelt poetry and books by Renu. Explore poems on love, nature, life, spirituality, and more.",
+  keywords: [
+    "poetry",
+    "poems",
+    "books",
+    "Renu",
+    "love poems",
+    "nature poetry",
+    "spirituality",
+    "Hindi poetry",
+  ],
+  authors: [{ name: "Renu" }],
   openGraph: {
     title: "Renu Writes Poem - Poetry & Books",
     description:
       "Discover heartfelt poetry and books by Renu. Explore poems on love, nature, life, spirituality, and more.",
     type: "website",
+    siteName: "Renu Writes Poem",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Renu Writes Poem - Poetry & Books",
+    description:
+      "Discover heartfelt poetry and books by Renu. Explore poems on love, nature, life, spirituality, and more.",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
@@ -32,9 +63,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${playfair.variable} ${inter.variable} antialiased`}>
-        {children}
+    <html lang="en" className={cn("font-sans", geist.variable)}>
+      <body
+        className={`${playfair.variable} ${inter.variable} antialiased bg-neutral-950 text-white`}
+      >
+        <Header />
+        <main className="min-h-screen pt-[72px]">{children}</main>
+        <Footer />
         <SocialFloating />
         <Analytics />
       </body>

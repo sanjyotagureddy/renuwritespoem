@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center px-6 py-16 pb-24">
+    <div className="relative min-h-[calc(100vh-72px)] flex flex-col items-center justify-center px-6 py-16">
       {/* Background scenery */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -15,7 +15,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/75" />
       </div>
 
-      <main className="relative z-10 flex flex-col md:flex-row items-center gap-16 md:gap-20 max-w-4xl w-full">
+      <div className="relative z-10 flex flex-col md:flex-row items-center gap-16 md:gap-20 max-w-4xl w-full">
         {/* Author image */}
         <div className="shrink-0">
           <div className="w-56 h-56 md:w-80 md:h-80 rounded-full overflow-hidden ring-4 ring-white/20 shadow-2xl">
@@ -51,14 +51,7 @@ export default function Home() {
             and every verse finds its home.&rdquo;
           </blockquote>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 py-4 text-center z-10">
-        <p className="font-[family-name:var(--font-inter)] text-xs text-white/40">
-          &copy; {new Date().getFullYear()} Renu Writes Poem. All rights reserved.
-        </p>
-      </footer>
+      </div>
     </div>
   );
 }
