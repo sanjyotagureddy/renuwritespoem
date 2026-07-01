@@ -6,15 +6,25 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+function resolveDatabaseUrl(): string | undefined {
+  return (
+    process.env.DATABASE_URL ??
+    process.env.renuwritespoem_postgres_POSTGRES_PRISMA_URL ??
+    process.env.renuwritespoem_postgres_POSTGRES_URL
+  );
+}
+
 export function getPrisma(): PrismaClient {
   if (globalForPrisma.prisma) {
     return globalForPrisma.prisma;
   }
 
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = resolveDatabaseUrl();
 
   if (!connectionString) {
-    throw new Error("Missing DATABASE_URL. Add it in Vercel Project Settings -> Environment Variables.");
+    throw new Error(
+      "Missing database connection URL. Set DATABASE_URL or renuwritespoem_postgres_POSTGRES_PRISMA_URL in Vercel environment variables.",
+    );
   }
 
   const pool = new Pool({ connectionString });
