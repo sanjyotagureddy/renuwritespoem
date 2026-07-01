@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { getPrisma } from "@/lib/db";
 import {
   poemLanguageFontClass,
   poemLanguageOptions,
@@ -29,6 +29,7 @@ function formatDate(date: Date | null): string {
 }
 
 export default async function PoemsPage({ searchParams }: PoemsPageProps) {
+  const prisma = getPrisma();
   const params = await searchParams;
   const languageValue = Array.isArray(params.language)
     ? params.language[0]

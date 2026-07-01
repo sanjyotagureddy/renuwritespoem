@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { getPrisma } from "@/lib/db";
 import {
   poemLanguageFontClass,
   poemLanguageLabel,
@@ -23,6 +23,7 @@ function formatDate(date: Date | null): string {
 }
 
 async function getPoemBySlug(slug: string) {
+  const prisma = getPrisma();
   return prisma.poem.findUnique({
     where: { slug },
     include: {
@@ -33,6 +34,7 @@ async function getPoemBySlug(slug: string) {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const prisma = getPrisma();
   const { slug } = await params;
   const poem = await prisma.poem.findUnique({ where: { slug } });
 
