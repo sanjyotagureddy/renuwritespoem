@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +13,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-const navLinks = [
+const baseNavLinks = [
   { href: "/", label: "Home" },
   { href: "/poems", label: "Poems" },
   { href: "/genres", label: "Genres" },
@@ -23,10 +24,28 @@ const navLinks = [
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const { data: session, status } = useSession();
+
+  const userDisplayName =
+    session?.user?.name?.trim().split(" ")[0] ??
+    session?.user?.email?.split("@")[0] ??
+    "";
+
+  const navLinks = [...baseNavLinks];
+
+  if (status !== "loading") {
+    if (!session?.user) {
+      navLinks.push({ href: "/login", label: "Login" });
+    }
+
+    if (session?.user?.role === "ADMIN") {
+      navLinks.push({ href: "/admin", label: "Admin" });
+    }
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-md border-b border-white/10">
-      <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
         {/* Logo / Brand */}
         <Link
           href="/"
@@ -47,6 +66,14 @@ export default function Header() {
               </Link>
             </li>
           ))}
+
+          {status !== "loading" && session?.user ? (
+            <li>
+              <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 py-1.5 font-[family-name:var(--font-inter)] text-xs tracking-wide text-white/85">
+                {`Hey, ${userDisplayName}`}
+              </span>
+            </li>
+          ) : null}
         </ul>
 
         {/* Mobile Menu */}

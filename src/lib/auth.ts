@@ -1,0 +1,69 @@
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { type NextAuthOptions, getServerSession } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import { getPrisma } from "@/lib/db";
+
+function getAdminEmails(): Set<string> {
+  const raw = process.env.ADMIN_EMAILS ?? "";
+  return new Set(
+    raw
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
+export const authOptions: NextAuthOptions = {
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+  adapter: PrismaAdapter(getPrisma()),
+  session: {
+    strategy: "jwt",
+  },
+  providers: [
+    GoogleProvider({
+      clientId: process.env.AUTH_GOOGLE_ID ?? process.env.GOOGLE_CLIENT_ID ?? "",
+      clientSecret: process.env.AUTH_GOOGLE_SECRET ?? process.env.GOOGLE_CLIENT_SECRET ?? "",
+    }),
+  ],
+  callbacks: {
+    async signIn({ user }) {
+      if (!user.email) {
+        return false;
+      }
+
+      const isAdmin = getAdminEmails().has(user.email.toLowerCase());
+
+      await getPrisma().user.updateMany({
+        where: { email: user.email },
+        data: { role: isAdmin ? "ADMIN" : "READER" },
+      });
+
+      return true;
+    },
+    async jwt({ token, user }) {
+      if (user?.id) {
+        token.userId = user.id;
+      }
+
+      const email = (user?.email ?? token.email)?.toLowerCase();
+      const isAdmin = email ? getAdminEmails().has(email) : false;
+      token.role = isAdmin ? "ADMIN" : "READER";
+
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = (token.userId as string | undefined) ?? "";
+        session.user.role = (token.role as "ADMIN" | "READER" | undefined) ?? "READER";
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: "/login",
+  },
+};
+
+export function getServerAuthSession() {
+  return getServerSession(authOptions);
+}

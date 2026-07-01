@@ -16,12 +16,12 @@
 
 ## Phase 2: Authentication
 
-- [ ] Install and configure Auth.js
-- [ ] Set up Google OAuth provider
-- [ ] Create auth API routes
-- [ ] Implement session management
-- [ ] Create role-based access (Admin, Reader)
-- [ ] Protect admin routes with middleware
+- [x] Install and configure Auth.js
+- [x] Set up Google OAuth provider
+- [x] Create auth API routes
+- [x] Implement session management
+- [x] Create role-based access (Admin, Reader)
+- [x] Protect admin routes with middleware
 
 ## Phase 3: Database & Data Layer
 

@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import SocialFloating from "@/components/social-floating";
+import AuthSessionProvider from "@/components/providers/session-provider";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -72,11 +73,13 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${inter.variable} ${notoDevanagari.variable} antialiased bg-neutral-950 text-white`}
       >
-        <Header />
-        <main className="min-h-screen pt-[72px]">{children}</main>
-        <Footer />
-        <SocialFloating />
-        <Analytics />
+        <AuthSessionProvider>
+          <Header />
+          <main className="min-h-screen pt-[72px]">{children}</main>
+          <Footer />
+          <SocialFloating />
+          <Analytics />
+        </AuthSessionProvider>
       </body>
     </html>
   );
