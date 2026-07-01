@@ -18,6 +18,25 @@ function isLocalDatabase(url: URL): boolean {
   return url.hostname === "localhost" || url.hostname === "127.0.0.1";
 }
 
+function buildPoolOptions(connectionString: string): {
+  connectionString: string;
+  ssl?: { rejectUnauthorized: boolean };
+} {
+  const parsedUrl = new URL(connectionString);
+
+  if (isLocalDatabase(parsedUrl)) {
+    return { connectionString };
+  }
+
+  // Force no-verify for managed Postgres providers whose CA chain is not in runtime trust store.
+  parsedUrl.searchParams.set("sslmode", "no-verify");
+
+  return {
+    connectionString: parsedUrl.toString(),
+    ssl: { rejectUnauthorized: false },
+  };
+}
+
 export function getPrisma(): PrismaClient {
   if (globalForPrisma.prisma) {
     return globalForPrisma.prisma;
@@ -31,12 +50,7 @@ export function getPrisma(): PrismaClient {
     );
   }
 
-  const parsedUrl = new URL(connectionString);
-
-  const pool = new Pool({
-    connectionString,
-    ssl: isLocalDatabase(parsedUrl) ? undefined : { rejectUnauthorized: false },
-  });
+  const pool = new Pool(buildPoolOptions(connectionString));
   const adapter = new PrismaPg(pool);
   const prisma = new PrismaClient({ adapter });
 
