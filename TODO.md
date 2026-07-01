@@ -6,11 +6,11 @@
 - [x] Configure Tailwind CSS
 - [x] Install and configure shadcn/ui
 - [x] Set up ESLint and Prettier
-- [ ] Set up Prisma ORM
-- [ ] Configure Neon PostgreSQL connection
-- [ ] Define database schema (Poems, Genres, Tags, Books, Comments, Subscribers, Campaigns, Users)
-- [ ] Run initial migration
-- [ ] Seed database with sample data
+- [x] Set up Prisma ORM
+- [x] Configure PostgreSQL connection (Supabase/local Docker)
+- [x] Define database schema (Poems, Genres, Tags, Books, Comments, Subscribers, Campaigns, Users)
+- [x] Run initial migration
+- [x] Seed database with sample data
 - [x] Set up environment variables (.env.example)
 - [x] Configure Vercel project
 
@@ -25,10 +25,10 @@
 
 ## Phase 3: Database & Data Layer
 
-- [ ] Create Prisma models for all entities
+- [x] Create Prisma models for all entities
 - [ ] Set up data access functions (queries/mutations)
 - [ ] Implement PostgreSQL Full Text Search for poems
-- [ ] Add database indexes for performance
+- [x] Add database indexes for performance
 
 ## Phase 4: Public Website - Layout & Navigation
 
@@ -50,9 +50,10 @@
 ## Phase 6: Public Pages - Poems
 
 - [ ] Poems listing page with pagination
-- [ ] Poem detail page
+- [x] Poem detail page
 - [ ] Genre filter on poems listing
 - [ ] Tag filter on poems listing
+- [x] Language filter on poems listing (All/English/Hindi/Marathi)
 - [ ] Search functionality (PostgreSQL FTS)
 - [ ] Related poems section on detail page
 

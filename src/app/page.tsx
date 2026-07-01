@@ -40,6 +40,14 @@ export default function Home() {
             A space for poetry, stories, and the quiet beauty of words.
           </p>
 
+          <p className="font-[family-name:var(--font-inter)] text-sm md:text-base text-white/80 mb-6 tracking-wide">
+            <span lang="en">English</span>
+            <span className="mx-2 text-white/50">|</span>
+            <span lang="hi">हिन्दी</span>
+            <span className="mx-2 text-white/50">|</span>
+            <span lang="mr">मराठी</span>
+          </p>
+
           <div className="inline-block border border-white/40 rounded-full px-6 py-2 mb-8">
             <span className="font-[family-name:var(--font-inter)] text-sm uppercase tracking-widest text-white/90">
               Coming Soon

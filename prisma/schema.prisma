@@ -1,0 +1,171 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Users & Auth ────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  READER
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  role      Role     @default(READER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comments Comment[]
+
+  @@map("users")
+}
+
+// ─── Genres ──────────────────────────────────────────────────
+
+model Genre {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+
+  poems Poem[]
+
+  @@map("genres")
+}
+
+// ─── Tags ────────────────────────────────────────────────────
+
+model Tag {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  poems PoemTag[]
+
+  @@map("tags")
+}
+
+// ─── Poems ───────────────────────────────────────────────────
+
+enum PoemLanguage {
+  EN
+  HI
+  MR
+}
+
+model Poem {
+  id          String   @id @default(cuid())
+  language    PoemLanguage @default(EN)
+  title       String
+  slug        String   @unique
+  content     String
+  excerpt     String?
+  coverImage  String?
+  published   Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  genreId String?
+  genre   Genre?  @relation(fields: [genreId], references: [id])
+
+  tags     PoemTag[]
+  comments Comment[]
+
+  @@index([genreId])
+  @@index([language])
+  @@index([published, publishedAt(sort: Desc)])
+  @@map("poems")
+}
+
+model PoemTag {
+  poemId String
+  tagId  String
+
+  poem Poem @relation(fields: [poemId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([poemId, tagId])
+  @@map("poem_tags")
+}
+
+// ─── Books ───────────────────────────────────────────────────
+
+enum BookStatus {
+  COMING_SOON
+  AVAILABLE
+  ARCHIVED
+}
+
+model Book {
+  id           String     @id @default(cuid())
+  title        String
+  slug         String     @unique
+  description  String?
+  coverImage   String?
+  purchaseUrl  String?
+  status       BookStatus @default(COMING_SOON)
+  publishedAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@map("books")
+}
+
+// ─── Comments ────────────────────────────────────────────────
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  body      String
+  status    CommentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  poemId String
+  poem   Poem   @relation(fields: [poemId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([poemId, status])
+  @@index([userId])
+  @@map("comments")
+}
+
+// ─── Newsletter ──────────────────────────────────────────────
+
+model Subscriber {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  verified      Boolean   @default(false)
+  verifyToken   String?   @unique
+  subscribedAt  DateTime  @default(now())
+  unsubscribedAt DateTime?
+
+  @@map("subscribers")
+}
+
+model Campaign {
+  id        String   @id @default(cuid())
+  subject   String
+  body      String
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@map("campaigns")
+}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, Geist } from "next/font/google";
+import { Playfair_Display, Inter, Geist, Noto_Sans_Devanagari } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -17,6 +17,11 @@ const playfair = Playfair_Display({
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+});
+
+const notoDevanagari = Noto_Sans_Devanagari({
+  subsets: ["devanagari"],
+  variable: "--font-devanagari",
 });
 
 export const metadata: Metadata = {
@@ -65,7 +70,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
       <body
-        className={`${playfair.variable} ${inter.variable} antialiased bg-neutral-950 text-white`}
+        className={`${playfair.variable} ${inter.variable} ${notoDevanagari.variable} antialiased bg-neutral-950 text-white`}
       >
         <Header />
         <main className="min-h-screen pt-[72px]">{children}</main>

@@ -64,10 +64,32 @@ pnpm prisma db seed
 pnpm dev
 ```
 
+### Local Docker Database (Optional)
+
+If you do not want to depend on cloud PostgreSQL during development, run a local database with Docker:
+
+```bash
+# Start local Postgres
+npm run db:local:up
+
+# Create/apply migration
+npm run db:migrate -- --name init
+
+# Seed sample data
+npm run db:seed
+```
+
+Stop it with:
+
+```bash
+npm run db:local:down
+```
+
 ### Environment Variables
 
 ```env
 DATABASE_URL=postgresql://...
+DIRECT_URL=postgresql://...
 AUTH_SECRET=...
 AUTH_GOOGLE_ID=...
 AUTH_GOOGLE_SECRET=...
