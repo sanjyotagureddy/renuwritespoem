@@ -14,6 +14,10 @@ function resolveDatabaseUrl(): string | undefined {
   );
 }
 
+function isLocalDatabase(url: URL): boolean {
+  return url.hostname === "localhost" || url.hostname === "127.0.0.1";
+}
+
 export function getPrisma(): PrismaClient {
   if (globalForPrisma.prisma) {
     return globalForPrisma.prisma;
@@ -27,7 +31,12 @@ export function getPrisma(): PrismaClient {
     );
   }
 
-  const pool = new Pool({ connectionString });
+  const parsedUrl = new URL(connectionString);
+
+  const pool = new Pool({
+    connectionString,
+    ssl: isLocalDatabase(parsedUrl) ? undefined : { rejectUnauthorized: false },
+  });
   const adapter = new PrismaPg(pool);
   const prisma = new PrismaClient({ adapter });
 
