@@ -57,12 +57,21 @@ function formatDate(date: string | null): string {
 
 export default function BookPurchaseLayout({ book }: BookPurchaseLayoutProps) {
   const [purchaseOpen, setPurchaseOpen] = useState(false);
+  const hasDiscount =
+    book.discountedPrice != null &&
+    book.discountedPrice > 0 &&
+    book.discountedPrice < book.price;
+  const discountPercent = hasDiscount
+    ? Math.round(((book.price - book.discountedPrice!) / book.price) * 100)
+    : 0;
 
   return (
-    <div className={`grid grid-cols-1 gap-8 items-start ${purchaseOpen ? "lg:grid-cols-1" : "lg:grid-cols-[1fr_320px]"}`}>
-      <div className="rounded-2xl border border-white/15 bg-white/3 overflow-hidden">
+    <div
+      className={`grid grid-cols-1 items-start gap-8 ${purchaseOpen ? "lg:grid-cols-1" : "lg:grid-cols-[1fr_320px]"}`}
+    >
+      <div className="overflow-hidden rounded-2xl border border-white/15 bg-white/3">
         <div className="flex flex-col md:flex-row">
-          <div className="md:w-72 md:shrink-0 aspect-3/4 md:aspect-auto relative bg-white/5">
+          <div className="relative aspect-3/4 bg-white/5 md:aspect-auto md:w-72 md:shrink-0">
             {book.coverImage ? (
               <Image
                 src={book.coverImage}
@@ -79,38 +88,77 @@ export default function BookPurchaseLayout({ book }: BookPurchaseLayoutProps) {
             )}
           </div>
 
-          <div className="p-7 md:p-10 flex flex-col justify-between flex-1 gap-8">
+          <div className="flex flex-1 flex-col justify-between gap-8 p-7 md:p-10">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                {book.featured && <span className="text-amber-400 text-sm">★</span>}
-                <span className={`rounded-full border px-3 py-1 text-xs uppercase tracking-wider ${statusColor(book.status)}`}>
+              <div className="mb-4 flex items-center gap-2">
+                {book.featured && (
+                  <span className="text-sm text-amber-400">★</span>
+                )}
+                <span
+                  className={`rounded-full border px-3 py-1 text-xs tracking-wider uppercase ${statusColor(book.status)}`}
+                >
                   {statusLabel(book.status)}
                 </span>
+                {hasDiscount ? (
+                  <span className="rounded-full border border-amber-300/30 bg-amber-400/10 px-3 py-1 text-xs font-medium tracking-wider text-amber-300 uppercase">
+                    Sale
+                  </span>
+                ) : null}
                 {book.publishedAt && (
-                  <span className="ml-auto text-xs uppercase tracking-wider text-white/40">
+                  <span className="ml-auto text-xs tracking-wider text-white/40 uppercase">
                     {formatDate(book.publishedAt)}
                   </span>
                 )}
               </div>
 
-              <h1 className="text-3xl md:text-4xl text-white mb-4">{book.title}</h1>
+              <h1 className="mb-4 text-3xl text-white md:text-4xl">
+                {book.title}
+              </h1>
 
               {book.description && (
-                <p className="text-white/65 leading-relaxed font-(family-name:--font-inter) whitespace-pre-line">
+                <p className="font-(family-name:--font-inter) leading-relaxed whitespace-pre-line text-white/65">
                   {book.description}
                 </p>
               )}
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/2 p-5 md:p-6 space-y-4">
-              <div className="flex items-end justify-between gap-4 flex-wrap">
+            <div className="space-y-4 rounded-2xl border border-white/10 bg-white/2 p-5 md:p-6">
+              <div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white/45 mb-2">Purchase</p>
-                  <p className="text-2xl text-white">₹{book.price.toLocaleString("en-IN")}</p>
+                  <div className="mb-2 flex items-center gap-2">
+                    <p className="text-xs tracking-[0.2em] text-white/45 uppercase">
+                      Purchase
+                    </p>
+                    {hasDiscount ? (
+                      <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-medium tracking-wider text-emerald-300 uppercase">
+                        Limited-time deal · {discountPercent}% off
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-2">
+                    {hasDiscount ? (
+                      <div className="flex items-baseline gap-3">
+                        <p className="text-3xl font-medium text-emerald-300">
+                          ₹{book.discountedPrice!.toLocaleString("en-IN")}
+                        </p>
+                        <p className="text-base text-white/35 line-through">
+                          ₹{book.price.toLocaleString("en-IN")}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-2xl text-white">
+                        ₹{book.price.toLocaleString("en-IN")}
+                      </p>
+                    )}
+                    <p
+                      className={`text-xs ${book.shippingCharge === 0 ? "font-medium text-emerald-300" : "text-white/45"}`}
+                    >
+                      {book.shippingCharge === 0
+                        ? "Free shipping"
+                        : `+ ₹${book.shippingCharge.toLocaleString("en-IN")} shipping`}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xs text-white/35 max-w-sm text-left md:text-right">
-                  Manual UPI checkout with shipping set from the admin panel.
-                </p>
               </div>
 
               <PurchaseForm
@@ -128,7 +176,7 @@ export default function BookPurchaseLayout({ book }: BookPurchaseLayoutProps) {
 
       {!purchaseOpen && (
         <aside className="lg:sticky lg:top-24">
-          <div className="rounded-2xl border border-white/15 bg-white/3 p-5 space-y-6">
+          <div className="space-y-6 rounded-2xl border border-white/15 bg-white/3 p-5">
             <BookLikeButton slug={book.slug} />
             <div className="border-t border-white/10 pt-5">
               <BookCommentSection slug={book.slug} />
