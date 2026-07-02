@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 
 type LikeUser = { name: string; image: string | null };
@@ -91,7 +92,9 @@ export default function BookLikeButton({ slug }: { slug: string }) {
             {users.map((user, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-2.5">
                 {user.image ? (
-                  <img src={user.image} alt={user.name} width={28} height={28} className="w-7 h-7 rounded-full object-cover" />
+                  <div className="relative w-7 h-7 rounded-full overflow-hidden shrink-0">
+                    <Image src={user.image} alt={user.name} fill className="object-cover" sizes="28px" />
+                  </div>
                 ) : (
                   <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs text-white/60">
                     {user.name[0]?.toUpperCase()}

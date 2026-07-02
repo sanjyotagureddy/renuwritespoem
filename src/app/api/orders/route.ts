@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 import { getPrisma } from "@/lib/db";
 import { sendOrderConfirmation } from "@/lib/email";
 
@@ -75,24 +76,19 @@ export async function POST(request: Request) {
   paymentData = buffer.toString("base64");
   paymentMime = screenshot.type;
 
-  const prismaAny: any = prisma;
-  const order = await prismaAny["bookOrder"].create({
-    data: {
-      name,
-      email,
-      phone,
-      address,
-      city,
-      state,
-      pincode,
-      copies,
-      shippingAmount: shippingCharge,
-      totalAmount,
-      paymentData,
-      paymentMime,
-      bookId: book.id,
-    },
-  });
+  const orderRows = await prisma.$queryRaw<Array<{ id: string }>>`
+    INSERT INTO book_orders
+      (id, name, email, phone, address, city, state, pincode, copies, "shippingAmount", "totalAmount", "paymentData", "paymentMime", "bookId", status, "createdAt", "updatedAt")
+    VALUES
+      (${randomUUID()}, ${name}, ${email}, ${phone}, ${address}, ${city}, ${state}, ${pincode}, ${copies}, ${shippingCharge}, ${totalAmount}, ${paymentData}, ${paymentMime}, ${book.id}, 'PENDING', now(), now())
+    RETURNING id
+  `;
+
+  const order = orderRows[0];
+
+  if (!order) {
+    return NextResponse.json({ error: "Failed to create order." }, { status: 500 });
+  }
 
   // Send emails (don't block the response if it fails)
   let buyerSent = false;

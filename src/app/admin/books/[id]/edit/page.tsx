@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
@@ -42,7 +43,9 @@ export default async function EditBookPage({ params }: EditBookPageProps) {
             <label htmlFor="coverImage" className="block text-sm text-white/80 mb-2">Cover Image</label>
             {book.coverImage && (
               <div className="mb-3">
-                <img src={book.coverImage} alt="Current cover" className="w-24 h-auto rounded-lg border border-white/10" />
+                <div className="relative w-24 aspect-[3/4] overflow-hidden rounded-lg border border-white/10">
+                  <Image src={book.coverImage} alt="Current cover" fill className="object-cover" sizes="96px" />
+                </div>
                 <p className="text-xs text-white/30 mt-1">Current cover. Upload a new file to replace it.</p>
               </div>
             )}

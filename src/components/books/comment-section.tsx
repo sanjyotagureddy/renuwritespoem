@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { Pencil, Trash2 } from "lucide-react";
 
@@ -157,7 +158,9 @@ export default function BookCommentSection({ slug }: { slug: string }) {
             return (
               <div key={comment.id} className="flex gap-3">
                 {comment.user.image ? (
-                  <img src={comment.user.image} alt={comment.user.name} width={28} height={28} className="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5" />
+                  <div className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 mt-0.5">
+                    <Image src={comment.user.image} alt={comment.user.name} fill className="object-cover" sizes="28px" />
+                  </div>
                 ) : (
                   <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs text-white/60 shrink-0 mt-0.5">
                     {comment.user.name[0]?.toUpperCase()}
