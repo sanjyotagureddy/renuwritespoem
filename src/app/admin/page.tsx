@@ -1,189 +1,199 @@
-import type { Metadata } from "next";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import SignOutButton from "@/components/auth/sign-out-button";
-import { getServerAuthSession } from "@/lib/auth";
+import Link from "next/link";
 import { getPrisma } from "@/lib/db";
-import type { PoemLanguage } from "@/lib/poem-language";
+import { poemLanguageLabel, type PoemLanguage } from "@/lib/poem-language";
+import { toggleFeatured } from "./actions";
 
-export const metadata: Metadata = {
-  title: "Admin",
-  description: "Manage poems and content.",
-};
-
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[^\w\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+function formatDate(date: Date | null): string {
+  if (!date) return "—";
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
-async function createPoem(formData: FormData) {
-  "use server";
-
-  const session = await getServerAuthSession();
-  if (!session?.user || session.user.role !== "ADMIN") {
-    redirect("/login");
-  }
-
-  const title = String(formData.get("title") ?? "").trim();
-  const content = String(formData.get("content") ?? "").trim();
-  const language = String(formData.get("language") ?? "EN") as PoemLanguage;
-  const publishNow = formData.get("publishNow") === "on";
-
-  if (!title || !content) {
-    throw new Error("Title and content are required.");
-  }
-
-  const baseSlug = slugify(title);
-  const randomSuffix = Math.random().toString(36).slice(2, 7);
-  const slug = `${baseSlug}-${randomSuffix}`;
-
+export default async function AdminDashboard() {
   const prisma = getPrisma();
-  await prisma.poem.create({
-    data: {
-      title,
-      slug,
-      content,
-      excerpt: content.slice(0, 180),
-      language,
-      published: publishNow,
-      publishedAt: publishNow ? new Date() : null,
-    },
-  });
 
-  revalidatePath("/poems");
-  revalidatePath("/admin");
-}
+  const [totalPoems, publishedPoems, draftPoems, featuredPoems, recentPoems] = await Promise.all([
+    prisma.poem.count(),
+    prisma.poem.count({ where: { published: true } }),
+    prisma.poem.count({ where: { published: false } }),
+    prisma.poem.findMany({
+      where: { featured: true },
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        language: true,
+        published: true,
+        featured: true,
+        publishedAt: true,
+      },
+    }),
+    prisma.poem.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        language: true,
+        published: true,
+        featured: true,
+        createdAt: true,
+      },
+    }),
+  ]);
 
-export default async function AdminPage() {
-  const session = await getServerAuthSession();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  if (session.user.role !== "ADMIN") {
-    return (
-      <div className="max-w-3xl mx-auto px-6 py-20 md:py-24">
-        <div className="rounded-2xl border border-rose-200/20 bg-rose-500/5 p-8">
-          <h1 className="text-3xl text-white mb-3">Access Denied</h1>
-          <p className="text-white/70 font-[family-name:var(--font-inter)]">
-            Your account is signed in but does not have admin access.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const recentPoems = await getPrisma().poem.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 8,
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      language: true,
-      published: true,
-      createdAt: true,
-    },
-  });
+  const stats = [
+    { label: "Total Poems", value: totalPoems },
+    { label: "Published", value: publishedPoems },
+    { label: "Drafts", value: draftPoems },
+    { label: "Featured", value: `${featuredPoems.length}/3` },
+  ];
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-14 md:py-20 space-y-10">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-white/40 mb-2">Admin Dashboard</p>
-          <h1 className="text-3xl md:text-4xl text-white">Create Poem</h1>
-          <p className="text-white/60 font-[family-name:var(--font-inter)] mt-2">
-            Signed in as {session.user.email}
-          </p>
+    <div className="space-y-8">
+      <h1 className="text-3xl md:text-4xl text-white">Dashboard</h1>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+          >
+            <p className="text-xs uppercase tracking-[0.18em] text-white/40 mb-2">{stat.label}</p>
+            <p className="text-3xl text-white">{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Featured Poems */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl text-white">Featured Poems</h2>
+          <span className="text-xs text-white/40 uppercase tracking-wider">
+            {featuredPoems.length} of 3 slots used
+          </span>
         </div>
 
-        <SignOutButton />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8">
-        <section className="rounded-2xl border border-white/15 bg-white/[0.03] p-7">
-          <form action={createPoem} className="space-y-5">
-            <div>
-              <label htmlFor="title" className="block text-sm text-white/80 mb-2">
-                Title
-              </label>
-              <input
-                id="title"
-                name="title"
-                required
-                className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40"
-                placeholder="Write the poem title"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="language" className="block text-sm text-white/80 mb-2">
-                Language
-              </label>
-              <select
-                id="language"
-                name="language"
-                defaultValue="EN"
-                className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40"
-              >
-                <option value="EN">English</option>
-                <option value="HI">Hindi</option>
-                <option value="MR">Marathi</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="content" className="block text-sm text-white/80 mb-2">
-                Content
-              </label>
-              <textarea
-                id="content"
-                name="content"
-                required
-                rows={10}
-                className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40"
-                placeholder="Write your poem here..."
-              />
-            </div>
-
-            <label className="inline-flex items-center gap-2 text-sm text-white/75">
-              <input type="checkbox" name="publishNow" className="accent-white" />
-              Publish immediately
-            </label>
-
-            <button
-              type="submit"
-              className="rounded-full border border-white/30 bg-white/10 px-6 py-3 text-xs uppercase tracking-[0.18em] text-white hover:bg-white/20 transition-colors"
+        {featuredPoems.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-8 text-center">
+            <p className="text-white/50 font-[family-name:var(--font-inter)] mb-3">
+              No poems are featured yet.
+            </p>
+            <Link
+              href="/admin/poems"
+              className="text-sm text-white/70 hover:text-white underline underline-offset-4"
             >
-              Save Poem
-            </button>
-          </form>
-        </section>
-
-        <section className="rounded-2xl border border-white/15 bg-white/[0.03] p-7">
-          <h2 className="text-xl text-white mb-5">Recent Poems</h2>
-          <div className="space-y-3">
-            {recentPoems.length === 0 ? (
-              <p className="text-white/60 font-[family-name:var(--font-inter)]">No poems yet.</p>
-            ) : (
-              recentPoems.map((poem) => (
-                <div key={poem.id} className="rounded-xl border border-white/10 bg-black/20 p-3">
-                  <p className="text-white">{poem.title}</p>
-                  <p className="text-xs uppercase tracking-wider text-white/50 mt-1">
-                    {poem.language} • {poem.published ? "Published" : "Draft"}
-                  </p>
-                </div>
-              ))
-            )}
+              Go to Poems to feature one
+            </Link>
           </div>
-        </section>
-      </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {featuredPoems.map((poem) => (
+              <div
+                key={poem.id}
+                className="rounded-2xl border border-amber-400/20 bg-amber-500/5 p-5 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-amber-400 text-xs">★</span>
+                    <span className="text-xs uppercase tracking-wider text-white/50">
+                      {poemLanguageLabel(poem.language as PoemLanguage)}
+                    </span>
+                    <span
+                      className={`ml-auto text-xs uppercase tracking-wider ${poem.published ? "text-emerald-400/70" : "text-white/40"}`}
+                    >
+                      {poem.published ? "Published" : "Draft"}
+                    </span>
+                  </div>
+                  <h3 className="text-white text-lg mb-2">{poem.title}</h3>
+                  <p className="text-xs text-white/40">{formatDate(poem.publishedAt)}</p>
+                </div>
+                <div className="mt-4 flex items-center gap-3">
+                  <Link
+                    href={`/admin/poems/${poem.id}/edit`}
+                    className="text-xs text-white/60 hover:text-white underline underline-offset-4"
+                  >
+                    Edit
+                  </Link>
+                  <form action={toggleFeatured}>
+                    <input type="hidden" name="id" value={poem.id} />
+                    <button
+                      type="submit"
+                      className="text-xs text-amber-400/70 hover:text-amber-300 underline underline-offset-4"
+                    >
+                      Unfeature
+                    </button>
+                  </form>
+                </div>
+              </div>
+            ))}
+
+            {/* Empty slots */}
+            {Array.from({ length: 3 - featuredPoems.length }).map((_, i) => (
+              <div
+                key={`empty-${i}`}
+                className="rounded-2xl border border-dashed border-white/10 bg-white/[0.01] p-5 flex items-center justify-center min-h-[140px]"
+              >
+                <p className="text-xs text-white/30 uppercase tracking-wider">Empty slot</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Recent Poems */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl text-white">Recent Poems</h2>
+          <Link
+            href="/admin/poems"
+            className="text-xs text-white/50 hover:text-white uppercase tracking-wider"
+          >
+            View all →
+          </Link>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/8">
+          {recentPoems.length === 0 ? (
+            <div className="p-6 text-center">
+              <p className="text-white/50 font-[family-name:var(--font-inter)]">No poems yet.</p>
+            </div>
+          ) : (
+            recentPoems.map((poem) => (
+              <div key={poem.id} className="flex items-center justify-between px-5 py-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  {poem.featured && <span className="text-amber-400 text-sm shrink-0">★</span>}
+                  <div className="min-w-0">
+                    <p className="text-white truncate">{poem.title}</p>
+                    <p className="text-xs text-white/40 mt-0.5">
+                      {poemLanguageLabel(poem.language as PoemLanguage)} •{" "}
+                      {formatDate(poem.createdAt)}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span
+                    className={`text-xs uppercase tracking-wider ${poem.published ? "text-emerald-400/70" : "text-white/40"}`}
+                  >
+                    {poem.published ? "Live" : "Draft"}
+                  </span>
+                  <Link
+                    href={`/admin/poems/${poem.id}/edit`}
+                    className="text-xs text-white/50 hover:text-white"
+                  >
+                    Edit
+                  </Link>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   );
 }

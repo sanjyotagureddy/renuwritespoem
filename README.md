@@ -8,17 +8,17 @@ Create a beautiful, accessible, and SEO-optimized platform where a poet can publ
 
 ## Technology Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS |
-| Components | shadcn/ui |
-| Authentication | Auth.js (Google OAuth) |
-| Database | PostgreSQL (Neon) |
-| ORM | Prisma |
-| Email | Resend |
-| Deployment | Vercel |
+| Layer          | Technology              |
+| -------------- | ----------------------- |
+| Framework      | Next.js 15 (App Router) |
+| Language       | TypeScript              |
+| Styling        | Tailwind CSS            |
+| Components     | shadcn/ui               |
+| Authentication | Auth.js (Google OAuth)  |
+| Database       | PostgreSQL (Neon)       |
+| ORM            | Prisma                  |
+| Email          | Resend                  |
+| Deployment     | Vercel                  |
 
 ## Architecture Overview
 
@@ -93,8 +93,16 @@ DIRECT_URL=postgresql://...
 AUTH_SECRET=...
 AUTH_GOOGLE_ID=...
 AUTH_GOOGLE_SECRET=...
+NEXTAUTH_URL=http://localhost:3000
 RESEND_API_KEY=...
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+For Google OAuth, add this exact authorized redirect URI in the Google Cloud
+console (replace the origin in production):
+
+```text
+http://localhost:3000/api/auth/callback/google
 ```
 
 ## Deployment
@@ -108,14 +116,14 @@ The application deploys to **Vercel** via Git push to `main`.
 
 ## Project Documentation
 
-| Document | Purpose |
-|----------|---------|
-| [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md) | Primary context for AI coding agents |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture and diagrams |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Architectural Decision Records |
-| [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md) | Code style and conventions |
-| [docs/FOLDER_STRUCTURE.md](docs/FOLDER_STRUCTURE.md) | Project layout guide |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Development phases and milestones |
+| Document                                             | Purpose                              |
+| ---------------------------------------------------- | ------------------------------------ |
+| [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md)             | Primary context for AI coding agents |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)         | System architecture and diagrams     |
+| [docs/DECISIONS.md](docs/DECISIONS.md)               | Architectural Decision Records       |
+| [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md) | Code style and conventions           |
+| [docs/FOLDER_STRUCTURE.md](docs/FOLDER_STRUCTURE.md) | Project layout guide                 |
+| [docs/ROADMAP.md](docs/ROADMAP.md)                   | Development phases and milestones    |
 
 ## Contribution Guidelines
 

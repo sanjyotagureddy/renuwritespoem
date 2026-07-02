@@ -17,15 +17,18 @@ enum Role {
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
+  emailVerified DateTime?
   name      String?
   image     String?
   role      Role     @default(READER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  accounts Account[]
-  sessions Session[]
-  comments Comment[]
+  accounts     Account[]
+  sessions     Session[]
+  comments     Comment[]
+  likes        Like[]
+  commentLikes CommentLike[]
 
   @@map("users")
 }
@@ -113,6 +116,7 @@ model Poem {
   excerpt     String?
   coverImage  String?
   published   Boolean  @default(false)
+  featured    Boolean  @default(false)
   publishedAt DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -122,6 +126,7 @@ model Poem {
 
   tags     PoemTag[]
   comments Comment[]
+  likes    Like[]
 
   @@index([genreId])
   @@index([language])
@@ -174,6 +179,7 @@ enum CommentStatus {
 model Comment {
   id        String        @id @default(cuid())
   body      String
+  edited    Boolean       @default(false)
   status    CommentStatus @default(PENDING)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
@@ -184,9 +190,39 @@ model Comment {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  likes CommentLike[]
+
   @@index([poemId, status])
   @@index([userId])
   @@map("comments")
+}
+
+model CommentLike {
+  commentId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([commentId, userId])
+  @@index([userId])
+  @@map("comment_likes")
+}
+
+// ─── Likes ───────────────────────────────────────────────────
+
+model Like {
+  poemId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  poem Poem @relation(fields: [poemId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([poemId, userId])
+  @@index([userId])
+  @@map("likes")
 }
 
 // ─── Newsletter ──────────────────────────────────────────────

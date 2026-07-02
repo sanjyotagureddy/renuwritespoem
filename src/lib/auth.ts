@@ -45,6 +45,15 @@ export const authOptions: NextAuthOptions = {
         token.userId = user.id;
       }
 
+      // Ensure userId is always set from the database if missing
+      if (!token.userId && token.email) {
+        const dbUser = await getPrisma().user.findUnique({
+          where: { email: token.email },
+          select: { id: true },
+        });
+        if (dbUser) token.userId = dbUser.id;
+      }
+
       const email = (user?.email ?? token.email)?.toLowerCase();
       const isAdmin = email ? getAdminEmails().has(email) : false;
       token.role = isAdmin ? "ADMIN" : "READER";

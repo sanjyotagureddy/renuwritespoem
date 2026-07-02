@@ -6,7 +6,7 @@ export default function GoogleSignInButton() {
   return (
     <button
       type="button"
-      onClick={() => signIn("google", { callbackUrl: "/admin" })}
+      onClick={() => signIn("google", { callbackUrl: "/login" })}
       className="inline-flex w-full items-center justify-center gap-3 rounded-xl border border-white/25 bg-white/10 px-5 py-3.5 text-sm font-semibold text-white shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/40"
     >
       <span

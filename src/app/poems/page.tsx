@@ -8,9 +8,10 @@ import {
   poemLanguageToHtmlLang,
   type PoemLanguage,
 } from "@/lib/poem-language";
+import PageSizeSelect from "@/components/poems/page-size-select";
 
 type PoemsPageProps = {
-  searchParams: Promise<{ language?: string | string[] }>;
+  searchParams: Promise<{ language?: string | string[]; page?: string | string[]; size?: string | string[] }>;
 };
 
 export const metadata: Metadata = {
@@ -18,6 +19,9 @@ export const metadata: Metadata = {
   description:
     "Read poems by Renu across English, Hindi, and Marathi on love, nature, life, and solitude.",
 };
+
+const PAGE_SIZE_OPTIONS = [6, 9, 12, 15] as const;
+const DEFAULT_PAGE_SIZE = 9;
 
 function formatDate(date: Date | null): string {
   if (!date) return "Unpublished";
@@ -39,17 +43,46 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     ? (languageValue as PoemLanguage)
     : "ALL";
 
-  const poems = await prisma.poem.findMany({
-    where:
-      selectedLanguage === "ALL"
-        ? { published: true }
-        : { published: true, language: selectedLanguage },
-    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-    include: {
-      genre: { select: { name: true, slug: true } },
-      tags: { include: { tag: { select: { name: true, slug: true } } } },
-    },
-  });
+  const pageValue = Array.isArray(params.page) ? params.page[0] : params.page;
+  const currentPage = Math.max(1, parseInt(pageValue ?? "1", 10) || 1);
+
+  const sizeValue = Array.isArray(params.size) ? params.size[0] : params.size;
+  const parsedSize = parseInt(sizeValue ?? "", 10);
+  const perPage = PAGE_SIZE_OPTIONS.includes(parsedSize as (typeof PAGE_SIZE_OPTIONS)[number])
+    ? parsedSize
+    : DEFAULT_PAGE_SIZE;
+
+  const whereClause =
+    selectedLanguage === "ALL"
+      ? { published: true }
+      : { published: true, language: selectedLanguage };
+
+  const [poems, totalCount] = await Promise.all([
+    prisma.poem.findMany({
+      where: whereClause,
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      skip: (currentPage - 1) * perPage,
+      take: perPage,
+      include: {
+        genre: { select: { name: true, slug: true } },
+        tags: { include: { tag: { select: { name: true, slug: true } } } },
+        _count: { select: { likes: true, comments: true } },
+      },
+    }),
+    prisma.poem.count({ where: whereClause }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
+
+  function buildPageUrl(page: number, size?: number) {
+    const params = new URLSearchParams();
+    if (selectedLanguage !== "ALL") params.set("language", selectedLanguage);
+    if (page > 1) params.set("page", String(page));
+    const s = size ?? perPage;
+    if (s !== DEFAULT_PAGE_SIZE) params.set("size", String(s));
+    const qs = params.toString();
+    return `/poems${qs ? `?${qs}` : ""}`;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
@@ -86,6 +119,12 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
               {poemLanguageLabel(language)}
             </Link>
           ))}
+
+          {totalCount > 0 && (
+            <span className="ml-auto text-xs text-white/30">
+              {totalCount} poem{totalCount !== 1 ? "s" : ""}
+            </span>
+          )}
         </div>
       </div>
 
@@ -134,15 +173,27 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
                   {poem.excerpt ?? poem.content}
                 </p>
 
-                <div className="mb-6 flex flex-wrap gap-2">
-                  {poem.tags.slice(0, 3).map(({ tag }) => (
-                    <span
-                      key={tag.slug}
-                      className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[11px] uppercase tracking-wider text-white/50"
-                    >
-                      {tag.name}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <span className="flex items-center gap-1 text-xs text-white/40" title="Likes">
+                      <span>♡</span>
+                      {poem._count.likes}
                     </span>
-                  ))}
+                    <span className="flex items-center gap-1 text-xs text-white/40" title="Comments">
+                      <span>💬</span>
+                      {poem._count.comments}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {poem.tags.slice(0, 3).map(({ tag }) => (
+                      <span
+                        key={tag.slug}
+                        className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[11px] uppercase tracking-wider text-white/50"
+                      >
+                        {tag.name}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 <Link
@@ -157,6 +208,56 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
               </article>
             );
           })}
+        </div>
+      )}
+
+      {/* Pagination + Page size */}
+      {(totalPages > 1 || totalCount > PAGE_SIZE_OPTIONS[0]) && (
+        <div className="mt-12 flex items-center justify-between">
+          {/* Pagination controls — centered */}
+          <div className="flex-1" />
+          {totalPages > 1 ? (
+            <div className="flex items-center gap-2">
+              {currentPage > 1 && (
+                <Link
+                  href={buildPageUrl(currentPage - 1)}
+                  className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-wider text-white/60 hover:text-white hover:border-white/30 transition-colors"
+                >
+                  ← Prev
+                </Link>
+              )}
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Link
+                  key={page}
+                  href={buildPageUrl(page)}
+                  className={`rounded-full border px-3.5 py-2 text-xs transition-colors ${
+                    page === currentPage
+                      ? "border-white/40 bg-white/10 text-white"
+                      : "border-white/15 text-white/50 hover:text-white hover:border-white/30"
+                  }`}
+                >
+                  {page}
+                </Link>
+              ))}
+
+              {currentPage < totalPages && (
+                <Link
+                  href={buildPageUrl(currentPage + 1)}
+                  className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-wider text-white/60 hover:text-white hover:border-white/30 transition-colors"
+                >
+                  Next →
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div />
+          )}
+
+          {/* Page size dropdown — right */}
+          <div className="flex-1 flex justify-end">
+            <PageSizeSelect current={perPage} />
+          </div>
         </div>
       )}
     </div>

@@ -8,6 +8,8 @@ import {
   poemLanguageToHtmlLang,
   type PoemLanguage,
 } from "@/lib/poem-language";
+import LikeButton from "@/components/poems/like-button";
+import CommentSection from "@/components/poems/comment-section";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -63,7 +65,7 @@ export default async function PoemDetailPage({ params }: PageProps) {
   const lang = poemLanguageToHtmlLang(language);
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-16 md:py-24">
+    <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
       <Link
         href="/poems"
         className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-white/50 hover:text-white/80 mb-10"
@@ -71,54 +73,67 @@ export default async function PoemDetailPage({ params }: PageProps) {
         ← Back to Poems
       </Link>
 
-      <article className="rounded-2xl border border-white/15 bg-white/[0.03] p-7 md:p-10">
-        <div className="mb-6 flex flex-wrap items-center gap-2">
-          <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-white/80">
-            {poemLanguageLabel(language)}
-          </span>
-          {poem.genre ? (
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-wider text-white/60">
-              {poem.genre.name}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+        {/* Poem content */}
+        <article className="rounded-2xl border border-white/15 bg-white/[0.03] p-7 md:p-10">
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-white/80">
+              {poemLanguageLabel(language)}
             </span>
-          ) : null}
-          <span className="ml-auto text-xs uppercase tracking-wider text-white/40">
-            {formatDate(poem.publishedAt)}
-          </span>
-        </div>
-
-        <h1 lang={lang} className={`text-4xl md:text-5xl text-white mb-4 ${poemLanguageFontClass(language)}`}>
-          {poem.title}
-        </h1>
-
-        {poem.excerpt ? (
-          <p
-            lang={lang}
-            className={`text-lg text-white/60 leading-relaxed mb-8 ${poemLanguageFontClass(language)}`}
-          >
-            {poem.excerpt}
-          </p>
-        ) : null}
-
-        <div
-          lang={lang}
-          className={`text-white/85 whitespace-pre-line leading-loose text-lg ${poemLanguageFontClass(language)}`}
-        >
-          {poem.content}
-        </div>
-
-        {poem.tags.length > 0 ? (
-          <div className="mt-10 pt-8 border-t border-white/10 flex flex-wrap gap-2">
-            {poem.tags.map(({ tag }) => (
-              <span
-                key={tag.slug}
-                className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[11px] uppercase tracking-wider text-white/50"
-              >
-                {tag.name}
+            {poem.genre ? (
+              <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-wider text-white/60">
+                {poem.genre.name}
               </span>
-            ))}
+            ) : null}
+            <span className="ml-auto text-xs uppercase tracking-wider text-white/40">
+              {formatDate(poem.publishedAt)}
+            </span>
           </div>
-        ) : null}
-      </article>
+
+          <h1 lang={lang} className={`text-4xl md:text-5xl text-white mb-4 ${poemLanguageFontClass(language)}`}>
+            {poem.title}
+          </h1>
+
+          {poem.excerpt ? (
+            <p
+              lang={lang}
+              className={`text-lg text-white/60 leading-relaxed mb-8 ${poemLanguageFontClass(language)}`}
+            >
+              {poem.excerpt}
+            </p>
+          ) : null}
+
+          <div
+            lang={lang}
+            className={`text-white/85 whitespace-pre-line leading-loose text-lg ${poemLanguageFontClass(language)}`}
+          >
+            {poem.content}
+          </div>
+
+          {poem.tags.length > 0 ? (
+            <div className="mt-10 pt-8 border-t border-white/10 flex flex-wrap gap-2">
+              {poem.tags.map(({ tag }) => (
+                <span
+                  key={tag.slug}
+                  className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[11px] uppercase tracking-wider text-white/50"
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </article>
+
+        {/* Sidebar — Likes & Comments */}
+        <aside className="lg:sticky lg:top-[96px]">
+          <div className="rounded-2xl border border-white/15 bg-white/[0.03] p-5 space-y-6">
+            <LikeButton slug={poem.slug} />
+            <div className="border-t border-white/10 pt-5">
+              <CommentSection slug={poem.slug} />
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

@@ -40,17 +40,18 @@
 
 ## Phase 5: Public Pages - Home
 
-- [ ] Build Home page layout
-- [ ] Author introduction section
-- [ ] Featured poems section
+- [x] Build Home page layout
+- [x] Author introduction section
+- [ ] Featured poems section (display 3 featured poems on home)
 - [ ] Latest poems section
 - [ ] Featured book section
 - [ ] Newsletter signup section
 
 ## Phase 6: Public Pages - Poems
 
-- [ ] Poems listing page with pagination
-- [x] Poem detail page
+- [x] Poems listing page with like & comment count icons
+- [x] Poem detail page with sidebar (likes + comments)
+- [ ] Poems pagination
 - [ ] Genre filter on poems listing
 - [ ] Tag filter on poems listing
 - [x] Language filter on poems listing (All/English/Hindi/Marathi)
@@ -85,12 +86,17 @@
 - [ ] Generate sitemap.xml
 - [ ] Generate robots.txt
 
-## Phase 11: Comments System
+## Phase 11: Comments & Likes System
 
-- [ ] Comment form component (authenticated users only)
-- [ ] Display approved comments on poem pages
-- [ ] Submit comment API route
-- [ ] Comment moderation status (Pending/Approved/Rejected)
+- [x] Like model & API route (toggle like/unlike per poem)
+- [x] Like button with user popup on poem detail page
+- [x] Like & comment counts on poems listing cards
+- [x] Comment form component (authenticated users only)
+- [x] Display approved comments on poem detail sidebar
+- [x] Submit comment API route
+- [x] Comment like model & API route (per-comment likes)
+- [x] Comment like button on each comment
+- [ ] Comment moderation in admin (Pending/Approved/Rejected)
 
 ## Phase 12: Newsletter System
 
@@ -102,17 +108,22 @@
 
 ## Phase 13: Admin Dashboard - Layout
 
-- [ ] Admin layout with sidebar navigation
-- [ ] Dashboard overview page (stats cards)
-- [ ] Admin route protection
+- [x] Admin layout with tab navigation
+- [x] Dashboard overview page (stats: total/published/drafts/featured)
+- [x] Admin route protection (role-based in layout)
 
 ## Phase 14: Admin - Poems Management
 
-- [ ] Poems list with status filters (Draft/Published/Archived)
-- [ ] Create poem form (title, content, genre, tags, cover image, SEO fields)
-- [ ] Edit poem form
-- [ ] Publish/unpublish poem action
-- [ ] Archive poem action
+- [x] Poems list with publish/draft status badges
+- [x] Create poem form (title, content, language, publish toggle)
+- [x] Edit poem form (pre-filled)
+- [x] Publish/unpublish poem toggle action
+- [x] Featured poem toggle (max 3 featured, with dashboard slots view)
+- [x] Delete poem with confirmation
+- [x] View published poem link
+- [ ] Genre & tag assignment in poem forms
+- [ ] Cover image upload
+- [ ] SEO fields in poem forms
 - [ ] Poem preview
 - [ ] "Notify Subscribers" option on publish
 

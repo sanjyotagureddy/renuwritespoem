@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,16 +31,13 @@ export default function Header() {
     session?.user?.email?.split("@")[0] ??
     "";
 
+  const isAdmin = session?.user?.role === "ADMIN";
+  const isLoggedIn = Boolean(session?.user);
+
   const navLinks = [...baseNavLinks];
 
-  if (status !== "loading") {
-    if (!session?.user) {
-      navLinks.push({ href: "/login", label: "Login" });
-    }
-
-    if (session?.user?.role === "ADMIN") {
-      navLinks.push({ href: "/admin", label: "Admin" });
-    }
+  if (status !== "loading" && !isLoggedIn) {
+    navLinks.push({ href: "/login", label: "Login" });
   }
 
   return (
@@ -67,11 +64,35 @@ export default function Header() {
             </li>
           ))}
 
-          {status !== "loading" && session?.user ? (
-            <li>
-              <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 py-1.5 font-[family-name:var(--font-inter)] text-xs tracking-wide text-white/85">
+          {status !== "loading" && isLoggedIn ? (
+            <li className="relative group">
+              <button
+                type="button"
+                className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 py-1.5 font-[family-name:var(--font-inter)] text-xs tracking-wide text-white/85 hover:bg-white/10 transition-colors cursor-pointer"
+              >
                 {`Hey, ${userDisplayName}`}
-              </span>
+              </button>
+
+              {/* Dropdown on hover */}
+              <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <div className="rounded-xl border border-white/15 bg-neutral-900 shadow-xl py-1 min-w-[140px]">
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="block px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                    >
+                      Admin Panel
+                    </Link>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="w-full text-left px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
             </li>
           ) : null}
         </ul>
@@ -108,6 +129,32 @@ export default function Header() {
                   {link.label}
                 </Link>
               ))}
+
+              {isLoggedIn && (
+                <>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="block py-3 px-3 rounded-lg font-[family-name:var(--font-inter)] text-sm uppercase tracking-wider text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      Admin
+                    </Link>
+                  )}
+                  <div className="border-t border-white/10 mt-2 pt-2">
+                    <p className="px-3 py-2 text-xs text-white/40">
+                      {`Signed in as ${userDisplayName}`}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className="w-full text-left py-3 px-3 rounded-lg font-[family-name:var(--font-inter)] text-sm uppercase tracking-wider text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </>
+              )}
             </nav>
           </SheetContent>
         </Sheet>
