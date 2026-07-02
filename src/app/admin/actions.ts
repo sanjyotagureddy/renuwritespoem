@@ -24,6 +24,45 @@ function slugify(value: string): string {
     .replace(/-+/g, "-");
 }
 
+function parseTags(formData: FormData): Array<{ name: string; slug: string }> {
+  const names = String(formData.get("tags") ?? "")
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean)
+    .slice(0, 10);
+
+  const uniqueNames = [
+    ...new Map(names.map((name) => [name.toLocaleLowerCase(), name])).values(),
+  ];
+
+  const normalizedTags = uniqueNames
+    .map((name) => {
+      const slug = name
+        .toLocaleLowerCase()
+        .normalize("NFKD")
+        .replace(/[^\p{L}\p{N}\s-]/gu, "")
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
+
+      return { name: name.slice(0, 50), slug: slug.slice(0, 60) };
+    })
+    .filter((tag) => tag.slug.length > 0);
+
+  return [...new Map(normalizedTags.map((tag) => [tag.slug, tag])).values()];
+}
+
+function createTagRelations(tags: Array<{ name: string; slug: string }>) {
+  return tags.map((tag) => ({
+    tag: {
+      connectOrCreate: {
+        where: { slug: tag.slug },
+        create: tag,
+      },
+    },
+  }));
+}
+
 // ─── Poems ───────────────────────────────────────────────────
 
 export async function createPoem(formData: FormData) {
@@ -32,7 +71,9 @@ export async function createPoem(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const content = String(formData.get("content") ?? "").trim();
   const language = String(formData.get("language") ?? "EN") as PoemLanguage;
+  const genreId = String(formData.get("genreId") ?? "").trim();
   const publishNow = formData.get("publishNow") === "on";
+  const tags = parseTags(formData);
 
   if (!title || !content) {
     throw new Error("Title and content are required.");
@@ -50,8 +91,10 @@ export async function createPoem(formData: FormData) {
       content,
       excerpt: content.slice(0, 180),
       language,
+      genreId: genreId || null,
       published: publishNow,
       publishedAt: publishNow ? new Date() : null,
+      tags: { create: createTagRelations(tags) },
     },
   });
 
@@ -67,7 +110,9 @@ export async function updatePoem(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const content = String(formData.get("content") ?? "").trim();
   const language = String(formData.get("language") ?? "EN") as PoemLanguage;
+  const genreId = String(formData.get("genreId") ?? "").trim();
   const publishNow = formData.get("publishNow") === "on";
+  const tags = parseTags(formData);
 
   if (!id || !title || !content) {
     throw new Error("ID, title, and content are required.");
@@ -84,8 +129,14 @@ export async function updatePoem(formData: FormData) {
       content,
       excerpt: content.slice(0, 180),
       language,
+      genreId: genreId || null,
       published: publishNow,
-      publishedAt: publishNow && !existing.publishedAt ? new Date() : existing.publishedAt,
+      publishedAt:
+        publishNow && !existing.publishedAt ? new Date() : existing.publishedAt,
+      tags: {
+        deleteMany: {},
+        create: createTagRelations(tags),
+      },
     },
   });
 
@@ -124,7 +175,8 @@ export async function togglePublish(formData: FormData) {
     where: { id },
     data: {
       published: newPublished,
-      publishedAt: newPublished && !poem.publishedAt ? new Date() : poem.publishedAt,
+      publishedAt:
+        newPublished && !poem.publishedAt ? new Date() : poem.publishedAt,
     },
   });
 
@@ -144,9 +196,13 @@ export async function toggleFeatured(formData: FormData) {
   if (!poem) throw new Error("Poem not found.");
 
   if (!poem.featured) {
-    const featuredCount = await prisma.poem.count({ where: { featured: true } });
+    const featuredCount = await prisma.poem.count({
+      where: { featured: true },
+    });
     if (featuredCount >= 3) {
-      throw new Error("You can only have up to 3 featured poems. Unfeature one first.");
+      throw new Error(
+        "You can only have up to 3 featured poems. Unfeature one first.",
+      );
     }
   }
 
@@ -164,7 +220,9 @@ export async function toggleFeatured(formData: FormData) {
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
 
-async function processBookCover(file: File): Promise<{ data: string; mime: string }> {
+async function processBookCover(
+  file: File,
+): Promise<{ data: string; mime: string }> {
   if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
     throw new Error("Only JPG, PNG, and WebP images are allowed.");
   }
@@ -175,7 +233,10 @@ async function processBookCover(file: File): Promise<{ data: string; mime: strin
   return { data: buffer.toString("base64"), mime: file.type };
 }
 
-function parseMoney(value: string, fallback: number | null = null): number | null {
+function parseMoney(
+  value: string,
+  fallback: number | null = null,
+): number | null {
   const trimmed = value.trim();
   if (!trimmed) return fallback;
 
@@ -187,7 +248,10 @@ function parseMoney(value: string, fallback: number | null = null): number | nul
   return parsed;
 }
 
-function normalizeDiscount(price: number | null, discountedPrice: number | null): number | null {
+function normalizeDiscount(
+  price: number | null,
+  discountedPrice: number | null,
+): number | null {
   if (price == null || discountedPrice == null) return null;
   if (discountedPrice <= 0 || discountedPrice >= price) return null;
   return discountedPrice;
@@ -201,9 +265,15 @@ export async function createBook(formData: FormData) {
   const purchaseUrl = String(formData.get("purchaseUrl") ?? "").trim();
   const priceRaw = String(formData.get("price") ?? "").trim();
   const price = parseMoney(priceRaw);
-  const discountedPriceRaw = String(formData.get("discountedPrice") ?? "").trim();
-  const discountedPrice = normalizeDiscount(price, parseMoney(discountedPriceRaw));
-  const shippingCharge = parseMoney(String(formData.get("shippingCharge") ?? "").trim(), 40) ?? 40;
+  const discountedPriceRaw = String(
+    formData.get("discountedPrice") ?? "",
+  ).trim();
+  const discountedPrice = normalizeDiscount(
+    price,
+    parseMoney(discountedPriceRaw),
+  );
+  const shippingCharge =
+    parseMoney(String(formData.get("shippingCharge") ?? "").trim(), 40) ?? 40;
   const status = String(formData.get("status") ?? "COMING_SOON");
   const coverFile = formData.get("coverImage") as File | null;
 
@@ -261,9 +331,15 @@ export async function updateBook(formData: FormData) {
   const purchaseUrl = String(formData.get("purchaseUrl") ?? "").trim();
   const priceRaw = String(formData.get("price") ?? "").trim();
   const price = parseMoney(priceRaw);
-  const discountedPriceRaw = String(formData.get("discountedPrice") ?? "").trim();
-  const discountedPrice = normalizeDiscount(price, parseMoney(discountedPriceRaw));
-  const shippingCharge = parseMoney(String(formData.get("shippingCharge") ?? "").trim(), 40) ?? 40;
+  const discountedPriceRaw = String(
+    formData.get("discountedPrice") ?? "",
+  ).trim();
+  const discountedPrice = normalizeDiscount(
+    price,
+    parseMoney(discountedPriceRaw),
+  );
+  const shippingCharge =
+    parseMoney(String(formData.get("shippingCharge") ?? "").trim(), 40) ?? 40;
   const status = String(formData.get("status") ?? "COMING_SOON");
   const coverFile = formData.get("coverImage") as File | null;
 
@@ -285,7 +361,9 @@ export async function updateBook(formData: FormData) {
     purchaseUrl: purchaseUrl || null,
     status: status as "COMING_SOON" | "AVAILABLE" | "ARCHIVED",
     publishedAt:
-      status === "AVAILABLE" && !existing.publishedAt ? new Date() : existing.publishedAt,
+      status === "AVAILABLE" && !existing.publishedAt
+        ? new Date()
+        : existing.publishedAt,
   };
 
   if (coverFile && coverFile.size > 0) {
@@ -331,9 +409,13 @@ export async function toggleBookFeatured(formData: FormData) {
   if (!book) throw new Error("Book not found.");
 
   if (!book.featured) {
-    const featuredCount = await prisma.book.count({ where: { featured: true } });
+    const featuredCount = await prisma.book.count({
+      where: { featured: true },
+    });
     if (featuredCount >= 3) {
-      throw new Error("You can only have up to 3 featured books. Unfeature one first.");
+      throw new Error(
+        "You can only have up to 3 featured books. Unfeature one first.",
+      );
     }
   }
 
@@ -356,13 +438,22 @@ export async function updateOrderStatus(formData: FormData) {
 
   if (!id || !status) throw new Error("Order ID and status are required.");
 
-  const validStatuses = ["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "REJECTED"];
+  const validStatuses = [
+    "PENDING",
+    "CONFIRMED",
+    "SHIPPED",
+    "DELIVERED",
+    "REJECTED",
+  ];
   if (!validStatuses.includes(status)) throw new Error("Invalid status.");
 
   const prisma = getPrisma();
   await prisma.bookOrder.update({
     where: { id },
-    data: { status: status as "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "REJECTED" },
+    data: {
+      status: status as
+        "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "REJECTED",
+    },
   });
 
   revalidatePath("/admin/orders");
