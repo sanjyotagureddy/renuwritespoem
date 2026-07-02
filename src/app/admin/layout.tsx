@@ -13,6 +13,8 @@ const navItems = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/poems", label: "Poems" },
   { href: "/admin/poems/new", label: "New Poem" },
+  { href: "/admin/books", label: "Books" },
+  { href: "/admin/books/new", label: "New Book" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

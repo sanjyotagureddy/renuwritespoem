@@ -24,11 +24,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  accounts     Account[]
-  sessions     Session[]
-  comments     Comment[]
-  likes        Like[]
-  commentLikes CommentLike[]
+  accounts         Account[]
+  sessions         Session[]
+  comments         Comment[]
+  likes            Like[]
+  commentLikes     CommentLike[]
+  bookLikes        BookLike[]
+  bookComments     BookComment[]
+  bookCommentLikes BookCommentLike[]
 
   @@map("users")
 }
@@ -159,13 +162,66 @@ model Book {
   slug         String     @unique
   description  String?
   coverImage   String?
+  coverData    String?
+  coverMime    String?
   purchaseUrl  String?
+  featured     Boolean    @default(false)
   status       BookStatus @default(COMING_SOON)
   publishedAt  DateTime?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
+  likes    BookLike[]
+  comments BookComment[]
+
   @@map("books")
+}
+
+model BookLike {
+  bookId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, userId])
+  @@index([userId])
+  @@map("book_likes")
+}
+
+model BookComment {
+  id        String        @id @default(cuid())
+  body      String
+  edited    Boolean       @default(false)
+  status    CommentStatus @default(APPROVED)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  likes BookCommentLike[]
+
+  @@index([bookId, status])
+  @@index([userId])
+  @@map("book_comments")
+}
+
+model BookCommentLike {
+  commentId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  comment BookComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([commentId, userId])
+  @@index([userId])
+  @@map("book_comment_likes")
 }
 
 // ─── Comments ────────────────────────────────────────────────
