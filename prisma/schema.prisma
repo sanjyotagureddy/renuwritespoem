@@ -164,6 +164,9 @@ model Book {
   coverImage   String?
   coverData    String?
   coverMime    String?
+  price        Float?
+  discountedPrice Float?
+  shippingCharge  Float    @default(40)
   purchaseUrl  String?
   featured     Boolean    @default(false)
   status       BookStatus @default(COMING_SOON)
@@ -173,6 +176,7 @@ model Book {
 
   likes    BookLike[]
   comments BookComment[]
+  orders   BookOrder[]
 
   @@map("books")
 }
@@ -279,6 +283,43 @@ model Like {
   @@id([poemId, userId])
   @@index([userId])
   @@map("likes")
+}
+
+// ─── Book Orders ─────────────────────────────────────────────
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  REJECTED
+}
+
+model BookOrder {
+  id               String      @id @default(cuid())
+  name             String
+  email            String
+  phone            String
+  address          String
+  city             String
+  state            String
+  pincode          String
+  copies           Int         @default(1)
+  shippingAmount   Float       @default(40)
+  totalAmount      Float
+  paymentData      String?
+  paymentMime      String?
+  status           OrderStatus @default(PENDING)
+  adminNote        String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
+  @@index([status])
+  @@map("book_orders")
 }
 
 // ─── Newsletter ──────────────────────────────────────────────

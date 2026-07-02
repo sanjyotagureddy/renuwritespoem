@@ -25,7 +25,7 @@ export default async function EditBookPage({ params }: EditBookPageProps) {
       </div>
 
       <div className="max-w-2xl">
-        <form action={updateBook} className="rounded-2xl border border-white/15 bg-white/[0.03] p-7 space-y-5">
+        <form action={updateBook} className="rounded-2xl border border-white/15 bg-white/3 p-7 space-y-5">
           <input type="hidden" name="id" value={book.id} />
 
           <div>
@@ -48,6 +48,22 @@ export default async function EditBookPage({ params }: EditBookPageProps) {
             )}
             <input id="coverImage" name="coverImage" type="file" accept="image/jpeg,image/png,image/webp" className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40 file:mr-4 file:rounded-full file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-xs file:uppercase file:tracking-wider file:text-white/70 file:cursor-pointer hover:file:bg-white/20" />
             <p className="text-xs text-white/30 mt-1">JPG, PNG, or WebP. Max 5 MB. Leave empty to keep current.</p>
+          </div>
+
+          <div>
+            <label htmlFor="price" className="block text-sm text-white/80 mb-2">Actual Price (₹)</label>
+            <input id="price" name="price" type="number" step="0.01" min="0" defaultValue={book.price ?? ""} className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40" placeholder="299" />
+          </div>
+
+          <div>
+            <label htmlFor="discountedPrice" className="block text-sm text-white/80 mb-2">Discounted Price (₹)</label>
+            <input id="discountedPrice" name="discountedPrice" type="number" step="0.01" min="0" defaultValue={book.discountedPrice ?? ""} className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40" placeholder="249" />
+            <p className="text-xs text-white/30 mt-1">Leave empty if there is no offer price.</p>
+          </div>
+
+          <div>
+            <label htmlFor="shippingCharge" className="block text-sm text-white/80 mb-2">Shipping Charge (₹)</label>
+            <input id="shippingCharge" name="shippingCharge" type="number" step="0.01" min="0" defaultValue={book.shippingCharge} className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40" placeholder="40" />
           </div>
 
           <div>

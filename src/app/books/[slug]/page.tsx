@@ -3,8 +3,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
+import BookPurchaseLayout from "@/components/books/book-purchase-layout";
 import BookLikeButton from "@/components/books/like-button";
 import BookCommentSection from "@/components/books/comment-section";
+import PurchaseForm from "@/components/books/purchase-form";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -66,6 +68,37 @@ export default async function BookDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const canPurchase = book.status === "AVAILABLE" && Boolean(book.price);
+
+  if (canPurchase) {
+    return (
+      <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+        <Link
+          href="/books"
+          className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-white/50 hover:text-white/80 mb-10"
+        >
+          ← Back to Books
+        </Link>
+
+        <BookPurchaseLayout
+          book={{
+            id: book.id,
+            title: book.title,
+            slug: book.slug,
+            description: book.description,
+            coverImage: book.coverImage,
+            featured: book.featured,
+            status: book.status,
+            publishedAt: book.publishedAt ? book.publishedAt.toISOString() : null,
+            price: book.price ?? 0,
+            discountedPrice: book.discountedPrice,
+            shippingCharge: book.shippingCharge,
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
       <Link
@@ -75,12 +108,10 @@ export default async function BookDetailPage({ params }: PageProps) {
         ← Back to Books
       </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
-        {/* Book content */}
-        <div className="rounded-2xl border border-white/15 bg-white/[0.03] overflow-hidden">
+      <div className={`grid grid-cols-1 gap-8 items-start ${canPurchase ? "lg:grid-cols-1" : "lg:grid-cols-[1fr_320px]"}`}>
+        <div className="rounded-2xl border border-white/15 bg-white/3 overflow-hidden">
           <div className="flex flex-col md:flex-row">
-            {/* Cover */}
-            <div className="md:w-72 md:shrink-0 aspect-[3/4] md:aspect-auto relative bg-white/5">
+            <div className="md:w-72 md:shrink-0 aspect-3/4 md:aspect-auto relative bg-white/5">
               {book.coverImage ? (
                 <Image
                   src={book.coverImage}
@@ -97,8 +128,7 @@ export default async function BookDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            {/* Details */}
-            <div className="p-7 md:p-10 flex flex-col justify-between flex-1">
+            <div className="p-7 md:p-10 flex flex-col justify-between flex-1 gap-8">
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   {book.featured && <span className="text-amber-400 text-sm">★</span>}
@@ -115,14 +145,26 @@ export default async function BookDetailPage({ params }: PageProps) {
                 <h1 className="text-3xl md:text-4xl text-white mb-4">{book.title}</h1>
 
                 {book.description && (
-                  <p className="text-white/65 leading-relaxed font-[family-name:var(--font-inter)] mb-8 whitespace-pre-line">
+                  <p className="text-white/65 leading-relaxed font-(family-name:--font-inter) whitespace-pre-line">
                     {book.description}
                   </p>
                 )}
               </div>
 
-              {/* Purchase button */}
-              {book.status === "AVAILABLE" && (
+              {book.status === "AVAILABLE" && book.price ? (
+                <div className="rounded-2xl border border-white/10 bg-white/2 p-5 md:p-6 space-y-4">
+                  <div className="flex items-end justify-between gap-4 flex-wrap">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-white/45 mb-2">Purchase</p>
+                      <p className="text-2xl text-white">₹{book.price.toLocaleString("en-IN")}</p>
+                    </div>
+                    <p className="text-xs text-white/35 max-w-sm text-left md:text-right">
+                      Manual UPI checkout with shipping included. The form below uses the full width.
+                    </p>
+                  </div>
+                  <PurchaseForm bookId={book.id} bookTitle={book.title} price={book.price} />
+                </div>
+              ) : book.status === "AVAILABLE" ? (
                 <div>
                   {book.purchaseUrl ? (
                     <a
@@ -144,7 +186,7 @@ export default async function BookDetailPage({ params }: PageProps) {
                     </button>
                   )}
                 </div>
-              )}
+              ) : null}
 
               {book.status === "COMING_SOON" && (
                 <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-500/5 px-6 py-3 text-sm uppercase tracking-[0.18em] text-amber-400/70">
@@ -155,15 +197,16 @@ export default async function BookDetailPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Sidebar — Likes & Comments */}
-        <aside className="lg:sticky lg:top-[96px]">
-          <div className="rounded-2xl border border-white/15 bg-white/[0.03] p-5 space-y-6">
-            <BookLikeButton slug={book.slug} />
-            <div className="border-t border-white/10 pt-5">
-              <BookCommentSection slug={book.slug} />
+        {!canPurchase && (
+          <aside className="lg:sticky lg:top-24">
+            <div className="rounded-2xl border border-white/15 bg-white/3 p-5 space-y-6">
+              <BookLikeButton slug={book.slug} />
+              <div className="border-t border-white/10 pt-5">
+                <BookCommentSection slug={book.slug} />
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        )}
       </div>
     </div>
   );

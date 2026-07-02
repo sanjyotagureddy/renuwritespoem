@@ -175,12 +175,35 @@ async function processBookCover(file: File): Promise<{ data: string; mime: strin
   return { data: buffer.toString("base64"), mime: file.type };
 }
 
+function parseMoney(value: string, fallback: number | null = null): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return fallback;
+
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw new Error("Please enter a valid amount.");
+  }
+
+  return parsed;
+}
+
+function normalizeDiscount(price: number | null, discountedPrice: number | null): number | null {
+  if (price == null || discountedPrice == null) return null;
+  if (discountedPrice <= 0 || discountedPrice >= price) return null;
+  return discountedPrice;
+}
+
 export async function createBook(formData: FormData) {
   await requireAdmin();
 
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const purchaseUrl = String(formData.get("purchaseUrl") ?? "").trim();
+  const priceRaw = String(formData.get("price") ?? "").trim();
+  const price = parseMoney(priceRaw);
+  const discountedPriceRaw = String(formData.get("discountedPrice") ?? "").trim();
+  const discountedPrice = normalizeDiscount(price, parseMoney(discountedPriceRaw));
+  const shippingCharge = parseMoney(String(formData.get("shippingCharge") ?? "").trim(), 40) ?? 40;
   const status = String(formData.get("status") ?? "COMING_SOON");
   const coverFile = formData.get("coverImage") as File | null;
 
@@ -207,6 +230,9 @@ export async function createBook(formData: FormData) {
       coverData,
       coverMime,
       coverImage: null,
+      price,
+      discountedPrice,
+      shippingCharge,
       purchaseUrl: purchaseUrl || null,
       status: status as "COMING_SOON" | "AVAILABLE" | "ARCHIVED",
       publishedAt: status === "AVAILABLE" ? new Date() : null,
@@ -233,6 +259,11 @@ export async function updateBook(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const purchaseUrl = String(formData.get("purchaseUrl") ?? "").trim();
+  const priceRaw = String(formData.get("price") ?? "").trim();
+  const price = parseMoney(priceRaw);
+  const discountedPriceRaw = String(formData.get("discountedPrice") ?? "").trim();
+  const discountedPrice = normalizeDiscount(price, parseMoney(discountedPriceRaw));
+  const shippingCharge = parseMoney(String(formData.get("shippingCharge") ?? "").trim(), 40) ?? 40;
   const status = String(formData.get("status") ?? "COMING_SOON");
   const coverFile = formData.get("coverImage") as File | null;
 
@@ -248,6 +279,9 @@ export async function updateBook(formData: FormData) {
   const updateData: Record<string, unknown> = {
     title,
     description: description || null,
+    price,
+    discountedPrice,
+    shippingCharge,
     purchaseUrl: purchaseUrl || null,
     status: status as "COMING_SOON" | "AVAILABLE" | "ARCHIVED",
     publishedAt:
@@ -310,4 +344,26 @@ export async function toggleBookFeatured(formData: FormData) {
 
   revalidatePath("/books");
   revalidatePath("/admin");
+}
+
+// ─── Orders ──────────────────────────────────────────────────
+
+export async function updateOrderStatus(formData: FormData) {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "").trim();
+  const status = String(formData.get("status") ?? "").trim();
+
+  if (!id || !status) throw new Error("Order ID and status are required.");
+
+  const validStatuses = ["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "REJECTED"];
+  if (!validStatuses.includes(status)) throw new Error("Invalid status.");
+
+  const prisma = getPrisma();
+  await prisma.bookOrder.update({
+    where: { id },
+    data: { status: status as "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "REJECTED" },
+  });
+
+  revalidatePath("/admin/orders");
 }

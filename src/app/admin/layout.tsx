@@ -15,6 +15,7 @@ const navItems = [
   { href: "/admin/poems/new", label: "New Poem" },
   { href: "/admin/books", label: "Books" },
   { href: "/admin/books/new", label: "New Book" },
+  { href: "/admin/orders", label: "Orders" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
