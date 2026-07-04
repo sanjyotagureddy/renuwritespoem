@@ -50,6 +50,19 @@ export default function ContactPage() {
               @renuwrites_poem on Instagram
             </a>
           </div>
+          <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+            <h3 className="mb-2 font-[family-name:var(--font-inter)] text-sm tracking-wider text-white/40 uppercase">
+              Blog
+            </h3>
+            <a
+              href="https://pillayrenu.blogspot.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-[family-name:var(--font-inter)] text-white/70 transition-colors hover:text-white"
+            >
+              pillayrenu.blogspot.com
+            </a>
+          </div>
         </div>
       </div>
     </div>

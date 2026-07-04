@@ -24,7 +24,7 @@ export default function SocialFloating() {
         </svg>
       </a>
       <a
-        href="https://blog.example.com"
+        href="https://pillayrenu.blogspot.com/"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Blog"

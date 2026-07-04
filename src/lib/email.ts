@@ -48,7 +48,7 @@ function emailShell({
     <div style="margin:0; padding:0; background:#fff7ed;">
       <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">${escapeHtml(
         subtitle ?? title,
-      )}</div>
+      ).replace(/<[^>]*>/g, "")}</div>
       <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; border-collapse:collapse; background:linear-gradient(180deg,#fff7ed 0%,#ffffff 48%,#fdf2f8 100%);">
         <tr>
           <td style="padding:28px 14px;">
@@ -62,11 +62,11 @@ function emailShell({
               </tr>
               <tr>
                 <td style="overflow:hidden; border:1px solid #f1d5c6; border-radius:28px; background:#ffffff; box-shadow:0 24px 70px rgba(124,45,18,0.12);">
-                  <div style="padding:34px 28px 30px; background:linear-gradient(135deg,#431407 0%,#7c2d12 42%,#be185d 100%); color:#ffffff; text-align:center;">
-                    <p style="margin:0 0 12px; color:#fed7aa; font-family:Arial,sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase;">${eyebrow}</p>
-                    ${badge ? `<div style="display:inline-block; margin:0 0 14px; padding:7px 13px; border-radius:999px; background:rgba(255,255,255,0.14); color:#ffedd5; font-family:Arial,sans-serif; font-size:12px; font-weight:700;">${badge}</div>` : ""}
-                    <h1 style="margin:0; font-family:Georgia,'Times New Roman',serif; font-size:34px; line-height:1.18; letter-spacing:-0.5px;">${title}</h1>
-                    ${subtitle ? `<p style="margin:16px auto 0; max-width:520px; color:#ffedd5; font-family:Arial,sans-serif; font-size:15px; line-height:1.7;">${subtitle}</p>` : ""}
+                  <div style="padding:34px 28px 30px; background:#fff7ed; background-image:linear-gradient(135deg,#fff7ed 0%,#ffedd5 55%,#fce7f3 100%); color:#431407; text-align:center;">
+                    <p style="margin:0 0 12px; color:#9a3412; font-family:Arial,sans-serif; font-size:12px; font-weight:800; letter-spacing:2px; text-transform:uppercase;">${eyebrow}</p>
+                    ${badge ? `<div style="display:inline-block; margin:0 0 14px; padding:7px 13px; border-radius:999px; background:#7c2d12; color:#ffffff; font-family:Arial,sans-serif; font-size:12px; font-weight:800;">${badge}</div>` : ""}
+                    <h1 style="margin:0; color:#431407; font-family:Georgia,'Times New Roman',serif; font-size:34px; line-height:1.18; letter-spacing:-0.5px;">${title}</h1>
+                    ${subtitle ? `<p style="margin:16px auto 0; max-width:520px; color:#5f2411; font-family:Arial,sans-serif; font-size:15px; line-height:1.7;">${subtitle}</p>` : ""}
                   </div>
                   <div style="padding:28px; font-family:Arial,sans-serif; color:#1f2937; font-size:15px; line-height:1.7;">
                     ${children}
@@ -421,7 +421,7 @@ export async function sendOrderStatusUpdate({
     from: FROM_EMAIL,
     to: buyerEmail,
     replyTo: FROM_EMAIL,
-    subject: `${statusCopy.subject} — ${bookTitle}`,
+    subject: `${statusCopy.subject} — Order ${orderId} — ${bookTitle}`,
     text: `${statusCopy.heading}
 
 Hi ${buyerName},

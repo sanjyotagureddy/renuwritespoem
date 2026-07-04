@@ -2,10 +2,14 @@
 -- Adds fields required by the current deployed application without deleting data.
 
 ALTER TABLE "book_orders"
+  ADD COLUMN IF NOT EXISTS "orderNumber" TEXT,
   ADD COLUMN IF NOT EXISTS "idempotencyKey" TEXT,
   ADD COLUMN IF NOT EXISTS "trackingProvider" TEXT,
   ADD COLUMN IF NOT EXISTS "trackingNumber" TEXT,
   ADD COLUMN IF NOT EXISTS "trackingUrl" TEXT;
+
+CREATE UNIQUE INDEX IF NOT EXISTS "book_orders_orderNumber_key"
+  ON "book_orders"("orderNumber");
 
 CREATE UNIQUE INDEX IF NOT EXISTS "book_orders_idempotencyKey_key"
   ON "book_orders"("idempotencyKey");

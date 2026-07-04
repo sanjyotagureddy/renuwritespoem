@@ -11,7 +11,12 @@ import {
 import PageSizeSelect from "@/components/poems/page-size-select";
 
 type PoemsPageProps = {
-  searchParams: Promise<{ language?: string | string[]; page?: string | string[]; size?: string | string[] }>;
+  searchParams: Promise<{
+    genre?: string | string[];
+    language?: string | string[];
+    page?: string | string[];
+    size?: string | string[];
+  }>;
 };
 
 export const metadata: Metadata = {
@@ -38,6 +43,10 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
   const languageValue = Array.isArray(params.language)
     ? params.language[0]
     : params.language;
+  const genreValue = Array.isArray(params.genre)
+    ? params.genre[0]
+    : params.genre;
+  const selectedGenreSlug = genreValue?.trim() || "";
 
   const selectedLanguage = poemLanguageOptions.includes(languageValue as PoemLanguage)
     ? (languageValue as PoemLanguage)
@@ -52,12 +61,13 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     ? parsedSize
     : DEFAULT_PAGE_SIZE;
 
-  const whereClause =
-    selectedLanguage === "ALL"
-      ? { published: true }
-      : { published: true, language: selectedLanguage };
+  const whereClause = {
+    published: true,
+    ...(selectedLanguage === "ALL" ? {} : { language: selectedLanguage }),
+    ...(selectedGenreSlug ? { genre: { slug: selectedGenreSlug } } : {}),
+  };
 
-  const [poems, totalCount] = await Promise.all([
+  const [poems, totalCount, selectedGenre] = await Promise.all([
     prisma.poem.findMany({
       where: whereClause,
       orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
@@ -70,6 +80,12 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
       },
     }),
     prisma.poem.count({ where: whereClause }),
+    selectedGenreSlug
+      ? prisma.genre.findUnique({
+          where: { slug: selectedGenreSlug },
+          select: { name: true, slug: true },
+        })
+      : null,
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
@@ -77,6 +93,7 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
   function buildPageUrl(page: number, size?: number) {
     const params = new URLSearchParams();
     if (selectedLanguage !== "ALL") params.set("language", selectedLanguage);
+    if (selectedGenreSlug) params.set("genre", selectedGenreSlug);
     if (page > 1) params.set("page", String(page));
     const s = size ?? perPage;
     if (s !== DEFAULT_PAGE_SIZE) params.set("size", String(s));
@@ -96,7 +113,7 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
 
         <div className="mt-7 flex flex-wrap items-center gap-2">
           <Link
-            href="/poems"
+            href={selectedGenreSlug ? `/poems?genre=${selectedGenreSlug}` : "/poems"}
             className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
               selectedLanguage === "ALL"
                 ? "border-white/40 bg-white/10 text-white"
@@ -109,7 +126,7 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
           {poemLanguageOptions.map((language) => (
             <Link
               key={language}
-              href={`/poems?language=${language}`}
+              href={`/poems?language=${language}${selectedGenreSlug ? `&genre=${selectedGenreSlug}` : ""}`}
               className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
                 selectedLanguage === language
                   ? "border-white/40 bg-white/10 text-white"
@@ -119,6 +136,15 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
               {poemLanguageLabel(language)}
             </Link>
           ))}
+
+          {selectedGenre && (
+            <Link
+              href={selectedLanguage === "ALL" ? "/poems" : `/poems?language=${selectedLanguage}`}
+              className="rounded-full border border-amber-300/25 bg-amber-400/10 px-4 py-2 text-xs tracking-wider text-amber-100/80 uppercase transition-colors hover:border-amber-200/40 hover:text-amber-100"
+            >
+              Genre: {selectedGenre.name} ×
+            </Link>
+          )}
 
           {totalCount > 0 && (
             <span className="ml-auto text-xs text-white/30">
@@ -133,8 +159,12 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
           <h2 className="text-2xl text-white mb-3">No poems published yet</h2>
           <p className="text-white/60 font-[family-name:var(--font-inter)]">
             {selectedLanguage === "ALL"
-              ? "New poems will appear here as soon as they are published."
-              : `No ${poemLanguageLabel(selectedLanguage)} poems are published yet.`}
+              ? selectedGenre
+                ? `No poems are published in ${selectedGenre.name} yet.`
+                : "New poems will appear here as soon as they are published."
+              : selectedGenre
+                ? `No ${poemLanguageLabel(selectedLanguage)} poems are published in ${selectedGenre.name} yet.`
+                : `No ${poemLanguageLabel(selectedLanguage)} poems are published yet.`}
           </p>
         </div>
       ) : (

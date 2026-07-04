@@ -154,9 +154,16 @@ export default function ContactForm() {
         </p>
       )}
 
-      <Button type="submit" size="lg" disabled={submitting}>
-        {submitting ? "Sending..." : "Send Message"}
-      </Button>
+      <div className="flex justify-stretch sm:justify-end">
+        <Button
+          type="submit"
+          size="lg"
+          disabled={submitting}
+          className="min-h-13 w-full px-8 text-sm sm:w-auto"
+        >
+          {submitting ? "Sending..." : "Send Message"}
+        </Button>
+      </div>
     </form>
   );
 }

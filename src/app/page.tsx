@@ -17,10 +17,16 @@ function formatDate(date: Date | null): string {
   }).format(date);
 }
 
+function formatPrice(value: number | null): string {
+  if (value == null) return "";
+  return `₹${value.toLocaleString("en-IN")}`;
+}
+
 export default async function Home() {
   const prisma = getPrisma();
 
-  const [featuredPoems, latestPoems, totalPoems] = await Promise.all([
+  const [featuredPoems, latestPoems, totalPoems, featuredBooks, totalBooks] =
+    await Promise.all([
     prisma.poem.findMany({
       where: { featured: true, published: true },
       orderBy: { publishedAt: "desc" },
@@ -34,6 +40,23 @@ export default async function Home() {
       include: { _count: { select: { likes: true, comments: true } } },
     }),
     prisma.poem.count({ where: { published: true } }),
+    prisma.book.findMany({
+      where: { featured: true, status: "AVAILABLE" },
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      take: 3,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        coverImage: true,
+        price: true,
+        discountedPrice: true,
+        shippingCharge: true,
+        _count: { select: { likes: true, comments: true } },
+      },
+    }),
+    prisma.book.count({ where: { status: "AVAILABLE" } }),
   ]);
 
   return (
@@ -157,6 +180,99 @@ export default async function Home() {
                 </Link>
               );
             })}
+          </div>
+        </section>
+      )}
+
+      {/* ── Featured Books ── */}
+      {featuredBooks.length > 0 && (
+        <section className="border-t border-white/8 py-20 md:py-28">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="mb-12 flex flex-col gap-4 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
+              <div>
+                <p className="mb-3 text-xs tracking-[0.22em] text-white/40 uppercase">
+                  Featured Books
+                </p>
+                <h2 className="font-[family-name:var(--font-playfair)] text-3xl text-white md:text-4xl">
+                  Books by Renu
+                </h2>
+              </div>
+              <Link
+                href="/books"
+                className="text-xs tracking-[0.18em] text-white/50 uppercase transition-colors hover:text-white"
+              >
+                View all {totalBooks} books →
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {featuredBooks.map((book) => {
+                const price = book.discountedPrice
+                  ? formatPrice(Number(book.discountedPrice))
+                  : formatPrice(book.price ? Number(book.price) : null);
+                const originalPrice = book.discountedPrice && book.price
+                  ? formatPrice(Number(book.price))
+                  : "";
+
+                return (
+                  <Link
+                    key={book.id}
+                    href={`/books/${book.slug}`}
+                    className="group overflow-hidden rounded-2xl border border-white/15 bg-white/[0.03] transition-colors hover:border-white/30"
+                  >
+                    <div className="relative aspect-[4/3] bg-white/[0.04]">
+                      {book.coverImage ? (
+                        <Image
+                          src={book.coverImage}
+                          alt={book.title}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-white/20">
+                          No cover
+                        </div>
+                      )}
+                      <div className="absolute left-4 top-4 rounded-full border border-amber-300/30 bg-black/45 px-3 py-1 text-xs text-amber-100 backdrop-blur">
+                        ★ Featured
+                      </div>
+                    </div>
+
+                    <div className="p-6">
+                      <h3 className="mb-3 text-xl text-white group-hover:text-white/90">
+                        {book.title}
+                      </h3>
+                      {book.description && (
+                        <p className="mb-5 line-clamp-3 font-[family-name:var(--font-inter)] text-sm leading-6 text-white/55">
+                          {book.description}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="font-[family-name:var(--font-inter)]">
+                          <span className="text-sm font-semibold text-white">
+                            {price}
+                          </span>
+                          {originalPrice && (
+                            <span className="ml-2 text-xs text-white/35 line-through">
+                              {originalPrice}
+                            </span>
+                          )}
+                          <p className="mt-1 text-xs text-white/35">
+                            {Number(book.shippingCharge) === 0
+                              ? "Free shipping"
+                              : `+ ₹${Number(book.shippingCharge).toLocaleString("en-IN")} shipping`}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2.5 text-[11px] text-white/30">
+                          <span>♡ {book._count.likes}</span>
+                          <span>💬 {book._count.comments}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </section>
       )}

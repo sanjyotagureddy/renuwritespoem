@@ -100,6 +100,7 @@ export async function createPoem(formData: FormData) {
   });
 
   revalidatePath("/poems");
+  revalidatePath("/");
   revalidatePath("/admin");
   redirect("/admin/poems");
 }
@@ -143,6 +144,7 @@ export async function updatePoem(formData: FormData) {
 
   revalidatePath("/poems");
   revalidatePath(`/poems/${existing.slug}`);
+  revalidatePath("/");
   revalidatePath("/admin");
   redirect("/admin/poems");
 }
@@ -157,6 +159,7 @@ export async function deletePoem(formData: FormData) {
   await prisma.poem.delete({ where: { id } });
 
   revalidatePath("/poems");
+  revalidatePath("/");
   revalidatePath("/admin");
   redirect("/admin/poems");
 }
@@ -183,6 +186,7 @@ export async function togglePublish(formData: FormData) {
 
   revalidatePath("/poems");
   revalidatePath(`/poems/${poem.slug}`);
+  revalidatePath("/");
   revalidatePath("/admin");
 }
 
@@ -213,7 +217,97 @@ export async function toggleFeatured(formData: FormData) {
   });
 
   revalidatePath("/poems");
+  revalidatePath("/");
   revalidatePath("/admin");
+}
+
+// ─── Genres ──────────────────────────────────────────────────
+
+export async function createGenre(formData: FormData) {
+  await requireAdmin();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+
+  if (!name) throw new Error("Genre name is required.");
+  if (name.length > 80 || description.length > 500) {
+    throw new Error("Genre name or description is too long.");
+  }
+
+  const prisma = getPrisma();
+  const baseSlug = slugify(name);
+  const existing = await prisma.genre.findUnique({ where: { slug: baseSlug } });
+  const slug = existing
+    ? `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`
+    : baseSlug;
+
+  await prisma.genre.create({
+    data: {
+      name,
+      slug,
+      description: description || null,
+    },
+  });
+
+  revalidatePath("/genres");
+  revalidatePath("/poems");
+  revalidatePath("/admin");
+  revalidatePath("/admin/genres");
+}
+
+export async function updateGenre(formData: FormData) {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+
+  if (!id || !name) throw new Error("Genre ID and name are required.");
+  if (name.length > 80 || description.length > 500) {
+    throw new Error("Genre name or description is too long.");
+  }
+
+  const prisma = getPrisma();
+  const existing = await prisma.genre.findUnique({ where: { id } });
+  if (!existing) throw new Error("Genre not found.");
+
+  const nextBaseSlug = slugify(name);
+  const slugOwner = await prisma.genre.findUnique({
+    where: { slug: nextBaseSlug },
+  });
+  const nextSlug =
+    slugOwner && slugOwner.id !== id
+      ? `${nextBaseSlug}-${Math.random().toString(36).slice(2, 6)}`
+      : nextBaseSlug;
+
+  await prisma.genre.update({
+    where: { id },
+    data: {
+      name,
+      slug: nextSlug,
+      description: description || null,
+    },
+  });
+
+  revalidatePath("/genres");
+  revalidatePath("/poems");
+  revalidatePath("/admin");
+  revalidatePath("/admin/genres");
+}
+
+export async function deleteGenre(formData: FormData) {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "").trim();
+  if (!id) throw new Error("Genre ID is required.");
+
+  const prisma = getPrisma();
+  await prisma.genre.delete({ where: { id } });
+
+  revalidatePath("/genres");
+  revalidatePath("/poems");
+  revalidatePath("/admin");
+  revalidatePath("/admin/genres");
 }
 
 // ─── Books ───────────────────────────────────────────────────
@@ -319,6 +413,7 @@ export async function createBook(formData: FormData) {
   }
 
   revalidatePath("/books");
+  revalidatePath("/");
   revalidatePath("/admin");
   redirect("/admin/books");
 }
@@ -381,6 +476,7 @@ export async function updateBook(formData: FormData) {
 
   revalidatePath("/books");
   revalidatePath(`/books/${existing.slug}`);
+  revalidatePath("/");
   revalidatePath("/admin");
   redirect("/admin/books");
 }
@@ -395,6 +491,7 @@ export async function deleteBook(formData: FormData) {
   await prisma.book.delete({ where: { id } });
 
   revalidatePath("/books");
+  revalidatePath("/");
   revalidatePath("/admin");
   redirect("/admin/books");
 }
@@ -426,7 +523,44 @@ export async function toggleBookFeatured(formData: FormData) {
   });
 
   revalidatePath("/books");
+  revalidatePath("/");
   revalidatePath("/admin");
+}
+
+export async function updateBookStatus(formData: FormData) {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "").trim();
+  const status = String(formData.get("status") ?? "").trim();
+
+  if (!id || !status) throw new Error("Book ID and status are required.");
+
+  const validStatuses = ["COMING_SOON", "AVAILABLE", "ARCHIVED"];
+  if (!validStatuses.includes(status)) throw new Error("Invalid book status.");
+
+  const prisma = getPrisma();
+  const book = await prisma.book.findUnique({
+    where: { id },
+    select: { id: true, slug: true, publishedAt: true },
+  });
+  if (!book) throw new Error("Book not found.");
+
+  await prisma.book.update({
+    where: { id },
+    data: {
+      status: status as "COMING_SOON" | "AVAILABLE" | "ARCHIVED",
+      publishedAt:
+        status === "AVAILABLE" && !book.publishedAt
+          ? new Date()
+          : book.publishedAt,
+    },
+  });
+
+  revalidatePath("/books");
+  revalidatePath(`/books/${book.slug}`);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/admin/books");
 }
 
 // ─── Orders ──────────────────────────────────────────────────
@@ -509,7 +643,7 @@ export async function updateOrderStatus(formData: FormData) {
         buyerEmail: updated.email,
         buyerName: updated.name,
         bookTitle: existing.book.title,
-        orderId: updated.id,
+        orderId: updated.orderNumber ?? updated.id,
         status: updated.status,
         trackingProvider: updated.trackingProvider,
         trackingNumber: updated.trackingNumber,

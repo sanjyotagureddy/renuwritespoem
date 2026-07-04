@@ -297,6 +297,7 @@ enum OrderStatus {
 
 model BookOrder {
   id               String      @id @default(cuid())
+  orderNumber      String?     @unique
   idempotencyKey   String?     @unique
   name             String
   email            String

@@ -31,22 +31,44 @@ export default async function AdminPoemsPage() {
   });
 
   const featuredCount = poems.filter((p) => p.featured).length;
+  const publishedCount = poems.filter((p) => p.published).length;
+  const draftCount = poems.filter((p) => !p.published).length;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl md:text-4xl text-white">Poems</h1>
+        <div>
+          <h1 className="text-3xl text-white md:text-4xl">Poems</h1>
+          <p className="mt-2 text-sm text-white/45">
+            Manage publishing, featured slots, languages, and poem visibility.
+          </p>
+        </div>
         <Link
           href="/admin/poems/new"
-          className="rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-xs uppercase tracking-[0.18em] text-white hover:bg-white/20 transition-colors"
+          className="rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-xs tracking-[0.18em] text-white uppercase transition-colors hover:bg-white/20"
         >
           + New Poem
         </Link>
       </div>
 
-      <p className="text-sm text-white/50 font-[family-name:var(--font-inter)]">
-        {poems.length} poem{poems.length !== 1 ? "s" : ""} total • {featuredCount}/3 featured
-      </p>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {[
+          ["Total", poems.length],
+          ["Published", publishedCount],
+          ["Drafts", draftCount],
+          ["Featured", `${featuredCount}/3`],
+        ].map(([label, value]) => (
+          <div
+            key={label}
+            className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+          >
+            <p className="mb-1 text-[10px] tracking-[0.18em] text-white/35 uppercase">
+              {label}
+            </p>
+            <p className="text-2xl text-white">{value}</p>
+          </div>
+        ))}
+      </div>
 
       {poems.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-10 text-center">

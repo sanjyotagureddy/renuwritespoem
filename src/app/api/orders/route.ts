@@ -27,6 +27,30 @@ function hasValidImageSignature(buffer: Buffer, mime: string): boolean {
   return false;
 }
 
+function makeOrderNumber(): string {
+  const date = new Date();
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const suffix = Math.floor(1000 + Math.random() * 9000);
+  return `RWP-${yyyy}${mm}${dd}-${suffix}`;
+}
+
+async function createUniqueOrderNumber(
+  prisma: ReturnType<typeof getPrisma>,
+): Promise<string> {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const orderNumber = makeOrderNumber();
+    const existing = await prisma.bookOrder.findUnique({
+      where: { orderNumber },
+      select: { id: true },
+    });
+    if (!existing) return orderNumber;
+  }
+
+  throw new Error("Could not generate a unique order number.");
+}
+
 export async function POST(request: Request) {
   const formData = await request.formData();
 
@@ -125,11 +149,11 @@ export async function POST(request: Request) {
   const prisma = getPrisma();
   const existingOrder = await prisma.bookOrder.findUnique({
     where: { idempotencyKey },
-    select: { id: true, totalAmount: true },
+    select: { id: true, orderNumber: true, totalAmount: true },
   });
   if (existingOrder) {
     return NextResponse.json({
-      orderId: existingOrder.id,
+      orderId: existingOrder.orderNumber ?? existingOrder.id,
       totalAmount: existingOrder.totalAmount,
       duplicate: true,
     });
@@ -193,9 +217,11 @@ export async function POST(request: Request) {
   }
   paymentData = buffer.toString("base64");
   paymentMime = screenshot.type;
+  const orderNumber = await createUniqueOrderNumber(prisma);
 
   const order = await prisma.bookOrder.create({
     data: {
+      orderNumber,
       idempotencyKey,
       name,
       email,
@@ -211,7 +237,7 @@ export async function POST(request: Request) {
       paymentMime,
       bookId: book.id,
     },
-    select: { id: true },
+    select: { id: true, orderNumber: true },
   });
 
   // Send emails (don't block the response if it fails)
@@ -231,7 +257,7 @@ export async function POST(request: Request) {
       shippingAmount: shippingCharge,
       subtotal,
       totalAmount,
-      orderId: order.id,
+      orderId: order.orderNumber ?? order.id,
     });
     buyerSent = sendResult.buyerSent;
     adminSent = sendResult.adminSent;
@@ -240,7 +266,7 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({
-    orderId: order.id,
+    orderId: order.orderNumber ?? order.id,
     totalAmount,
     buyerSent,
     adminSent,
