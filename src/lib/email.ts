@@ -1,15 +1,16 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-function getResend() {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) {
-    console.warn("RESEND_API_KEY is not set. Emails will not be sent.");
+function getMailer() {
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+  if (!user || !pass) {
+    console.warn("Gmail SMTP is not configured. Emails will not be sent.");
     return null;
   }
-  return new Resend(key);
+  return nodemailer.createTransport({ service: "gmail", auth: { user, pass } });
 }
 
-const FROM_EMAIL = process.env.FROM_EMAIL ?? "onboarding@resend.dev";
+const FROM_EMAIL = process.env.FROM_EMAIL ?? process.env.GMAIL_USER ?? "";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "";
 
 function escapeHtml(value: string): string {
@@ -50,12 +51,8 @@ export async function sendOrderConfirmation({
   totalAmount: number;
   orderId: string;
 }): Promise<{ buyerSent: boolean; adminSent: boolean }> {
-  const resend = getResend();
-  if (!resend) return { buyerSent: false, adminSent: false };
-
-  if (FROM_EMAIL.includes("onboarding@resend.dev")) {
-    console.warn("FROM_EMAIL is using onboarding@resend.dev. Verify a production sender domain in Resend for reliable delivery.");
-  }
+  const mailer = getMailer();
+  if (!mailer || !FROM_EMAIL) return { buyerSent: false, adminSent: false };
 
   const supportEmail = "renuwritespoem@gmail.com";
   const safeBuyerName = escapeHtml(buyerName);
@@ -99,11 +96,11 @@ export async function sendOrderConfirmation({
     </div>
   `;
   // Email to buyer
-  const buyerResult = await resend.emails.send({
+  await mailer.sendMail({
     from: FROM_EMAIL,
     to: buyerEmail,
     subject: `Order Received — ${bookTitle}`,
-    replyTo: supportEmail,
+    replyTo: FROM_EMAIL,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 16px; color: #111827;">
         <h2 style="margin: 0 0 12px; font-size: 24px;">Thank you, ${safeBuyerName}!</h2>
@@ -115,17 +112,13 @@ export async function sendOrderConfirmation({
     `,
   });
 
-  if (buyerResult.error) {
-    throw new Error(`Buyer email failed: ${buyerResult.error.message}`);
-  }
-
   // Email to admin
   if (ADMIN_EMAIL) {
-    const adminResult = await resend.emails.send({
+    await mailer.sendMail({
       from: FROM_EMAIL,
       to: ADMIN_EMAIL,
       subject: `New Book Order — ${bookTitle} × ${copies}`,
-      replyTo: supportEmail,
+      replyTo: buyerEmail,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 16px; color: #111827;">
           <h2 style="margin: 0 0 12px; font-size: 24px;">New Order Received</h2>
@@ -137,12 +130,50 @@ export async function sendOrderConfirmation({
       `,
     });
 
-    if (adminResult.error) {
-      throw new Error(`Admin email failed: ${adminResult.error.message}`);
-    }
-
     return { buyerSent: true, adminSent: true };
   }
 
   return { buyerSent: true, adminSent: false };
+}
+
+export async function sendContactMessage({
+  name,
+  email,
+  subject,
+  message,
+}: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}): Promise<void> {
+  const mailer = getMailer();
+  if (!mailer || !FROM_EMAIL || !ADMIN_EMAIL) {
+    throw new Error("Contact email is not configured.");
+  }
+
+  const safeName = escapeHtml(name);
+  const safeEmail = escapeHtml(email);
+  const safeSubject = escapeHtml(subject);
+  const safeMessage = escapeHtml(message).replaceAll("\n", "<br />");
+
+  await mailer.sendMail({
+    from: FROM_EMAIL,
+    to: ADMIN_EMAIL,
+    replyTo: email,
+    subject: `Website message — ${subject}`,
+    text: `From: ${name} <${email}>\nSubject: ${subject}\n\n${message}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 16px; color: #111827;">
+        <h2 style="margin: 0 0 18px; font-size: 24px;">New website message</h2>
+        <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <tr><td style="padding: 9px 0; color: #6b7280; width: 25%;">From</td><td style="padding: 9px 0; font-weight: 600;">${safeName}</td></tr>
+          <tr><td style="padding: 9px 0; color: #6b7280;">Email</td><td style="padding: 9px 0;"><a href="mailto:${safeEmail}">${safeEmail}</a></td></tr>
+          <tr><td style="padding: 9px 0; color: #6b7280;">Subject</td><td style="padding: 9px 0; font-weight: 600;">${safeSubject}</td></tr>
+        </table>
+        <div style="margin-top: 20px; padding: 18px; border-radius: 12px; background: #f3f4f6; line-height: 1.65;">${safeMessage}</div>
+        <p style="margin-top: 18px; color: #6b7280; font-size: 13px;">Reply to this email to respond directly to ${safeName}.</p>
+      </div>
+    `,
+  });
 }
