@@ -89,3 +89,29 @@ export function validateContactMessageTone({
 
   return null;
 }
+
+export function checkCommentTone(text: string): { isAbusive: boolean; reason: string | null } {
+  const normalized = normalizeForMatching(text);
+
+  if (ABUSIVE_WORDS.some((word) => normalized.includes(word))) {
+    return { isAbusive: true, reason: "Contains disrespectful language." };
+  }
+
+  if (THREAT_PATTERNS.some((pattern) => pattern.test(text))) {
+    return { isAbusive: true, reason: "Contains harmful or threatening language." };
+  }
+
+  if (hasTooManyLinks(text)) {
+    return { isAbusive: true, reason: "Contains too many links." };
+  }
+
+  if (isMostlyShouting(text)) {
+    return { isAbusive: true, reason: "Shouting in all-caps." };
+  }
+
+  if (hasRepeatedSpam(text)) {
+    return { isAbusive: true, reason: "Contains repeated text patterns." };
+  }
+
+  return { isAbusive: false, reason: null };
+}

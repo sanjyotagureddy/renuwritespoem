@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
+import { checkCommentTone } from "@/lib/contact-guard";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const limitCheck = await rateLimit("poem-comments", 5, 60000); // 5 per min
+  if (limitCheck.limited) {
+    return NextResponse.json(
+      { error: "Too many comments posted. Please try again in a minute." },
+      { status: 429 },
+    );
+  }
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Sign in to comment." }, { status: 401 });
@@ -29,12 +38,15 @@ export async function POST(
     );
   }
 
+  const toneCheck = checkCommentTone(text);
+  const status = toneCheck.isAbusive ? "PENDING" : "APPROVED";
+
   const comment = await prisma.comment.create({
     data: {
       body: text,
       poemId: poem.id,
       userId: session.user.id,
-      status: "APPROVED",
+      status,
     },
     include: {
       user: { select: { name: true, image: true, email: true } },
@@ -53,6 +65,8 @@ export async function POST(
       name: comment.user.name ?? comment.user.email?.split("@")[0] ?? "Anonymous",
       image: comment.user.image,
     },
+    status: comment.status,
+    pinned: false,
   });
 }
 
@@ -73,7 +87,7 @@ export async function GET(
 
   const comments = await prisma.comment.findMany({
     where: { poemId: poem.id, status: "APPROVED" },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
     include: {
       user: { select: { name: true, image: true, email: true } },
       _count: { select: { likes: true } },
@@ -98,6 +112,7 @@ export async function GET(
           name: c.user.name ?? c.user.email?.split("@")[0] ?? "Anonymous",
           image: c.user.image,
         },
+        pinned: c.pinned,
       };
     }),
   );

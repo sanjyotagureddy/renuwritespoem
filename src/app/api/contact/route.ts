@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { validateContactMessageTone } from "@/lib/contact-guard";
 import { sendContactMessage } from "@/lib/email";
+import { rateLimit } from "@/lib/rate-limit";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_PATTERN = /^[+\d][\d\s().-]{6,19}$/;
 
 export async function POST(request: Request) {
   try {
+    const limitCheck = await rateLimit("contact", 3, 300000); // 3 per 5 mins
+    if (limitCheck.limited) {
+      return NextResponse.json(
+        { error: "Too many messages sent. Please try again in a few minutes." },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
     const name = String(body.name ?? "").trim();
     const email = String(body.email ?? "").trim();

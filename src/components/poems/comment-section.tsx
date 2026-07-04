@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Pencil, Trash2 } from "lucide-react";
+import { toggleCommentPin, updateCommentStatus } from "@/app/admin/actions";
 
 type CommentData = {
   id: string;
@@ -14,6 +15,7 @@ type CommentData = {
   likeCount: number;
   liked: boolean;
   user: { name: string; image: string | null };
+  pinned: boolean;
 };
 
 function timeAgo(dateStr: string): string {
@@ -78,6 +80,7 @@ export default function CommentSection({ slug }: { slug: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/poems/${slug}/comments`)
@@ -100,7 +103,13 @@ export default function CommentSection({ slug }: { slug: string }) {
 
     if (res.ok) {
       const comment = await res.json();
-      setComments((prev) => [comment, ...prev]);
+      if (comment.status === "PENDING") {
+        setNotice("Your comment is pending moderation because of its tone.");
+        setTimeout(() => setNotice(null), 6000);
+      } else {
+        setComments((prev) => [comment, ...prev]);
+        setNotice(null);
+      }
       setText("");
     }
     setSubmitting(false);
@@ -143,11 +152,42 @@ export default function CommentSection({ slug }: { slug: string }) {
     }
   }
 
+  async function handleTogglePin(commentId: string, currentPinned: boolean) {
+    try {
+      await toggleCommentPin(commentId, false, !currentPinned);
+      setComments((prev) => {
+        const updated = prev.map((c) => (c.id === commentId ? { ...c, pinned: !currentPinned } : c));
+        return [...updated].sort((a, b) => {
+          if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+      });
+    } catch {
+      alert("Failed to toggle pin.");
+    }
+  }
+
+  async function handleDisable(commentId: string) {
+    if (!confirm("Are you sure you want to disable (soft-delete) this comment?")) return;
+    try {
+      await updateCommentStatus(commentId, false, "REJECTED");
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+    } catch {
+      alert("Failed to disable comment.");
+    }
+  }
+
   return (
     <div>
       <h3 className="mb-4 text-sm tracking-[0.18em] text-white/50 uppercase">
         Comments {comments.length > 0 && `(${comments.length})`}
       </h3>
+
+      {notice && (
+        <div className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-amber-300">
+          ⚠️ {notice}
+        </div>
+      )}
 
       {/* Post comment */}
       {session?.user ? (
@@ -183,7 +223,7 @@ export default function CommentSection({ slug }: { slug: string }) {
             const isOwner = session?.user?.id === comment.userId;
             const canDelete = isOwner || session?.user?.role === "ADMIN";
             return (
-              <div key={comment.id} className="flex gap-3">
+              <div key={comment.id} className={`flex gap-3 p-3 rounded-xl border transition-colors ${comment.pinned ? "border-amber-500/20 bg-amber-500/5" : "border-transparent"}`}>
                 {comment.user.image ? (
                   <Image
                     src={comment.user.image}
@@ -210,7 +250,32 @@ export default function CommentSection({ slug }: { slug: string }) {
                         edited
                       </span>
                     )}
+                    {comment.pinned && (
+                      <span className="flex items-center gap-0.5 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wider font-semibold text-amber-400">
+                        📌 Pinned
+                      </span>
+                    )}
                     <span className="ml-auto flex items-center gap-2">
+                      {session?.user?.role === "ADMIN" && editingId !== comment.id && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePin(comment.id, comment.pinned)}
+                            className={`transition-colors text-[10px] uppercase tracking-wider font-semibold ${comment.pinned ? "text-amber-400 hover:text-amber-300" : "text-white/35 hover:text-white/60"}`}
+                            title={comment.pinned ? "Unpin Comment" : "Pin Comment"}
+                          >
+                            {comment.pinned ? "Unpin" : "Pin"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDisable(comment.id)}
+                            className="text-rose-400/50 transition-colors hover:text-rose-400 text-[10px] uppercase tracking-wider font-semibold"
+                            title="Disable comment"
+                          >
+                            Disable
+                          </button>
+                        </>
+                      )}
                       {canDelete && editingId !== comment.id && (
                         <>
                           {isOwner && (

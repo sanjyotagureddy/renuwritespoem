@@ -199,6 +199,7 @@ model BookComment {
   body      String
   edited    Boolean       @default(false)
   status    CommentStatus @default(APPROVED)
+  pinned    Boolean       @default(false)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
@@ -241,6 +242,7 @@ model Comment {
   body      String
   edited    Boolean       @default(false)
   status    CommentStatus @default(APPROVED)
+  pinned    Boolean       @default(false)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 

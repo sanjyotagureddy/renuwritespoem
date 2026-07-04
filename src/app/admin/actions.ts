@@ -729,3 +729,63 @@ export async function updateOrderStatus(formData: FormData) {
 
   revalidatePath("/admin/orders");
 }
+
+// ─── Comments Moderation ──────────────────────────────────────
+
+export async function updateCommentStatus(
+  id: string,
+  isBook: boolean,
+  status: "PENDING" | "APPROVED" | "REJECTED",
+) {
+  await requireAdmin();
+  const prisma = getPrisma();
+
+  if (isBook) {
+    await prisma.bookComment.update({
+      where: { id },
+      data: { status },
+    });
+  } else {
+    await prisma.comment.update({
+      where: { id },
+      data: { status },
+    });
+  }
+  revalidatePath("/admin/comments");
+}
+
+export async function deleteCommentAdmin(id: string, isBook: boolean) {
+  await requireAdmin();
+  const prisma = getPrisma();
+
+  if (isBook) {
+    await prisma.bookComment.delete({
+      where: { id },
+    });
+  } else {
+    await prisma.comment.delete({
+      where: { id },
+    });
+  }
+  revalidatePath("/admin/comments");
+}
+
+export async function toggleCommentPin(id: string, isBook: boolean, pin: boolean) {
+  await requireAdmin();
+  const prisma = getPrisma();
+
+  if (isBook) {
+    // Optional: Unpin other comments for the same book if only one pinned is allowed,
+    // but usually multiple pinned are fine. We will just toggle the status on this comment.
+    await prisma.bookComment.update({
+      where: { id },
+      data: { pinned: pin },
+    });
+  } else {
+    await prisma.comment.update({
+      where: { id },
+      data: { pinned: pin },
+    });
+  }
+  revalidatePath("/admin/comments");
+}
