@@ -31,7 +31,28 @@ function runPrisma(args) {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
-const client = new Client({ connectionString: databaseUrl });
+function isLocalDatabase(url) {
+  return url.hostname === "localhost" || url.hostname === "127.0.0.1";
+}
+
+function buildClientOptions(connectionString) {
+  const parsedUrl = new URL(connectionString);
+
+  if (isLocalDatabase(parsedUrl)) {
+    return { connectionString };
+  }
+
+  // Keep this in sync with src/lib/db.ts for managed Postgres providers whose
+  // CA chain is not available in the build/runtime trust store.
+  parsedUrl.searchParams.set("sslmode", "no-verify");
+
+  return {
+    connectionString: parsedUrl.toString(),
+    ssl: { rejectUnauthorized: false },
+  };
+}
+
+const client = new Client(buildClientOptions(databaseUrl));
 await client.connect();
 let clientClosed = false;
 
