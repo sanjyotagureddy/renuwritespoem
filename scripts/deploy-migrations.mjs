@@ -7,11 +7,18 @@ loadEnv({ path: ".env.local" });
 loadEnv();
 
 const { Client } = pg;
-const databaseUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+const databaseUrl =
+  process.env.DIRECT_URL ??
+  process.env.renuwritespoem_postgres_POSTGRES_URL_NON_POOLING ??
+  process.env.DATABASE_URL ??
+  process.env.renuwritespoem_postgres_POSTGRES_PRISMA_URL ??
+  process.env.renuwritespoem_postgres_POSTGRES_URL;
 const baseline = "20260704000000_baseline";
 
 if (!databaseUrl) {
-  throw new Error("DIRECT_URL or DATABASE_URL is required for database migrations.");
+  throw new Error(
+    "No database URL is available. Connect the Postgres integration to this Vercel environment or set DIRECT_URL/DATABASE_URL.",
+  );
 }
 
 function runPrisma(args) {
