@@ -906,22 +906,50 @@ export async function clearAllCache() {
 
 // ─── Songs / Audio ───────────────────────────────────────────
 
-export async function createSong(data: {
-  title: string;
-  description: string;
-  audioUrl: string;
-  coverUrl: string | null;
-  publishNow: boolean;
-}) {
+export async function createSong(formData: FormData) {
   await requireAdmin();
 
-  const { title, description, audioUrl, coverUrl, publishNow } = data;
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const audioFile = formData.get("audioFile") as File;
+  const coverFile = formData.get("coverFile") as File;
+  const publishNow = formData.get("publishNow") === "on";
 
   if (!title) {
     throw new Error("Title is required.");
   }
-  if (!audioUrl) {
-    throw new Error("Audio URL is required.");
+  if (!audioFile || audioFile.size === 0) {
+    throw new Error("Audio file is required.");
+  }
+  if (audioFile.size > 15 * 1024 * 1024) {
+    throw new Error("Audio file size must not exceed 15MB.");
+  }
+
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    throw new Error(
+      "Missing BLOB_READ_WRITE_TOKEN in environment variables. Please configure it in your Vercel Dashboard or .env.local file to enable audio uploads."
+    );
+  }
+
+  let audioUrl = "";
+  let coverUrl = null;
+
+  try {
+    const audioBlob = await put(`songs/audio-${Date.now()}-${audioFile.name}`, audioFile, {
+      access: "public",
+    });
+    audioUrl = audioBlob.url;
+
+    if (coverFile && coverFile.size > 0) {
+      const coverBlob = await put(`songs/cover-${Date.now()}-${coverFile.name}`, coverFile, {
+        access: "public",
+      });
+      coverUrl = coverBlob.url;
+    }
+  } catch (error) {
+    console.error("Vercel Blob upload failed:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to upload media files: ${message}`);
   }
 
   const baseSlug = slugify(title);
