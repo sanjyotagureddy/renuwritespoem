@@ -17,7 +17,7 @@ Create a beautiful, accessible, and SEO-optimized platform where a poet can publ
 | Authentication | Auth.js (Google OAuth)  |
 | Database       | PostgreSQL (Neon)       |
 | ORM            | Prisma                  |
-| Email          | Resend                  |
+| Email          | Gmail SMTP / Nodemailer |
 | Deployment     | Vercel                  |
 
 ## Architecture Overview
@@ -38,7 +38,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed architecture docum
 ### Prerequisites
 
 - Node.js 20+
-- pnpm 9+
+- npm 10+
 - PostgreSQL (or Neon database URL)
 
 ### Setup
@@ -49,19 +49,19 @@ git clone https://github.com/your-org/renuwritespoem.git
 cd renuwritespoem
 
 # Install dependencies
-pnpm install
+npm install
 
 # Copy environment variables
 cp .env.example .env.local
 
-# Push database schema
-pnpm prisma db push
+# Apply database migrations
+npm run db:migrate
 
-# Seed development data (when available)
-pnpm prisma db seed
+# Seed development data
+npm run db:seed
 
 # Start development server
-pnpm dev
+npm run dev
 ```
 
 ### Local Docker Database (Optional)
@@ -93,10 +93,18 @@ DIRECT_URL=postgresql://...
 AUTH_SECRET=...
 AUTH_GOOGLE_ID=...
 AUTH_GOOGLE_SECRET=...
+ADMIN_EMAILS=admin@example.com
 NEXTAUTH_URL=http://localhost:3000
-RESEND_API_KEY=...
+GMAIL_USER=your-gmail@gmail.com
+GMAIL_APP_PASSWORD=your-16-character-app-password
+FROM_EMAIL=your-gmail@gmail.com
+ADMIN_EMAIL=orders-and-contact@example.com
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
+
+Email is sent through Gmail SMTP using an app password, not your normal Gmail
+login password. If you change the sending account later, update the Gmail email
+and app password in Vercel, then redeploy.
 
 For Google OAuth, add this exact authorized redirect URI in the Google Cloud
 console (replace the origin in production):
@@ -113,6 +121,28 @@ The application deploys to **Vercel** via Git push to `main`.
 - Production deployment on merge to `main`
 - Database hosted on Neon (serverless PostgreSQL)
 - Environment variables managed in Vercel dashboard
+- `npm run build` runs pending Prisma migrations before Next.js builds
+
+Required production environment variables include:
+
+```env
+DATABASE_URL=postgresql://...
+DIRECT_URL=postgresql://...
+AUTH_SECRET=...
+AUTH_GOOGLE_ID=...
+AUTH_GOOGLE_SECRET=...
+ADMIN_EMAILS=admin@example.com
+NEXTAUTH_URL=https://your-domain.example
+NEXT_PUBLIC_SITE_URL=https://your-domain.example
+GMAIL_USER=your-gmail@gmail.com
+GMAIL_APP_PASSWORD=your-16-character-app-password
+FROM_EMAIL=your-gmail@gmail.com
+ADMIN_EMAIL=orders-and-contact@example.com
+```
+
+`DIRECT_URL` is preferred for migrations. If your database provider presents a
+self-signed certificate chain, the migration deploy script handles that during
+Vercel builds.
 
 ## Project Documentation
 

@@ -314,6 +314,8 @@ export async function deleteGenre(formData: FormData) {
 
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
+const VALID_BOOK_STATUSES = ["COMING_SOON", "AVAILABLE", "ARCHIVED"] as const;
+type ValidBookStatus = (typeof VALID_BOOK_STATUSES)[number];
 
 async function processBookCover(
   file: File,
@@ -352,6 +354,34 @@ function normalizeDiscount(
   return discountedPrice;
 }
 
+function assertBookCanBeAvailable({
+  title,
+  price,
+  hasCover,
+}: {
+  title: string;
+  price: number | null;
+  hasCover: boolean;
+}) {
+  const missing: string[] = [];
+
+  if (!title.trim()) missing.push("title");
+  if (price == null || price <= 0) missing.push("price");
+  if (!hasCover) missing.push("cover image");
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Before marking a book available, add ${missing.join(", ")}.`,
+    );
+  }
+}
+
+function assertValidBookStatus(status: string): asserts status is ValidBookStatus {
+  if (!VALID_BOOK_STATUSES.includes(status as ValidBookStatus)) {
+    throw new Error("Invalid book status.");
+  }
+}
+
 export async function createBook(formData: FormData) {
   await requireAdmin();
 
@@ -373,6 +403,7 @@ export async function createBook(formData: FormData) {
   const coverFile = formData.get("coverImage") as File | null;
 
   if (!title) throw new Error("Title is required.");
+  assertValidBookStatus(status);
 
   let coverData: string | null = null;
   let coverMime: string | null = null;
@@ -380,6 +411,14 @@ export async function createBook(formData: FormData) {
     const result = await processBookCover(coverFile);
     coverData = result.data;
     coverMime = result.mime;
+  }
+
+  if (status === "AVAILABLE") {
+    assertBookCanBeAvailable({
+      title,
+      price,
+      hasCover: Boolean(coverData),
+    });
   }
 
   const baseSlug = slugify(title);
@@ -399,7 +438,7 @@ export async function createBook(formData: FormData) {
       discountedPrice,
       shippingCharge,
       purchaseUrl: purchaseUrl || null,
-      status: status as "COMING_SOON" | "AVAILABLE" | "ARCHIVED",
+      status,
       publishedAt: status === "AVAILABLE" ? new Date() : null,
     },
   });
@@ -440,11 +479,18 @@ export async function updateBook(formData: FormData) {
   const coverFile = formData.get("coverImage") as File | null;
 
   if (!id || !title) throw new Error("ID and title are required.");
+  assertValidBookStatus(status);
 
   const prisma = getPrisma();
   const existing = await prisma.book.findUnique({
     where: { id },
-    select: { id: true, slug: true, coverImage: true, publishedAt: true },
+    select: {
+      id: true,
+      slug: true,
+      coverData: true,
+      coverImage: true,
+      publishedAt: true,
+    },
   });
   if (!existing) throw new Error("Book not found.");
 
@@ -455,7 +501,7 @@ export async function updateBook(formData: FormData) {
     discountedPrice,
     shippingCharge,
     purchaseUrl: purchaseUrl || null,
-    status: status as "COMING_SOON" | "AVAILABLE" | "ARCHIVED",
+    status,
     publishedAt:
       status === "AVAILABLE" && !existing.publishedAt
         ? new Date()
@@ -467,6 +513,17 @@ export async function updateBook(formData: FormData) {
     updateData.coverData = result.data;
     updateData.coverMime = result.mime;
     updateData.coverImage = `/api/book-covers/${id}`;
+  }
+
+  if (status === "AVAILABLE") {
+    assertBookCanBeAvailable({
+      title,
+      price,
+      hasCover:
+        Boolean(coverFile?.size) ||
+        Boolean(existing.coverData) ||
+        Boolean(existing.coverImage),
+    });
   }
 
   await prisma.book.update({
@@ -535,20 +592,35 @@ export async function updateBookStatus(formData: FormData) {
 
   if (!id || !status) throw new Error("Book ID and status are required.");
 
-  const validStatuses = ["COMING_SOON", "AVAILABLE", "ARCHIVED"];
-  if (!validStatuses.includes(status)) throw new Error("Invalid book status.");
+  assertValidBookStatus(status);
 
   const prisma = getPrisma();
   const book = await prisma.book.findUnique({
     where: { id },
-    select: { id: true, slug: true, publishedAt: true },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      price: true,
+      coverData: true,
+      coverImage: true,
+      publishedAt: true,
+    },
   });
   if (!book) throw new Error("Book not found.");
+
+  if (status === "AVAILABLE") {
+    assertBookCanBeAvailable({
+      title: book.title,
+      price: book.price == null ? null : Number(book.price),
+      hasCover: Boolean(book.coverData) || Boolean(book.coverImage),
+    });
+  }
 
   await prisma.book.update({
     where: { id },
     data: {
-      status: status as "COMING_SOON" | "AVAILABLE" | "ARCHIVED",
+      status,
       publishedAt:
         status === "AVAILABLE" && !book.publishedAt
           ? new Date()

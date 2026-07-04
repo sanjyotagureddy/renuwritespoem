@@ -49,6 +49,8 @@ export default async function AdminBooksPage() {
       featured: true,
       createdAt: true,
       publishedAt: true,
+      price: true,
+      coverImage: true,
     },
   });
 
@@ -56,6 +58,9 @@ export default async function AdminBooksPage() {
   const availableCount = books.filter((b) => b.status === "AVAILABLE").length;
   const comingSoonCount = books.filter((b) => b.status === "COMING_SOON").length;
   const archivedCount = books.filter((b) => b.status === "ARCHIVED").length;
+  const needsSetupCount = books.filter(
+    (b) => !b.price || Number(b.price) <= 0 || !b.coverImage,
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -74,12 +79,13 @@ export default async function AdminBooksPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
         {[
           ["Total", books.length],
           ["Available", availableCount],
           ["Coming Soon", comingSoonCount],
           ["Archived", archivedCount],
+          ["Needs Setup", needsSetupCount],
           ["Featured", `${featuredCount}/3`],
         ].map(([label, value]) => (
           <div
@@ -125,6 +131,17 @@ export default async function AdminBooksPage() {
                       ? ` • Published ${formatDate(book.publishedAt)}`
                       : ""}
                   </p>
+                  {(!book.price || Number(book.price) <= 0 || !book.coverImage) && (
+                    <p className="mt-1 text-xs text-amber-300/70">
+                      Add {[
+                        !book.price || Number(book.price) <= 0 ? "price" : null,
+                        !book.coverImage ? "cover image" : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" and ")}{" "}
+                      before making this book available.
+                    </p>
+                  )}
                 </div>
               </div>
 
