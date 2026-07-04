@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { poemLanguageLabel, type PoemLanguage } from "@/lib/poem-language";
 import { toggleFeatured } from "./actions";
+import ClearCacheButton from "@/components/admin/clear-cache-button";
 
 function formatDate(date: Date | null): string {
   if (!date) return "—";
@@ -128,7 +129,12 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl text-white md:text-4xl">Dashboard</h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-3xl text-white md:text-4xl">Dashboard</h1>
+        <div>
+          <ClearCacheButton />
+        </div>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">

@@ -814,3 +814,25 @@ export async function toggleCommentPin(id: string, isBook: boolean, pin: boolean
   }
   revalidatePath("/admin/comments");
 }
+
+export async function clearAllCache() {
+  await requireAdmin();
+  const prisma = getPrisma();
+  const [poems, books] = await Promise.all([
+    prisma.poem.findMany({ select: { slug: true } }),
+    prisma.book.findMany({ select: { slug: true } }),
+  ]);
+
+  const keys = [
+    "home:featured-data",
+    ...poems.map((p) => `poem:details:${p.slug}`),
+    ...books.map((b) => `book:details:${b.slug}`),
+  ];
+
+  await invalidateCache(keys);
+
+  revalidatePath("/");
+  revalidatePath("/poems");
+  revalidatePath("/books");
+  revalidatePath("/admin");
+}
