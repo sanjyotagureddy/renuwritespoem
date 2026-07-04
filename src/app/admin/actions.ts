@@ -921,6 +921,9 @@ export async function createSong(formData: FormData) {
   if (!audioFile || audioFile.size === 0) {
     throw new Error("Audio file is required.");
   }
+  if (audioFile.size > 15 * 1024 * 1024) {
+    throw new Error("Audio file size must not exceed 15MB.");
+  }
 
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     throw new Error(

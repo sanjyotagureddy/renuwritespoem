@@ -14,6 +14,12 @@ export default function NewSongForm() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
+    const audioFile = formData.get("audioFile") as File;
+    if (audioFile && audioFile.size > 15 * 1024 * 1024) {
+      setError("Audio file size must not exceed 15MB.");
+      setLoading(false);
+      return;
+    }
 
     try {
       await createSong(formData);
