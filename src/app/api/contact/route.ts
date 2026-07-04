@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { sendContactMessage } from "@/lib/email";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_PATTERN = /^[+\d][\d\s().-]{6,19}$/;
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const name = String(body.name ?? "").trim();
     const email = String(body.email ?? "").trim();
+    const phone = String(body.phone ?? "").trim();
     const subject = String(body.subject ?? "").trim();
     const message = String(body.message ?? "").trim();
     const website = String(body.website ?? "").trim();
@@ -15,7 +17,7 @@ export async function POST(request: Request) {
     // Honeypot fields are invisible to people but commonly filled by bots.
     if (website) return NextResponse.json({ sent: true });
 
-    if (!name || !email || !subject || !message) {
+    if (!name || !email || !phone || !subject || !message) {
       return NextResponse.json(
         { error: "All fields are required." },
         { status: 400 },
@@ -27,14 +29,25 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-    if (name.length > 100 || subject.length > 150 || message.length > 5000) {
+    if (!PHONE_PATTERN.test(phone)) {
+      return NextResponse.json(
+        { error: "Enter a valid phone number." },
+        { status: 400 },
+      );
+    }
+    if (
+      name.length > 100 ||
+      phone.length > 20 ||
+      subject.length > 150 ||
+      message.length > 5000
+    ) {
       return NextResponse.json(
         { error: "One or more fields are too long." },
         { status: 400 },
       );
     }
 
-    await sendContactMessage({ name, email, subject, message });
+    await sendContactMessage({ name, email, phone, subject, message });
     return NextResponse.json({ sent: true });
   } catch (error) {
     console.error("Contact email failed:", error);

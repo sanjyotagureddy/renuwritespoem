@@ -1,4 +1,5 @@
 import { getPrisma } from "@/lib/db";
+import OrderStatusForm from "@/components/admin/order-status-form";
 import { updateOrderStatus } from "../actions";
 
 function formatDate(date: Date): string {
@@ -118,71 +119,28 @@ export default async function AdminOrdersPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex shrink-0 flex-col items-end gap-3">
+                <div className="flex shrink-0 flex-col items-stretch gap-3">
                   {/* View payment screenshot */}
                   <a
                     href={`/api/orders/${order.id}/screenshot`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded-lg px-3 py-1.5 text-xs text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                    className="self-end rounded-lg px-3 py-1.5 text-xs text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                   >
                     Screenshot ↗
                   </a>
 
-                  {/* Status update */}
-                  <form
+                  <OrderStatusForm
                     action={updateOrderStatus}
-                    className="grid w-full gap-2 sm:w-[420px] sm:grid-cols-2"
-                  >
-                    <input type="hidden" name="id" value={order.id} />
-                    <select
-                      name="status"
-                      defaultValue={order.status}
-                      className="rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 text-xs text-white outline-none"
-                    >
-                      <option value="PENDING">Pending</option>
-                      <option value="CONFIRMED">Confirmed</option>
-                      <option value="SHIPPED">Shipped</option>
-                      <option value="DELIVERED">Delivered</option>
-                      <option value="REJECTED">Rejected</option>
-                    </select>
-                    <input
-                      name="trackingProvider"
-                      defaultValue={order.trackingProvider ?? ""}
-                      maxLength={100}
-                      placeholder="Delivery provider"
-                      className="rounded-lg border border-white/15 bg-black/30 px-3 py-1.5 text-xs text-white outline-none placeholder:text-white/25"
-                    />
-                    <input
-                      name="trackingNumber"
-                      defaultValue={order.trackingNumber ?? ""}
-                      maxLength={150}
-                      placeholder="Tracking number"
-                      className="rounded-lg border border-white/15 bg-black/30 px-3 py-1.5 text-xs text-white outline-none placeholder:text-white/25"
-                    />
-                    <input
-                      name="trackingUrl"
-                      type="url"
-                      defaultValue={order.trackingUrl ?? ""}
-                      maxLength={500}
-                      placeholder="Tracking URL (optional)"
-                      className="rounded-lg border border-white/15 bg-black/30 px-3 py-1.5 text-xs text-white outline-none placeholder:text-white/25"
-                    />
-                    <textarea
-                      name="adminNote"
-                      defaultValue={order.adminNote ?? ""}
-                      maxLength={1000}
-                      rows={2}
-                      placeholder="Message to buyer (optional)"
-                      className="resize-none rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-xs text-white outline-none placeholder:text-white/25 sm:col-span-2"
-                    />
-                    <button
-                      type="submit"
-                      className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs text-white/70 transition-colors hover:bg-white/10 sm:col-span-2"
-                    >
-                      Save update & notify buyer
-                    </button>
-                  </form>
+                    order={{
+                      id: order.id,
+                      status: order.status,
+                      trackingProvider: order.trackingProvider,
+                      trackingNumber: order.trackingNumber,
+                      trackingUrl: order.trackingUrl,
+                      adminNote: order.adminNote,
+                    }}
+                  />
                 </div>
               </div>
             </div>

@@ -1,15 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function ContactForm() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const inputClassName = "min-h-12 px-4 text-base md:text-base";
+  const textareaClassName =
+    "min-h-56 resize-y px-4 py-4 text-base leading-7 md:text-base";
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -49,18 +52,36 @@ export default function ContactForm() {
         <Label htmlFor="website">Website</Label>
         <Input id="website" name="website" tabIndex={-1} autoComplete="off" />
       </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
+          name="name"
+          required
+          maxLength={100}
+          autoComplete="name"
+          placeholder="Your name"
+          className={inputClassName}
+        />
+      </div>
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="phone">Phone</Label>
           <Input
-            id="name"
-            name="name"
+            id="phone"
+            name="phone"
+            type="tel"
             required
-            maxLength={100}
-            autoComplete="name"
-            placeholder="Your name"
+            maxLength={20}
+            autoComplete="tel"
+            inputMode="tel"
+            placeholder="+91 98765 43210"
+            className={inputClassName}
           />
         </div>
+
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -71,9 +92,11 @@ export default function ContactForm() {
             maxLength={254}
             autoComplete="email"
             placeholder="you@example.com"
+            className={inputClassName}
           />
         </div>
       </div>
+
       <div className="space-y-2">
         <Label htmlFor="subject">Subject</Label>
         <Input
@@ -82,18 +105,20 @@ export default function ContactForm() {
           required
           maxLength={150}
           placeholder="What's this about?"
+          className={inputClassName}
         />
       </div>
+
       <div className="space-y-2">
         <Label htmlFor="message">Message</Label>
         <Textarea
           id="message"
           name="message"
-          rows={6}
+          rows={9}
           required
           maxLength={5000}
           placeholder="Write your message here..."
-          className="resize-none"
+          className={textareaClassName}
         />
       </div>
 
