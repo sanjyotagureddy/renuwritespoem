@@ -8,6 +8,7 @@ import BookLikeButton from "@/components/books/like-button";
 import BookCommentSection from "@/components/books/comment-section";
 import { siteConfig } from "@/lib/seo";
 import { getCache, setCache } from "@/lib/cache";
+import BookDescription from "@/components/books/book-description";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -242,9 +243,7 @@ export default async function BookDetailPage({ params }: PageProps) {
                 </h1>
 
                 {book.description && (
-                  <p className="font-(family-name:--font-inter) leading-relaxed whitespace-pre-line text-white/65">
-                    {book.description}
-                  </p>
+                  <BookDescription description={book.description} />
                 )}
               </div>
 

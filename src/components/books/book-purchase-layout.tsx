@@ -5,6 +5,7 @@ import Image from "next/image";
 import BookLikeButton from "./like-button";
 import BookCommentSection from "./comment-section";
 import PurchaseForm from "./purchase-form";
+import BookDescription from "./book-description";
 
 type BookPurchaseLayoutProps = {
   book: {
@@ -116,9 +117,7 @@ export default function BookPurchaseLayout({ book }: BookPurchaseLayoutProps) {
               </h1>
 
               {book.description && (
-                <p className="font-(family-name:--font-inter) leading-relaxed whitespace-pre-line text-white/65">
-                  {book.description}
-                </p>
+                <BookDescription description={book.description} />
               )}
             </div>
 
