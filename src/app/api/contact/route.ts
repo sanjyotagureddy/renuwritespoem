@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { validateContactMessageTone } from "@/lib/contact-guard";
 import { sendContactMessage } from "@/lib/email";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -45,6 +46,10 @@ export async function POST(request: Request) {
         { error: "One or more fields are too long." },
         { status: 400 },
       );
+    }
+    const toneError = validateContactMessageTone({ subject, message });
+    if (toneError) {
+      return NextResponse.json({ error: toneError }, { status: 400 });
     }
 
     await sendContactMessage({ name, email, phone, subject, message });

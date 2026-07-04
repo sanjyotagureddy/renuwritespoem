@@ -27,6 +27,10 @@ function formatInr(value: number): string {
   return `₹${value.toLocaleString("en-IN")}`;
 }
 
+function cleanSubjectPart(value: string): string {
+  return value.replace(/[\r\n]+/g, " ").trim();
+}
+
 function emailShell({
   eyebrow,
   title,
@@ -140,6 +144,18 @@ function buttonLink(label: string, href: string): string {
   `;
 }
 
+function orderSupportBlock(orderId: string): string {
+  return callout({
+    tone: "blue",
+    title: "Need to contact us about this order?",
+    body: `Reply to this email or write to <a href="mailto:${escapeHtml(
+      SUPPORT_EMAIL,
+    )}" style="color:#1e3a8a; font-weight:800; text-decoration:none;">${escapeHtml(
+      SUPPORT_EMAIL,
+    )}</a>. Please include your Order ID: <strong>${orderId}</strong>.`,
+  });
+}
+
 export async function sendOrderConfirmation({
   buyerEmail,
   buyerName,
@@ -207,6 +223,8 @@ Book: ${bookTitle}
 Copies: ${copies}
 Total: ${formatInr(totalAmount)}
 
+If you contact us about this order, please include Order ID: ${orderId}.
+
 With gratitude,
 Renu Writes Poem`,
     html: emailShell({
@@ -222,6 +240,7 @@ Renu Writes Poem`,
           body: "Once payment is verified, you will receive a confirmation email. When the book ships, we will send the courier name and tracking details.",
         })}
         ${orderTable}
+        ${orderSupportBlock(escapeHtml(orderId))}
       `,
     }),
   });
@@ -278,12 +297,14 @@ export async function sendContactMessage({
   const safePhone = escapeHtml(phone);
   const safeSubject = escapeHtml(subject);
   const safeMessage = escapeHtml(message).replaceAll("\n", "<br />");
+  const messageRef = new Date().toISOString().slice(0, 16).replace("T", " ");
+  const subjectLine = `Website message from ${cleanSubjectPart(name)} — ${cleanSubjectPart(subject)} — ${messageRef}`;
 
   await mailer.sendMail({
     from: FROM_EMAIL,
     to: ADMIN_EMAIL,
     replyTo: email,
-    subject: `Website message — ${subject}`,
+    subject: subjectLine,
     text: `From: ${name} <${email}>\nPhone: ${phone}\nSubject: ${subject}\n\n${message}`,
     html: emailShell({
       eyebrow: "Website message",
@@ -409,6 +430,8 @@ ${statusCopy.message}
 Book: ${bookTitle}
 Order ID: ${orderId}${trackingProvider ? `\nProvider: ${trackingProvider}` : ""}${trackingNumber ? `\nTracking: ${trackingNumber}` : ""}${trackingUrl ? `\nTrack: ${trackingUrl}` : ""}${note ? `\n\nNote: ${note}` : ""}
 
+If you contact us about this order, please include Order ID: ${orderId}.
+
 With gratitude,
 Renu Writes Poem`,
     html: emailShell({
@@ -428,6 +451,7 @@ Renu Writes Poem`,
         ])}
         ${trackingBlock}
         ${safeNote ? callout({ tone: "warm", title: "A note from us", body: safeNote }) : ""}
+        ${orderSupportBlock(safeOrderId)}
       `,
     }),
   });

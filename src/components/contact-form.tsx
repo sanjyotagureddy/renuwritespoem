@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { validateContactMessageTone } from "@/lib/contact-guard";
 
 export default function ContactForm() {
   const [submitting, setSubmitting] = useState(false);
@@ -23,6 +24,16 @@ export default function ContactForm() {
 
     const form = event.currentTarget;
     const values = Object.fromEntries(new FormData(form));
+    const toneError = validateContactMessageTone({
+      subject: String(values.subject ?? ""),
+      message: String(values.message ?? ""),
+    });
+
+    if (toneError) {
+      setError(toneError);
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const response = await fetch("/api/contact", {
@@ -111,6 +122,10 @@ export default function ContactForm() {
 
       <div className="space-y-2">
         <Label htmlFor="message">Message</Label>
+        <div className="rounded-xl border border-amber-300/20 bg-amber-400/10 px-4 py-3 text-sm leading-6 text-amber-100/80">
+          Please be respectful. Messages with abusive, threatening, spammy, or
+          repeated text will not be sent.
+        </div>
         <Textarea
           id="message"
           name="message"

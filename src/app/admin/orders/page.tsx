@@ -59,9 +59,9 @@ export default async function AdminOrdersPage() {
               key={order.id}
               className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
             >
-              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+              <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
                 {/* Order info */}
-                <div className="min-w-0 space-y-2">
+                <div className="min-w-0 flex-1 space-y-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={`rounded-full border px-2.5 py-1 text-[10px] tracking-wider uppercase ${statusColors[order.status] ?? ""}`}
@@ -76,29 +76,69 @@ export default async function AdminOrdersPage() {
                     </span>
                   </div>
 
-                  <div className="text-sm text-white/60">
-                    <span className="text-white/80">{order.name}</span> •{" "}
-                    {order.email} • {order.phone}
+                  <div className="grid gap-3 md:grid-cols-[1.1fr_0.9fr]">
+                    <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                      <p className="text-[10px] font-semibold tracking-[0.18em] text-white/35 uppercase">
+                        Buyer details
+                      </p>
+                      <div className="mt-3 space-y-2 font-[family-name:var(--font-inter)] text-sm">
+                        <p className="font-semibold text-white/90">
+                          {order.name}
+                        </p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-white/55">
+                          <a
+                            href={`mailto:${order.email}`}
+                            className="transition-colors hover:text-white"
+                          >
+                            {order.email}
+                          </a>
+                          <a
+                            href={`tel:${order.phone}`}
+                            className="transition-colors hover:text-white"
+                          >
+                            {order.phone}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-amber-200/15 bg-amber-400/10 p-4">
+                      <p className="text-[10px] font-semibold tracking-[0.18em] text-amber-100/50 uppercase">
+                        Order ID
+                      </p>
+                      <p className="mt-2 break-all font-mono text-sm font-semibold text-amber-100">
+                        #{order.id}
+                      </p>
+                      <p className="mt-2 text-xs text-amber-100/55">
+                        Ask buyers to mention this ID when contacting you.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="text-xs text-white/40">
-                    {order.address}, {order.city}, {order.state} —{" "}
-                    {order.pincode}
+                  <div className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
+                    <p className="text-[10px] font-semibold tracking-[0.18em] text-white/35 uppercase">
+                      Shipping address
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-white/65">
+                      {order.address}, {order.city}, {order.state} —{" "}
+                      {order.pincode}
+                    </p>
                   </div>
 
-                  <div className="flex items-center gap-4 text-xs text-white/40">
-                    <span>
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-white/40">
+                    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
                       Shipping ₹
                       {Number(order.shippingAmount).toLocaleString("en-IN")}
                     </span>
-                    <span>
+                    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
                       ₹{Number(order.totalAmount).toLocaleString("en-IN")}
                     </span>
-                    <span>{formatDate(order.createdAt)}</span>
-                    <span className="text-white/20">{order.id}</span>
+                    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                      {formatDate(order.createdAt)}
+                    </span>
                   </div>
                   {order.trackingNumber && (
-                    <div className="text-xs text-purple-200/70">
+                    <div className="rounded-xl border border-purple-300/15 bg-purple-400/10 px-4 py-3 text-xs text-purple-100/75">
                       {order.trackingProvider} • {order.trackingNumber}
                       {order.trackingUrl && (
                         <>
@@ -119,7 +159,7 @@ export default async function AdminOrdersPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex shrink-0 flex-col items-stretch gap-3">
+                <div className="flex shrink-0 flex-col items-stretch gap-2">
                   {/* View payment screenshot */}
                   <a
                     href={`/api/orders/${order.id}/screenshot`}
