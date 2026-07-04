@@ -17,6 +17,7 @@ type PoemsPageProps = {
     page?: string | string[];
     size?: string | string[];
     sort?: string | string[];
+    tag?: string | string[];
   }>;
 };
 
@@ -53,6 +54,11 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     ? params.genre[0]
     : params.genre;
   const selectedGenreSlug = genreValue?.trim() || "";
+  const tagValue = Array.isArray(params.tag)
+    ? params.tag[0]
+    : params.tag;
+  const selectedTagSlug = tagValue?.trim() || "";
+
   const sortValue = Array.isArray(params.sort) ? params.sort[0] : params.sort;
   const selectedSort: PoemSort = SORT_OPTIONS.includes(sortValue as PoemSort)
     ? (sortValue as PoemSort)
@@ -75,9 +81,10 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     published: true,
     ...(selectedLanguage === "ALL" ? {} : { language: selectedLanguage }),
     ...(selectedGenreSlug ? { genre: { slug: selectedGenreSlug } } : {}),
+    ...(selectedTagSlug ? { tags: { some: { tag: { slug: selectedTagSlug } } } } : {}),
   };
 
-  const [poems, totalCount, selectedGenre] = await Promise.all([
+  const [poems, totalCount, selectedGenre, selectedTag, allGenres, allTags] = await Promise.all([
     prisma.poem.findMany({
       where: whereClause,
       orderBy:
@@ -104,6 +111,21 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
           select: { name: true, slug: true },
         })
       : null,
+    selectedTagSlug
+      ? prisma.tag.findUnique({
+          where: { slug: selectedTagSlug },
+          select: { name: true, slug: true },
+        })
+      : null,
+    prisma.genre.findMany({
+      orderBy: { name: "asc" },
+      select: { name: true, slug: true },
+    }),
+    prisma.tag.findMany({
+      orderBy: { name: "asc" },
+      select: { name: true, slug: true },
+      take: 12,
+    }),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
@@ -112,6 +134,7 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     const params = new URLSearchParams();
     if (selectedLanguage !== "ALL") params.set("language", selectedLanguage);
     if (selectedGenreSlug) params.set("genre", selectedGenreSlug);
+    if (selectedTagSlug) params.set("tag", selectedTagSlug);
     if (selectedSort !== "popular") params.set("sort", selectedSort);
     if (page > 1) params.set("page", String(page));
     const s = size ?? perPage;
@@ -123,15 +146,18 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
   function buildFilterUrl({
     language = selectedLanguage,
     genre = selectedGenreSlug,
+    tag = selectedTagSlug,
     sort = selectedSort,
   }: {
     language?: PoemLanguage | "ALL";
     genre?: string;
+    tag?: string;
     sort?: PoemSort;
   }) {
     const params = new URLSearchParams();
     if (language !== "ALL") params.set("language", language);
     if (genre) params.set("genre", genre);
+    if (tag) params.set("tag", tag);
     if (sort !== "popular") params.set("sort", sort);
     if (perPage !== DEFAULT_PAGE_SIZE) params.set("size", String(perPage));
     const qs = params.toString();
@@ -148,86 +174,182 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
           language, and rhythm.
         </p>
 
-        <div className="mt-7 flex flex-wrap items-center gap-2">
-          <Link
-            href={buildFilterUrl({ language: "ALL" })}
-            className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
-              selectedLanguage === "ALL"
-                ? "border-white/40 bg-white/10 text-white"
-                : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
-            }`}
-          >
-            All
-          </Link>
-
-          {poemLanguageOptions.map((language) => (
-            <Link
-              key={language}
-              href={buildFilterUrl({ language })}
-              className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
-                selectedLanguage === language
-                  ? "border-white/40 bg-white/10 text-white"
-                  : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
-              }`}
-            >
-              {poemLanguageLabel(language)}
-            </Link>
-          ))}
-
-          {selectedGenre && (
-            <Link
-              href={buildFilterUrl({ genre: "" })}
-              className="rounded-full border border-amber-300/25 bg-amber-400/10 px-4 py-2 text-xs tracking-wider text-amber-100/80 uppercase transition-colors hover:border-amber-200/40 hover:text-amber-100"
-            >
-              Genre: {selectedGenre.name} ×
-            </Link>
-          )}
-
-          <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-            <span className="text-xs tracking-[0.16em] text-white/30 uppercase">
-              Sort
-            </span>
-            <Link
-              href={buildFilterUrl({ sort: "popular" })}
-              className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
-                selectedSort === "popular"
-                  ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
-                  : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
-              }`}
-            >
-              Popular
-            </Link>
-            <Link
-              href={buildFilterUrl({ sort: "newest" })}
-              className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
-                selectedSort === "newest"
-                  ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
-                  : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
-              }`}
-            >
-              Newest
-            </Link>
+        {/* Filter Rows */}
+        <div className="space-y-5 mt-8 border-t border-white/10 pt-6">
+          {/* Languages */}
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs uppercase tracking-[0.15em] text-white/40 min-w-[90px]">Language:</span>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={buildFilterUrl({ language: "ALL" })}
+                className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
+                  selectedLanguage === "ALL"
+                    ? "border-white/40 bg-white/10 text-white"
+                    : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                All
+              </Link>
+              {poemLanguageOptions.map((langOption) => (
+                <Link
+                  key={langOption}
+                  href={buildFilterUrl({ language: langOption })}
+                  className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
+                    selectedLanguage === langOption
+                      ? "border-white/40 bg-white/10 text-white"
+                      : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+                  }`}
+                >
+                  {poemLanguageLabel(langOption)}
+                </Link>
+              ))}
+            </div>
           </div>
 
-          {totalCount > 0 && (
-            <span className="text-xs text-white/30">
-              {totalCount} poem{totalCount !== 1 ? "s" : ""}
-            </span>
+          {/* Genres */}
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs uppercase tracking-[0.15em] text-white/40 min-w-[90px]">Genre:</span>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={buildFilterUrl({ genre: "" })}
+                className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
+                  !selectedGenreSlug
+                    ? "border-white/40 bg-white/10 text-white"
+                    : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                All Genres
+              </Link>
+              {allGenres.map((genre) => (
+                <Link
+                  key={genre.slug}
+                  href={buildFilterUrl({ genre: genre.slug })}
+                  className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
+                    selectedGenreSlug === genre.slug
+                      ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
+                      : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+                  }`}
+                >
+                  {genre.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Popular Tags */}
+          {allTags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-xs uppercase tracking-[0.15em] text-white/40 min-w-[90px]">Tags:</span>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={buildFilterUrl({ tag: "" })}
+                  className={`rounded-full border px-3.5 py-1.5 text-xs transition-colors ${
+                    !selectedTagSlug
+                      ? "border-white/40 bg-white/10 text-white"
+                      : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+                  }`}
+                >
+                  All Tags
+                </Link>
+                {allTags.map((tag) => (
+                  <Link
+                    key={tag.slug}
+                    href={buildFilterUrl({ tag: tag.slug })}
+                    className={`rounded-full border px-3.5 py-1.5 text-xs transition-colors ${
+                      selectedTagSlug === tag.slug
+                        ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
+                        : "border-white/10 bg-black/20 text-white/50 hover:border-white/20 hover:text-white"
+                    }`}
+                  >
+                    #{tag.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
           )}
+        </div>
+
+        {/* Sort & Stats & Active Badges */}
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-white/5 pt-5">
+          <div className="flex flex-wrap items-center gap-2">
+            {(selectedLanguage !== "ALL" || selectedGenreSlug || selectedTagSlug) && (
+              <>
+                <span className="text-xs text-white/40 mr-1">Active:</span>
+                {selectedLanguage !== "ALL" && (
+                  <Link
+                    href={buildFilterUrl({ language: "ALL" })}
+                    className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/80 hover:bg-white/10"
+                  >
+                    Language: {poemLanguageLabel(selectedLanguage)} ×
+                  </Link>
+                )}
+                {selectedGenre && (
+                  <Link
+                    href={buildFilterUrl({ genre: "" })}
+                    className="rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1 text-xs text-amber-100/80 hover:border-amber-200/45 hover:text-amber-100"
+                  >
+                    Genre: {selectedGenre.name} ×
+                  </Link>
+                )}
+                {selectedTag && (
+                  <Link
+                    href={buildFilterUrl({ tag: "" })}
+                    className="rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1 text-xs text-amber-100/80 hover:border-amber-200/45 hover:text-amber-100"
+                  >
+                    Tag: #{selectedTag.name} ×
+                  </Link>
+                )}
+                <Link
+                  href="/poems"
+                  className="text-xs text-white/45 hover:text-white underline ml-2"
+                >
+                  Clear all
+                </Link>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4 sm:ml-auto">
+            <div className="flex items-center gap-2">
+              <span className="text-xs tracking-[0.16em] text-white/30 uppercase">
+                Sort
+              </span>
+              <Link
+                href={buildFilterUrl({ sort: "popular" })}
+                className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
+                  selectedSort === "popular"
+                    ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
+                    : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                Popular
+              </Link>
+              <Link
+                href={buildFilterUrl({ sort: "newest" })}
+                className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
+                  selectedSort === "newest"
+                    ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
+                    : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                Newest
+              </Link>
+            </div>
+
+            {totalCount > 0 && (
+              <span className="text-xs text-white/30 border-l border-white/10 pl-4">
+                {totalCount} poem{totalCount !== 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
       {poems.length === 0 ? (
         <div className="rounded-2xl border border-white/15 bg-white/[0.03] p-10 text-center">
-          <h2 className="text-2xl text-white mb-3">No poems published yet</h2>
+          <h2 className="text-2xl text-white mb-3">No poems found</h2>
           <p className="text-white/60 font-[family-name:var(--font-inter)]">
-            {selectedLanguage === "ALL"
-              ? selectedGenre
-                ? `No poems are published in ${selectedGenre.name} yet.`
-                : "New poems will appear here as soon as they are published."
-              : selectedGenre
-                ? `No ${poemLanguageLabel(selectedLanguage)} poems are published in ${selectedGenre.name} yet.`
-                : `No ${poemLanguageLabel(selectedLanguage)} poems are published yet.`}
+            No poems match the selected filters. Try clearing some filters to see more.
           </p>
         </div>
       ) : (
@@ -242,13 +364,19 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
                 className="group relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.03] p-6 md:p-7 transition-colors hover:border-white/30"
               >
                 <div className="mb-5 flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-white/80">
+                  <Link
+                    href={buildFilterUrl({ language })}
+                    className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-white/80 hover:bg-white/10 transition-colors"
+                  >
                     {poemLanguageLabel(language)}
-                  </span>
+                  </Link>
                   {poem.genre ? (
-                    <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-wider text-white/60">
+                    <Link
+                      href={buildFilterUrl({ genre: poem.genre.slug })}
+                      className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-wider text-white/60 hover:border-white/30 transition-colors"
+                    >
                       {poem.genre.name}
-                    </span>
+                    </Link>
                   ) : null}
                   <span className="ml-auto text-xs uppercase tracking-wider text-white/40">
                     {formatDate(poem.publishedAt)}
@@ -279,12 +407,13 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {poem.tags.slice(0, 3).map(({ tag }) => (
-                      <span
+                      <Link
                         key={tag.slug}
-                        className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[11px] uppercase tracking-wider text-white/50"
+                        href={buildFilterUrl({ tag: tag.slug })}
+                        className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[11px] uppercase tracking-wider text-white/50 hover:border-white/25 hover:text-white transition-colors"
                       >
                         {tag.name}
-                      </span>
+                      </Link>
                     ))}
                   </div>
                 </div>

@@ -56,6 +56,7 @@ async function getBookBySlug(slug: string): Promise<BookCacheItem | null> {
   if (cached) {
     if (cached.createdAt) cached.createdAt = new Date(cached.createdAt);
     if (cached.updatedAt) cached.updatedAt = new Date(cached.updatedAt);
+    if (cached.publishedAt) cached.publishedAt = new Date(cached.publishedAt);
     return cached;
   }
 

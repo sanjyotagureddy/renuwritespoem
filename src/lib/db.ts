@@ -37,26 +37,29 @@ function buildPoolOptions(connectionString: string): {
   };
 }
 
-export function getPrisma(): PrismaClient {
-  if (globalForPrisma.prisma) {
-    return globalForPrisma.prisma;
-  }
+let prismaInstance: PrismaClient;
 
+function initPrisma(): PrismaClient {
   const connectionString = resolveDatabaseUrl();
-
   if (!connectionString) {
     throw new Error(
       "Missing database connection URL. Set DATABASE_URL or renuwritespoem_postgres_POSTGRES_PRISMA_URL in Vercel environment variables.",
     );
   }
-
   const pool = new Pool(buildPoolOptions(connectionString));
   const adapter = new PrismaPg(pool);
-  const prisma = new PrismaClient({ adapter });
+  return new PrismaClient({ adapter });
+}
 
-  if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.prisma = prisma;
+if (process.env.NODE_ENV === "production") {
+  prismaInstance = initPrisma();
+} else {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = initPrisma();
   }
+  prismaInstance = globalForPrisma.prisma;
+}
 
-  return prisma;
+export function getPrisma(): PrismaClient {
+  return prismaInstance;
 }
