@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter, Geist, Noto_Sans_Devanagari } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import SocialFloating from "@/components/social-floating";
@@ -93,6 +94,7 @@ export default function RootLayout({
           <Footer />
           <SocialFloating />
           <Analytics />
+          <SpeedInsights />
         </AuthSessionProvider>
       </body>
     </html>
