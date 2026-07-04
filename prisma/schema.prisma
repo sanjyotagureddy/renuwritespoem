@@ -164,9 +164,9 @@ model Book {
   coverImage   String?
   coverData    String?
   coverMime    String?
-  price        Float?
-  discountedPrice Float?
-  shippingCharge  Float    @default(40)
+  price             Decimal? @db.Decimal(10, 2)
+  discountedPrice   Decimal? @db.Decimal(10, 2)
+  shippingCharge    Decimal  @default(40) @db.Decimal(10, 2)
   purchaseUrl  String?
   featured     Boolean    @default(false)
   status       BookStatus @default(COMING_SOON)
@@ -240,7 +240,7 @@ model Comment {
   id        String        @id @default(cuid())
   body      String
   edited    Boolean       @default(false)
-  status    CommentStatus @default(PENDING)
+  status    CommentStatus @default(APPROVED)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
@@ -297,6 +297,7 @@ enum OrderStatus {
 
 model BookOrder {
   id               String      @id @default(cuid())
+  idempotencyKey   String?     @unique
   name             String
   email            String
   phone            String
@@ -305,8 +306,8 @@ model BookOrder {
   state            String
   pincode          String
   copies           Int         @default(1)
-  shippingAmount   Float       @default(40)
-  totalAmount      Float
+  shippingAmount   Decimal     @default(40) @db.Decimal(10, 2)
+  totalAmount      Decimal     @db.Decimal(10, 2)
   paymentData      String?
   paymentMime      String?
   status           OrderStatus @default(PENDING)

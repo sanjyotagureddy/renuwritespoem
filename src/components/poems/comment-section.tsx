@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { Pencil, Trash2 } from "lucide-react";
 
 type CommentData = {
@@ -42,7 +43,9 @@ function CommentLikeButton({
 
   async function handleToggle() {
     if (disabled) return;
-    const res = await fetch(`/api/comments/${commentId}/likes`, { method: "POST" });
+    const res = await fetch(`/api/comments/${commentId}/likes`, {
+      method: "POST",
+    });
     if (res.ok) {
       const data = await res.json();
       setLiked(data.liked);
@@ -59,7 +62,7 @@ function CommentLikeButton({
         liked
           ? "text-rose-400/80 hover:text-rose-300"
           : "text-white/30 hover:text-white/60"
-      } ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+      } ${disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"}`}
       title={disabled ? "Sign in to like" : liked ? "Unlike" : "Like"}
     >
       <span className="text-lg">{liked ? "♥" : "♡"}</span>
@@ -123,7 +126,9 @@ export default function CommentSection({ slug }: { slug: string }) {
     if (res.ok) {
       const data = await res.json();
       setComments((prev) =>
-        prev.map((c) => (c.id === commentId ? { ...c, body: data.body, edited: true } : c)),
+        prev.map((c) =>
+          c.id === commentId ? { ...c, body: data.body, edited: true } : c,
+        ),
       );
       setEditingId(null);
       setEditText("");
@@ -140,7 +145,7 @@ export default function CommentSection({ slug }: { slug: string }) {
 
   return (
     <div>
-      <h3 className="text-sm uppercase tracking-[0.18em] text-white/50 mb-4">
+      <h3 className="mb-4 text-sm tracking-[0.18em] text-white/50 uppercase">
         Comments {comments.length > 0 && `(${comments.length})`}
       </h3>
 
@@ -153,18 +158,20 @@ export default function CommentSection({ slug }: { slug: string }) {
             rows={3}
             maxLength={1000}
             placeholder="Share your thoughts..."
-            className="w-full rounded-xl border border-white/15 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-white/30 resize-none"
+            className="w-full resize-none rounded-xl border border-white/15 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-white/30"
           />
           <button
             type="submit"
             disabled={!text.trim() || submitting}
-            className="mt-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs uppercase tracking-wider text-white hover:bg-white/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="mt-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs tracking-wider text-white uppercase transition-colors hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting ? "Posting..." : "Post"}
           </button>
         </form>
       ) : (
-        <p className="text-xs text-white/40 mb-5">Sign in to leave a comment.</p>
+        <p className="mb-5 text-xs text-white/40">
+          Sign in to leave a comment.
+        </p>
       )}
 
       {/* Comments list */}
@@ -174,91 +181,100 @@ export default function CommentSection({ slug }: { slug: string }) {
         <div className="space-y-4">
           {comments.map((comment) => {
             const isOwner = session?.user?.id === comment.userId;
+            const canDelete = isOwner || session?.user?.role === "ADMIN";
             return (
-            <div key={comment.id} className="flex gap-3">
-              {comment.user.image ? (
-                <img
-                  src={comment.user.image}
-                  alt={comment.user.name}
-                  width={28}
-                  height={28}
-                  className="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5"
-                />
-              ) : (
-                <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs text-white/60 shrink-0 mt-0.5">
-                  {comment.user.name[0]?.toUpperCase()}
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-white/80 font-medium">{comment.user.name}</span>
-                  <span className="text-[10px] text-white/30">{timeAgo(comment.createdAt)}</span>
-                  {comment.edited && (
-                    <span className="text-[10px] text-white/25 italic">edited</span>
-                  )}
-                  <span className="ml-auto flex items-center gap-2">
-                    {isOwner && editingId !== comment.id && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => startEdit(comment)}
-                          className="text-white/25 hover:text-white/60 transition-colors"
-                          title="Edit"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(comment.id)}
-                          className="text-rose-400/30 hover:text-rose-400 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </>
-                    )}
-                    <CommentLikeButton
-                      commentId={comment.id}
-                      initialLiked={comment.liked}
-                      initialCount={comment.likeCount}
-                      disabled={!session?.user}
-                    />
-                  </span>
-                </div>
-                {editingId === comment.id ? (
-                  <div className="mt-2">
-                    <textarea
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                      rows={3}
-                      maxLength={1000}
-                      className="w-full rounded-xl border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-white/30 resize-none"
-                    />
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => saveEdit(comment.id)}
-                        disabled={!editText.trim()}
-                        className="text-xs text-white/70 hover:text-white transition-colors disabled:opacity-40"
-                      >
-                        Save
-                      </button>
-                      <button
-                        type="button"
-                        onClick={cancelEdit}
-                        className="text-xs text-white/40 hover:text-white/60 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
+              <div key={comment.id} className="flex gap-3">
+                {comment.user.image ? (
+                  <Image
+                    src={comment.user.image}
+                    alt={comment.user.name}
+                    width={28}
+                    height={28}
+                    className="mt-0.5 h-7 w-7 shrink-0 rounded-full object-cover"
+                  />
                 ) : (
-                  <p className="text-sm text-white/60 mt-1 whitespace-pre-line break-words">
-                    {comment.body}
-                  </p>
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs text-white/60">
+                    {comment.user.name[0]?.toUpperCase()}
+                  </div>
                 )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-white/80">
+                      {comment.user.name}
+                    </span>
+                    <span className="text-[10px] text-white/30">
+                      {timeAgo(comment.createdAt)}
+                    </span>
+                    {comment.edited && (
+                      <span className="text-[10px] text-white/25 italic">
+                        edited
+                      </span>
+                    )}
+                    <span className="ml-auto flex items-center gap-2">
+                      {canDelete && editingId !== comment.id && (
+                        <>
+                          {isOwner && (
+                            <button
+                              type="button"
+                              onClick={() => startEdit(comment)}
+                              className="text-white/25 transition-colors hover:text-white/60"
+                              title="Edit"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(comment.id)}
+                            className="text-rose-400/30 transition-colors hover:text-rose-400"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </>
+                      )}
+                      <CommentLikeButton
+                        commentId={comment.id}
+                        initialLiked={comment.liked}
+                        initialCount={comment.likeCount}
+                        disabled={!session?.user}
+                      />
+                    </span>
+                  </div>
+                  {editingId === comment.id ? (
+                    <div className="mt-2">
+                      <textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        rows={3}
+                        maxLength={1000}
+                        className="w-full resize-none rounded-xl border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+                      />
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => saveEdit(comment.id)}
+                          disabled={!editText.trim()}
+                          className="text-xs text-white/70 transition-colors hover:text-white disabled:opacity-40"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          className="text-xs text-white/40 transition-colors hover:text-white/60"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-sm break-words whitespace-pre-line text-white/60">
+                      {comment.body}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
             );
           })}
         </div>

@@ -128,16 +128,18 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl md:text-4xl text-white">Dashboard</h1>
+      <h1 className="text-3xl text-white md:text-4xl">Dashboard</h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {stats.map((stat) => (
           <div
             key={stat.label}
             className="rounded-2xl border border-white/10 bg-white/3 p-5"
           >
-            <p className="text-xs uppercase tracking-[0.18em] text-white/40 mb-2">{stat.label}</p>
+            <p className="mb-2 text-xs tracking-[0.18em] text-white/40 uppercase">
+              {stat.label}
+            </p>
             <p className="text-3xl text-white">{stat.value}</p>
           </div>
         ))}
@@ -145,42 +147,49 @@ export default async function AdminDashboard() {
 
       {/* Books */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl text-white">Books</h2>
           <div className="flex items-center gap-3">
             <Link
               href="/admin/books"
-              className="text-xs text-white/50 hover:text-white uppercase tracking-wider"
+              className="text-xs tracking-wider text-white/50 uppercase hover:text-white"
             >
               View all →
             </Link>
             <Link
               href="/admin/books/new"
-              className="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white hover:bg-white/20 transition-colors"
+              className="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs tracking-[0.18em] text-white uppercase transition-colors hover:bg-white/20"
             >
               + New Book
             </Link>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
           {bookStats.map((stat) => (
-            <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/3 p-5">
-              <p className="text-xs uppercase tracking-[0.18em] text-white/40 mb-2">{stat.label}</p>
+            <div
+              key={stat.label}
+              className="rounded-2xl border border-white/10 bg-white/3 p-5"
+            >
+              <p className="mb-2 text-xs tracking-[0.18em] text-white/40 uppercase">
+                {stat.label}
+              </p>
               <p className="text-3xl text-white">{stat.value}</p>
             </div>
           ))}
         </div>
 
         {featuredBooks.length > 0 && (
-          <div className="rounded-2xl border border-amber-400/20 bg-amber-500/5 p-5 mb-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-amber-300/70 mb-3">Featured Books</p>
+          <div className="mb-4 rounded-2xl border border-amber-400/20 bg-amber-500/5 p-5">
+            <p className="mb-3 text-xs tracking-[0.2em] text-amber-300/70 uppercase">
+              Featured Books
+            </p>
             <div className="flex flex-wrap gap-3">
               {featuredBooks.map((book) => (
                 <Link
                   key={book.id}
                   href={`/admin/books/${book.id}/edit`}
-                  className="rounded-full border border-amber-400/20 bg-black/10 px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                  className="rounded-full border border-amber-400/20 bg-black/10 px-4 py-2 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                 >
                   {book.title}
                 </Link>
@@ -189,29 +198,40 @@ export default async function AdminDashboard() {
           </div>
         )}
 
-        <div className="rounded-2xl border border-white/10 bg-white/3 divide-y divide-white/8">
+        <div className="divide-y divide-white/8 rounded-2xl border border-white/10 bg-white/3">
           {recentBooks.length === 0 ? (
             <div className="p-6 text-center">
-              <p className="text-white/50 font-(family-name:--font-inter)">No books yet.</p>
+              <p className="font-(family-name:--font-inter) text-white/50">
+                No books yet.
+              </p>
             </div>
           ) : (
             recentBooks.map((book) => (
-              <div key={book.id} className="flex items-center justify-between px-5 py-4 gap-4">
+              <div
+                key={book.id}
+                className="flex items-center justify-between gap-4 px-5 py-4"
+              >
                 <div className="min-w-0">
-                  <p className="text-white truncate">
-                    {book.featured ? <span className="text-amber-400 mr-2">★</span> : null}
+                  <p className="truncate text-white">
+                    {book.featured ? (
+                      <span className="mr-2 text-amber-400">★</span>
+                    ) : null}
                     {book.title}
                   </p>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                    <span className={`uppercase tracking-wider ${bookStatusColor(book.status)}`}>
+                    <span
+                      className={`tracking-wider uppercase ${bookStatusColor(book.status)}`}
+                    >
                       {bookStatusLabel(book.status)}
                     </span>
                     <span className="text-white/35">
-                      {book.discountedPrice ? `Offer ₹${book.discountedPrice.toLocaleString("en-IN")}` : `₹${book.price?.toLocaleString("en-IN") ?? "0"}`}
+                      {book.discountedPrice
+                        ? `Offer ₹${Number(book.discountedPrice).toLocaleString("en-IN")}`
+                        : `₹${book.price ? Number(book.price).toLocaleString("en-IN") : "0"}`}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex shrink-0 items-center gap-3">
                   <Link
                     href={`/admin/books/${book.id}/edit`}
                     className="text-xs text-white/50 hover:text-white"
@@ -234,15 +254,15 @@ export default async function AdminDashboard() {
 
       {/* Featured Poems */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl text-white">Featured Poems</h2>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-white/40 uppercase tracking-wider">
+            <span className="text-xs tracking-wider text-white/40 uppercase">
               {featuredPoems.length} of 3 slots used
             </span>
             <Link
               href="/admin/poems/new"
-              className="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white hover:bg-white/20 transition-colors"
+              className="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs tracking-[0.18em] text-white uppercase transition-colors hover:bg-white/20"
             >
               + New Poem
             </Link>
@@ -251,42 +271,44 @@ export default async function AdminDashboard() {
 
         {featuredPoems.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-white/15 bg-white/2 p-8 text-center">
-            <p className="text-white/50 font-(family-name:--font-inter) mb-3">
+            <p className="mb-3 font-(family-name:--font-inter) text-white/50">
               No poems are featured yet.
             </p>
             <Link
               href="/admin/poems"
-              className="text-sm text-white/70 hover:text-white underline underline-offset-4"
+              className="text-sm text-white/70 underline underline-offset-4 hover:text-white"
             >
               Go to Poems to feature one
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {featuredPoems.map((poem) => (
               <div
                 key={poem.id}
-                className="rounded-2xl border border-amber-400/20 bg-amber-500/5 p-5 flex flex-col justify-between"
+                className="flex flex-col justify-between rounded-2xl border border-amber-400/20 bg-amber-500/5 p-5"
               >
                 <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-amber-400 text-xs">★</span>
-                    <span className="text-xs uppercase tracking-wider text-white/50">
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="text-xs text-amber-400">★</span>
+                    <span className="text-xs tracking-wider text-white/50 uppercase">
                       {poemLanguageLabel(poem.language as PoemLanguage)}
                     </span>
                     <span
-                      className={`ml-auto text-xs uppercase tracking-wider ${poem.published ? "text-emerald-400/70" : "text-white/40"}`}
+                      className={`ml-auto text-xs tracking-wider uppercase ${poem.published ? "text-emerald-400/70" : "text-white/40"}`}
                     >
                       {poem.published ? "Published" : "Draft"}
                     </span>
                   </div>
-                  <h3 className="text-white text-lg mb-2">{poem.title}</h3>
-                  <p className="text-xs text-white/40">{formatDate(poem.publishedAt)}</p>
+                  <h3 className="mb-2 text-lg text-white">{poem.title}</h3>
+                  <p className="text-xs text-white/40">
+                    {formatDate(poem.publishedAt)}
+                  </p>
                 </div>
                 <div className="mt-4 flex items-center gap-3">
                   <Link
                     href={`/admin/poems/${poem.id}/edit`}
-                    className="text-xs text-white/60 hover:text-white underline underline-offset-4"
+                    className="text-xs text-white/60 underline underline-offset-4 hover:text-white"
                   >
                     Edit
                   </Link>
@@ -294,7 +316,7 @@ export default async function AdminDashboard() {
                     <input type="hidden" name="id" value={poem.id} />
                     <button
                       type="submit"
-                      className="text-xs text-amber-400/70 hover:text-amber-300 underline underline-offset-4"
+                      className="text-xs text-amber-400/70 underline underline-offset-4 hover:text-amber-300"
                     >
                       Unfeature
                     </button>
@@ -307,9 +329,11 @@ export default async function AdminDashboard() {
             {Array.from({ length: 3 - featuredPoems.length }).map((_, i) => (
               <div
                 key={`empty-${i}`}
-                className="rounded-2xl border border-dashed border-white/10 bg-white/1 p-5 flex items-center justify-center min-h-35"
+                className="flex min-h-35 items-center justify-center rounded-2xl border border-dashed border-white/10 bg-white/1 p-5"
               >
-                <p className="text-xs text-white/30 uppercase tracking-wider">Empty slot</p>
+                <p className="text-xs tracking-wider text-white/30 uppercase">
+                  Empty slot
+                </p>
               </div>
             ))}
           </div>
@@ -318,44 +342,51 @@ export default async function AdminDashboard() {
 
       {/* Recent Poems */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl text-white">Recent Poems</h2>
           <div className="flex items-center gap-3">
             <Link
               href="/admin/poems"
-              className="text-xs text-white/50 hover:text-white uppercase tracking-wider"
+              className="text-xs tracking-wider text-white/50 uppercase hover:text-white"
             >
               View all →
             </Link>
             <Link
               href="/admin/poems/new"
-              className="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white hover:bg-white/20 transition-colors"
+              className="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs tracking-[0.18em] text-white uppercase transition-colors hover:bg-white/20"
             >
               + New Poem
             </Link>
           </div>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/3 divide-y divide-white/8">
+        <div className="divide-y divide-white/8 rounded-2xl border border-white/10 bg-white/3">
           {recentPoems.length === 0 ? (
             <div className="p-6 text-center">
-              <p className="text-white/50 font-(family-name:--font-inter)">No poems yet.</p>
+              <p className="font-(family-name:--font-inter) text-white/50">
+                No poems yet.
+              </p>
             </div>
           ) : (
             recentPoems.map((poem) => (
-              <div key={poem.id} className="flex items-center justify-between px-5 py-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  {poem.featured && <span className="text-amber-400 text-sm shrink-0">★</span>}
+              <div
+                key={poem.id}
+                className="flex items-center justify-between px-5 py-4"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  {poem.featured && (
+                    <span className="shrink-0 text-sm text-amber-400">★</span>
+                  )}
                   <div className="min-w-0">
-                    <p className="text-white truncate">{poem.title}</p>
-                    <p className="text-xs text-white/40 mt-0.5">
+                    <p className="truncate text-white">{poem.title}</p>
+                    <p className="mt-0.5 text-xs text-white/40">
                       {poemLanguageLabel(poem.language as PoemLanguage)} •{" "}
                       {formatDate(poem.createdAt)}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex shrink-0 items-center gap-3">
                   <span
-                    className={`text-xs uppercase tracking-wider ${poem.published ? "text-emerald-400/70" : "text-white/40"}`}
+                    className={`text-xs tracking-wider uppercase ${poem.published ? "text-emerald-400/70" : "text-white/40"}`}
                   >
                     {poem.published ? "Live" : "Draft"}
                   </span>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 type LikeUser = { name: string; image: string | null };
 
@@ -63,8 +64,8 @@ export default function LikeButton({ slug }: { slug: string }) {
           className={`flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition-colors ${
             liked
               ? "border-rose-400/40 bg-rose-500/15 text-rose-400"
-              : "border-white/15 bg-white/5 text-white/60 hover:text-white hover:border-white/30"
-          } ${!session?.user ? "opacity-50 cursor-not-allowed" : ""}`}
+              : "border-white/15 bg-white/5 text-white/60 hover:border-white/30 hover:text-white"
+          } ${!session?.user ? "cursor-not-allowed opacity-50" : ""}`}
           title={!session?.user ? "Sign in to like" : liked ? "Unlike" : "Like"}
         >
           <span className="text-base">{liked ? "♥" : "♡"}</span>
@@ -75,7 +76,7 @@ export default function LikeButton({ slug }: { slug: string }) {
           <button
             type="button"
             onClick={handleCountClick}
-            className="text-sm text-white/50 hover:text-white transition-colors cursor-pointer"
+            className="cursor-pointer text-sm text-white/50 transition-colors hover:text-white"
           >
             {count} {count === 1 ? "like" : "likes"}
           </button>
@@ -86,10 +87,10 @@ export default function LikeButton({ slug }: { slug: string }) {
       {showPopup && users.length > 0 && (
         <div
           ref={popupRef}
-          className="absolute top-full left-0 mt-2 z-50 w-64 max-h-72 overflow-y-auto rounded-xl border border-white/15 bg-neutral-900 shadow-xl"
+          className="absolute top-full left-0 z-50 mt-2 max-h-72 w-64 overflow-y-auto rounded-xl border border-white/15 bg-neutral-900 shadow-xl"
         >
-          <div className="px-4 py-3 border-b border-white/10">
-            <p className="text-xs uppercase tracking-wider text-white/50">
+          <div className="border-b border-white/10 px-4 py-3">
+            <p className="text-xs tracking-wider text-white/50 uppercase">
               Liked by {count} {count === 1 ? "person" : "people"}
             </p>
           </div>
@@ -97,7 +98,7 @@ export default function LikeButton({ slug }: { slug: string }) {
             {users.map((user, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-2.5">
                 {user.image ? (
-                  <img
+                  <Image
                     src={user.image}
                     alt={user.name}
                     width={28}
@@ -105,11 +106,13 @@ export default function LikeButton({ slug }: { slug: string }) {
                     className="rounded-full"
                   />
                 ) : (
-                  <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs text-white/60">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-xs text-white/60">
                     {user.name[0]?.toUpperCase()}
                   </div>
                 )}
-                <span className="text-sm text-white/80 truncate">{user.name}</span>
+                <span className="truncate text-sm text-white/80">
+                  {user.name}
+                </span>
               </div>
             ))}
           </div>

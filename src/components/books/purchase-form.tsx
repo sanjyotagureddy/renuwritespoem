@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 
 type PurchaseFormProps = {
@@ -26,6 +26,9 @@ export default function PurchaseForm({
   const [success, setSuccess] = useState(false);
   const [orderId, setOrderId] = useState("");
   const [error, setError] = useState("");
+  const [idempotencyKey, setIdempotencyKey] = useState("");
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
 
   const hasDiscount =
     discountedPrice != null &&
@@ -50,6 +53,16 @@ export default function PurchaseForm({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, onOpenChange]);
 
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open, success]);
+
   function setPanelOpen(nextOpen: boolean) {
     setOpen(nextOpen);
     onOpenChange?.(nextOpen);
@@ -59,6 +72,7 @@ export default function PurchaseForm({
     setError("");
     setSuccess(false);
     setOrderId("");
+    setIdempotencyKey(crypto.randomUUID());
     setPanelOpen(true);
   }
 
@@ -78,17 +92,29 @@ export default function PurchaseForm({
     const formData = new FormData(form);
     formData.set("bookId", bookId);
     formData.set("copies", String(copies));
+    formData.set("idempotencyKey", idempotencyKey);
 
-    const res = await fetch("/api/orders", { method: "POST", body: formData });
-    const data = await res.json();
-
-    if (res.ok) {
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok)
+        throw new Error(
+          data?.error ?? "We couldn't place the order. Please try again.",
+        );
       setSuccess(true);
       setOrderId(data.orderId);
-    } else {
-      setError(data.error ?? "Something went wrong.");
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "We couldn't place the order. Please try again.",
+      );
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   }
 
   if (!open) {
@@ -108,18 +134,25 @@ export default function PurchaseForm({
       <div
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm"
         onClick={closePanel}
+        role="presentation"
       >
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
           className="w-[min(96vw,72rem)] rounded-[2rem] border border-emerald-400/20 bg-[#0f1118] p-6 text-center shadow-2xl"
           onClick={(event) => event.stopPropagation()}
         >
-          <p className="mb-2 text-lg text-emerald-400">Order Placed!</p>
+          <p id={titleId} className="mb-2 text-lg text-emerald-400">
+            Order Placed!
+          </p>
           <p className="mb-1 text-sm text-white/60">Order ID: {orderId}</p>
           <p className="text-xs text-white/50">
             You will receive a confirmation email shortly. We will verify your
             payment and update you.
           </p>
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={closePanel}
             className="mt-4 text-xs text-white/40 underline underline-offset-4 hover:text-white/60"
@@ -135,14 +168,18 @@ export default function PurchaseForm({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm"
       onClick={closePanel}
+      role="presentation"
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         className="max-h-[88vh] w-[min(96vw,72rem)] overflow-y-auto rounded-[2rem] border border-white/15 bg-[#0f1118] p-5 shadow-2xl md:p-7"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg text-white md:text-xl">
+            <h3 id={titleId} className="text-lg text-white md:text-xl">
               Purchase {bookTitle}
             </h3>
             <p className="mt-1 text-xs text-white/35">
@@ -150,8 +187,10 @@ export default function PurchaseForm({
             </p>
           </div>
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={closePanel}
+            aria-label="Close purchase form"
             className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
           >
             ×
@@ -192,7 +231,7 @@ export default function PurchaseForm({
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
             {/* Left: Form fields */}
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-xs text-white/60">
                     Full Name *
@@ -224,6 +263,9 @@ export default function PurchaseForm({
                   name="phone"
                   type="tel"
                   required
+                  inputMode="tel"
+                  autoComplete="tel"
+                  maxLength={15}
                   className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-white/30"
                 />
               </div>
@@ -240,7 +282,7 @@ export default function PurchaseForm({
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                   <label className="mb-1.5 block text-xs text-white/60">
                     City *
@@ -270,6 +312,8 @@ export default function PurchaseForm({
                     required
                     pattern="\d{6}"
                     maxLength={6}
+                    inputMode="numeric"
+                    autoComplete="postal-code"
                     className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-white/30"
                   />
                 </div>
@@ -357,7 +401,11 @@ export default function PurchaseForm({
           </div>
 
           {error && (
-            <div className="rounded-lg border border-rose-300/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+            <div
+              role="alert"
+              aria-live="polite"
+              className="rounded-lg border border-rose-300/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+            >
               {error}
             </div>
           )}
