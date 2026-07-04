@@ -163,10 +163,9 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     const qs = params.toString();
     return `/poems${qs ? `?${qs}` : ""}`;
   }
-
   return (
     <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
-      <div className="mb-12 md:mb-16">
+      <div className="mb-8">
         <p className="text-sm uppercase tracking-[0.22em] text-white/40 mb-3">Poetry Collection</p>
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Poems</h1>
         <p className="text-lg text-white/60 max-w-3xl font-[family-name:var(--font-inter)]">
@@ -174,8 +173,224 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
           language, and rhythm.
         </p>
 
-        {/* Filter Rows */}
-        <div className="space-y-5 mt-8 border-t border-white/10 pt-6">
+        {/* Sort & Stats row at the top */}
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {(selectedLanguage !== "ALL" || selectedGenreSlug || selectedTagSlug) ? (
+              <>
+                <span className="text-xs text-white/40 mr-1">Active:</span>
+                {selectedLanguage !== "ALL" && (
+                  <Link
+                    href={buildFilterUrl({ language: "ALL" })}
+                    className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/80 hover:bg-white/10"
+                  >
+                    Language: {poemLanguageLabel(selectedLanguage)} ×
+                  </Link>
+                )}
+                {selectedGenre && (
+                  <Link
+                    href={buildFilterUrl({ genre: "" })}
+                    className="rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1 text-xs text-amber-100/80 hover:border-amber-200/45 hover:text-amber-100"
+                  >
+                    Genre: {selectedGenre.name} ×
+                  </Link>
+                )}
+                {selectedTag && (
+                  <Link
+                    href={buildFilterUrl({ tag: "" })}
+                    className="rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1 text-xs text-amber-100/80 hover:border-amber-200/45 hover:text-amber-100"
+                  >
+                    Tag: #{selectedTag.name} ×
+                  </Link>
+                )}
+                <Link
+                  href="/poems"
+                  className="text-xs text-white/45 hover:text-white underline ml-2"
+                >
+                  Clear all
+                </Link>
+              </>
+            ) : (
+              <span className="text-xs text-white/40">Showing all poems</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4 sm:ml-auto">
+            <div className="flex items-center gap-2">
+              <span className="text-xs tracking-[0.16em] text-white/30 uppercase">
+                Sort
+              </span>
+              <Link
+                href={buildFilterUrl({ sort: "popular" })}
+                className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
+                  selectedSort === "popular"
+                    ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
+                    : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                Popular
+              </Link>
+              <Link
+                href={buildFilterUrl({ sort: "newest" })}
+                className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
+                  selectedSort === "newest"
+                    ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
+                    : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                Newest
+              </Link>
+            </div>
+
+            {totalCount > 0 && (
+              <span className="text-xs text-white/30 border-l border-white/10 pl-4">
+                {totalCount} poem{totalCount !== 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {poems.length === 0 ? (
+        <div className="rounded-2xl border border-white/15 bg-white/[0.03] p-10 text-center mb-8">
+          <h2 className="text-2xl text-white mb-3">No poems found</h2>
+          <p className="text-white/60 font-[family-name:var(--font-inter)]">
+            No poems match the selected filters. Try clearing some filters or refining below.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-8">
+          {poems.map((poem) => {
+            const language = poem.language as PoemLanguage;
+            const lang = poemLanguageToHtmlLang(language);
+
+            return (
+              <article
+                key={poem.id}
+                className="group relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.03] p-6 md:p-7 transition-colors hover:border-white/30"
+              >
+                <div className="mb-5 flex flex-wrap items-center gap-2">
+                  <Link
+                    href={buildFilterUrl({ language })}
+                    className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-white/80 hover:bg-white/10 transition-colors"
+                  >
+                    {poemLanguageLabel(language)}
+                  </Link>
+                  {poem.genre ? (
+                    <Link
+                      href={buildFilterUrl({ genre: poem.genre.slug })}
+                      className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-wider text-white/60 hover:border-white/30 transition-colors"
+                    >
+                      {poem.genre.name}
+                    </Link>
+                  ) : null}
+                  <span className="ml-auto text-xs uppercase tracking-wider text-white/40">
+                    {formatDate(poem.publishedAt)}
+                  </span>
+                </div>
+
+                <h2 lang={lang} className={`text-2xl text-white mb-3 ${poemLanguageFontClass(language)}`}>
+                  {poem.title}
+                </h2>
+
+                <p
+                  lang={lang}
+                  className={`text-white/65 leading-relaxed mb-6 line-clamp-4 font-[family-name:var(--font-inter)] ${poemLanguageFontClass(language)}`}
+                >
+                  {poem.excerpt ?? poem.content}
+                </p>
+
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <span className="flex items-center gap-1 text-xs text-white/40" title="Likes">
+                      <span>♡</span>
+                      {poem._count.likes}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-white/40" title="Comments">
+                      <span>💬</span>
+                      {poem._count.comments}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {poem.tags.slice(0, 3).map(({ tag }) => (
+                      <Link
+                        key={tag.slug}
+                        href={buildFilterUrl({ tag: tag.slug })}
+                        className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[11px] uppercase tracking-wider text-white/50 hover:border-white/25 hover:text-white transition-colors"
+                      >
+                        {tag.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                <Link
+                  href={`/poems/${poem.slug}`}
+                  className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.18em] text-white/85 hover:text-white"
+                >
+                  Read Poem
+                  <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">
+                    →
+                  </span>
+                </Link>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Pagination + Page size (directly below grid) */}
+      {(totalPages > 1 || totalCount > PAGE_SIZE_OPTIONS[0]) && (
+        <div className="mt-8 flex items-center justify-between mb-16">
+          <div className="flex-1" />
+          {totalPages > 1 ? (
+            <div className="flex items-center gap-2">
+              {currentPage > 1 && (
+                <Link
+                  href={buildPageUrl(currentPage - 1)}
+                  className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-wider text-white/60 hover:text-white hover:border-white/30 transition-colors"
+                >
+                  ← Prev
+                </Link>
+              )}
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Link
+                  key={page}
+                  href={buildPageUrl(page)}
+                  className={`rounded-full border px-3.5 py-2 text-xs transition-colors ${
+                    page === currentPage
+                      ? "border-white/40 bg-white/10 text-white"
+                      : "border-white/15 text-white/50 hover:text-white hover:border-white/30"
+                  }`}
+                >
+                  {page}
+                </Link>
+              ))}
+
+              {currentPage < totalPages && (
+                <Link
+                  href={buildPageUrl(currentPage + 1)}
+                  className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-wider text-white/60 hover:text-white hover:border-white/30 transition-colors"
+                >
+                  Next →
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div />
+          )}
+
+          <div className="flex-1 flex justify-end">
+            <PageSizeSelect current={perPage} />
+          </div>
+        </div>
+      )}
+
+      {/* Filters and sorting panel below poems list */}
+      <div className="mt-16 border-t border-white/10 pt-10">
+        <h2 className="text-xl tracking-wider text-white mb-6 uppercase">Filter & Sort Collection</h2>
+        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 md:p-8 space-y-6">
           {/* Languages */}
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-xs uppercase tracking-[0.15em] text-white/40 min-w-[90px]">Language:</span>
@@ -267,221 +482,9 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
               </div>
             </div>
           )}
-        </div>
 
-        {/* Sort & Stats & Active Badges */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-white/5 pt-5">
-          <div className="flex flex-wrap items-center gap-2">
-            {(selectedLanguage !== "ALL" || selectedGenreSlug || selectedTagSlug) && (
-              <>
-                <span className="text-xs text-white/40 mr-1">Active:</span>
-                {selectedLanguage !== "ALL" && (
-                  <Link
-                    href={buildFilterUrl({ language: "ALL" })}
-                    className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/80 hover:bg-white/10"
-                  >
-                    Language: {poemLanguageLabel(selectedLanguage)} ×
-                  </Link>
-                )}
-                {selectedGenre && (
-                  <Link
-                    href={buildFilterUrl({ genre: "" })}
-                    className="rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1 text-xs text-amber-100/80 hover:border-amber-200/45 hover:text-amber-100"
-                  >
-                    Genre: {selectedGenre.name} ×
-                  </Link>
-                )}
-                {selectedTag && (
-                  <Link
-                    href={buildFilterUrl({ tag: "" })}
-                    className="rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1 text-xs text-amber-100/80 hover:border-amber-200/45 hover:text-amber-100"
-                  >
-                    Tag: #{selectedTag.name} ×
-                  </Link>
-                )}
-                <Link
-                  href="/poems"
-                  className="text-xs text-white/45 hover:text-white underline ml-2"
-                >
-                  Clear all
-                </Link>
-              </>
-            )}
-          </div>
-
-          <div className="flex items-center gap-4 sm:ml-auto">
-            <div className="flex items-center gap-2">
-              <span className="text-xs tracking-[0.16em] text-white/30 uppercase">
-                Sort
-              </span>
-              <Link
-                href={buildFilterUrl({ sort: "popular" })}
-                className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
-                  selectedSort === "popular"
-                    ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
-                    : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
-                }`}
-              >
-                Popular
-              </Link>
-              <Link
-                href={buildFilterUrl({ sort: "newest" })}
-                className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
-                  selectedSort === "newest"
-                    ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
-                    : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
-                }`}
-              >
-                Newest
-              </Link>
-            </div>
-
-            {totalCount > 0 && (
-              <span className="text-xs text-white/30 border-l border-white/10 pl-4">
-                {totalCount} poem{totalCount !== 1 ? "s" : ""}
-              </span>
-            )}
-          </div>
         </div>
       </div>
-
-      {poems.length === 0 ? (
-        <div className="rounded-2xl border border-white/15 bg-white/[0.03] p-10 text-center">
-          <h2 className="text-2xl text-white mb-3">No poems found</h2>
-          <p className="text-white/60 font-[family-name:var(--font-inter)]">
-            No poems match the selected filters. Try clearing some filters to see more.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {poems.map((poem) => {
-            const language = poem.language as PoemLanguage;
-            const lang = poemLanguageToHtmlLang(language);
-
-            return (
-              <article
-                key={poem.id}
-                className="group relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.03] p-6 md:p-7 transition-colors hover:border-white/30"
-              >
-                <div className="mb-5 flex flex-wrap items-center gap-2">
-                  <Link
-                    href={buildFilterUrl({ language })}
-                    className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-white/80 hover:bg-white/10 transition-colors"
-                  >
-                    {poemLanguageLabel(language)}
-                  </Link>
-                  {poem.genre ? (
-                    <Link
-                      href={buildFilterUrl({ genre: poem.genre.slug })}
-                      className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-wider text-white/60 hover:border-white/30 transition-colors"
-                    >
-                      {poem.genre.name}
-                    </Link>
-                  ) : null}
-                  <span className="ml-auto text-xs uppercase tracking-wider text-white/40">
-                    {formatDate(poem.publishedAt)}
-                  </span>
-                </div>
-
-                <h2 lang={lang} className={`text-2xl text-white mb-3 ${poemLanguageFontClass(language)}`}>
-                  {poem.title}
-                </h2>
-
-                <p
-                  lang={lang}
-                  className={`text-white/65 leading-relaxed mb-6 line-clamp-4 font-[family-name:var(--font-inter)] ${poemLanguageFontClass(language)}`}
-                >
-                  {poem.excerpt ?? poem.content}
-                </p>
-
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1 text-xs text-white/40" title="Likes">
-                      <span>♡</span>
-                      {poem._count.likes}
-                    </span>
-                    <span className="flex items-center gap-1 text-xs text-white/40" title="Comments">
-                      <span>💬</span>
-                      {poem._count.comments}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {poem.tags.slice(0, 3).map(({ tag }) => (
-                      <Link
-                        key={tag.slug}
-                        href={buildFilterUrl({ tag: tag.slug })}
-                        className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[11px] uppercase tracking-wider text-white/50 hover:border-white/25 hover:text-white transition-colors"
-                      >
-                        {tag.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-
-                <Link
-                  href={`/poems/${poem.slug}`}
-                  className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.18em] text-white/85 hover:text-white"
-                >
-                  Read Poem
-                  <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">
-                    →
-                  </span>
-                </Link>
-              </article>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Pagination + Page size */}
-      {(totalPages > 1 || totalCount > PAGE_SIZE_OPTIONS[0]) && (
-        <div className="mt-12 flex items-center justify-between">
-          {/* Pagination controls — centered */}
-          <div className="flex-1" />
-          {totalPages > 1 ? (
-            <div className="flex items-center gap-2">
-              {currentPage > 1 && (
-                <Link
-                  href={buildPageUrl(currentPage - 1)}
-                  className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-wider text-white/60 hover:text-white hover:border-white/30 transition-colors"
-                >
-                  ← Prev
-                </Link>
-              )}
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Link
-                  key={page}
-                  href={buildPageUrl(page)}
-                  className={`rounded-full border px-3.5 py-2 text-xs transition-colors ${
-                    page === currentPage
-                      ? "border-white/40 bg-white/10 text-white"
-                      : "border-white/15 text-white/50 hover:text-white hover:border-white/30"
-                  }`}
-                >
-                  {page}
-                </Link>
-              ))}
-
-              {currentPage < totalPages && (
-                <Link
-                  href={buildPageUrl(currentPage + 1)}
-                  className="rounded-full border border-white/15 px-4 py-2 text-xs uppercase tracking-wider text-white/60 hover:text-white hover:border-white/30 transition-colors"
-                >
-                  Next →
-                </Link>
-              )}
-            </div>
-          ) : (
-            <div />
-          )}
-
-          {/* Page size dropdown — right */}
-          <div className="flex-1 flex justify-end">
-            <PageSizeSelect current={perPage} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
