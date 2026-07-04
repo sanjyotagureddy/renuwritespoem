@@ -24,6 +24,9 @@ export const metadata: Metadata = {
   title: "Poems",
   description:
     "Read poems by Renu across English, Hindi, and Marathi on love, nature, life, and solitude.",
+  alternates: {
+    canonical: "/poems",
+  },
 };
 
 const PAGE_SIZE_OPTIONS = [6, 9, 12, 15] as const;

@@ -7,6 +7,7 @@ import SocialFloating from "@/components/social-floating";
 import AuthSessionProvider from "@/components/providers/session-provider";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { siteConfig } from "@/lib/seo";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -26,6 +27,7 @@ const notoDevanagari = Noto_Sans_Devanagari({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
   title: {
     default: "Renu Writes Poem - Poetry & Books",
     template: "%s | Renu Writes Poem",
@@ -43,6 +45,9 @@ export const metadata: Metadata = {
     "Hindi poetry",
   ],
   authors: [{ name: "Renu" }],
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "Renu Writes Poem - Poetry & Books",
     description:
@@ -50,12 +55,21 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "Renu Writes Poem",
     locale: "en_US",
+    images: [
+      {
+        url: "/author.jpg",
+        width: 1200,
+        height: 1200,
+        alt: "Renu - Poet & Author",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Renu Writes Poem - Poetry & Books",
     description:
       "Discover heartfelt poetry and books by Renu. Explore poems on love, nature, life, spirituality, and more.",
+    images: ["/author.jpg"],
   },
   robots: {
     index: true,

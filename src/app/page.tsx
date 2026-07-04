@@ -7,6 +7,7 @@ import {
   poemLanguageToHtmlLang,
   type PoemLanguage,
 } from "@/lib/poem-language";
+import { siteConfig } from "@/lib/seo";
 
 function formatDate(date: Date | null): string {
   if (!date) return "";
@@ -23,6 +24,28 @@ function formatPrice(value: number | null): string {
 }
 
 export default async function Home() {
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": siteConfig.name,
+    "url": siteConfig.url,
+    "description": siteConfig.description,
+  };
+
+  const personSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": siteConfig.author,
+    "url": siteConfig.url,
+    "image": `${siteConfig.url}/author.jpg`,
+    "description": "A poet and author who weaves words into heartfelt verses on love, nature, life, and spirituality.",
+    "sameAs": [
+      siteConfig.instagram,
+      siteConfig.blog
+    ],
+    "jobTitle": "Poet & Author"
+  };
+
   const prisma = getPrisma();
 
   const [featuredPoems, latestPoems, totalPoems, featuredBooks, totalBooks] =
@@ -61,6 +84,14 @@ export default async function Home() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+      />
       {/* ── Hero ── */}
       <section className="relative min-h-[calc(100vh-72px)] flex items-center px-6 py-20">
         <div className="absolute inset-0 z-0">

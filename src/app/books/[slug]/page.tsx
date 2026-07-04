@@ -6,6 +6,7 @@ import { getPrisma } from "@/lib/db";
 import BookPurchaseLayout from "@/components/books/book-purchase-layout";
 import BookLikeButton from "@/components/books/like-button";
 import BookCommentSection from "@/components/books/comment-section";
+import { siteConfig } from "@/lib/seo";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -57,9 +58,28 @@ export async function generateMetadata({
     return { title: "Book Not Found" };
   }
 
+  const description = book.description ?? `${book.title} by Renu.`;
+  const images = book.coverImage ? [book.coverImage] : ["/author.jpg"];
+
   return {
     title: book.title,
-    description: book.description ?? `${book.title} by Renu`,
+    description,
+    alternates: {
+      canonical: `/books/${slug}`,
+    },
+    openGraph: {
+      title: book.title,
+      description,
+      type: "website",
+      url: `/books/${slug}`,
+      images,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: book.title,
+      description,
+      images,
+    },
   };
 }
 
@@ -78,9 +98,43 @@ export default async function BookDetailPage({ params }: PageProps) {
 
   const canPurchase = book.status === "AVAILABLE" && Boolean(book.price);
 
+  const bookSchema = {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": book.title,
+    "description": book.description ?? `${book.title} by Renu`,
+    "image": book.coverImage
+      ? (book.coverImage.startsWith("http") ? book.coverImage : `${siteConfig.url}${book.coverImage}`)
+      : `${siteConfig.url}/author.jpg`,
+    "author": {
+      "@type": "Person",
+      "name": siteConfig.author,
+      "url": siteConfig.url
+    },
+    ...(book.status === "AVAILABLE" && book.price ? {
+      "offers": {
+        "@type": "Offer",
+        "price": Number(book.price),
+        "priceCurrency": "INR",
+        "availability": "https://schema.org/InStock",
+        "url": book.purchaseUrl ?? `${siteConfig.url}/books/${book.slug}`
+      }
+    } : book.status === "COMING_SOON" ? {
+      "offers": {
+        "@type": "Offer",
+        "availability": "https://schema.org/PreOrder",
+        "url": `${siteConfig.url}/books/${book.slug}`
+      }
+    } : {})
+  };
+
   if (canPurchase) {
     return (
       <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(bookSchema) }}
+        />
         <Link
           href="/books"
           className="mb-10 inline-flex items-center gap-2 text-xs tracking-[0.2em] text-white/50 uppercase hover:text-white/80"
@@ -113,6 +167,10 @@ export default async function BookDetailPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(bookSchema) }}
+      />
       <Link
         href="/books"
         className="mb-10 inline-flex items-center gap-2 text-xs tracking-[0.2em] text-white/50 uppercase hover:text-white/80"

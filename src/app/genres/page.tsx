@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Genres",
   description:
     "Browse Renu's poems by genre, mood, and theme including love, nature, life, solitude, and more.",
+  alternates: {
+    canonical: "/genres",
+  },
 };
 
 export default async function GenresPage() {

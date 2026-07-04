@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "About",
   description:
     "Learn more about Renu — a poet and author who weaves words into heartfelt verses on love, nature, life, and spirituality.",
+  alternates: {
+    canonical: "/about",
+  },
 };
 
 export default function AboutPage() {

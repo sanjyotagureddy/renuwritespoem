@@ -10,6 +10,7 @@ import {
 } from "@/lib/poem-language";
 import LikeButton from "@/components/poems/like-button";
 import CommentSection from "@/components/poems/comment-section";
+import { siteConfig } from "@/lib/seo";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -40,7 +41,13 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const prisma = getPrisma();
   const { slug } = await params;
-  const poem = await prisma.poem.findUnique({ where: { slug } });
+  const poem = await prisma.poem.findUnique({
+    where: { slug },
+    include: {
+      genre: { select: { name: true } },
+      tags: { include: { tag: { select: { name: true } } } },
+    },
+  });
 
   if (!poem || !poem.published) {
     return {
@@ -49,9 +56,33 @@ export async function generateMetadata({
     };
   }
 
+  const description = poem.excerpt ?? (poem.content.slice(0, 150).trim() + "...");
+  const images = poem.coverImage ? [poem.coverImage] : ["/author.jpg"];
+  const tagsList = poem.tags.map((t) => t.tag.name);
+
   return {
     title: poem.title,
-    description: poem.excerpt ?? poem.content.slice(0, 140),
+    description,
+    alternates: {
+      canonical: `/poems/${slug}`,
+    },
+    openGraph: {
+      title: poem.title,
+      description,
+      type: "article",
+      url: `/poems/${slug}`,
+      publishedTime: poem.publishedAt?.toISOString(),
+      modifiedTime: poem.updatedAt?.toISOString(),
+      authors: [siteConfig.author],
+      tags: tagsList,
+      images: images,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: poem.title,
+      description,
+      images: images,
+    },
   };
 }
 
@@ -66,8 +97,38 @@ export default async function PoemDetailPage({ params }: PageProps) {
   const language = poem.language as PoemLanguage;
   const lang = poemLanguageToHtmlLang(language);
 
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    "headline": poem.title,
+    "description": poem.excerpt ?? (poem.content.slice(0, 150).trim() + "..."),
+    "text": poem.content,
+    "author": {
+      "@type": "Person",
+      "name": siteConfig.author,
+      "url": siteConfig.url
+    },
+    "genre": poem.genre?.name,
+    "datePublished": poem.publishedAt?.toISOString(),
+    "dateModified": poem.updatedAt?.toISOString(),
+    "inLanguage": lang,
+    "keywords": poem.tags.map((t) => t.tag.name).join(", "),
+    "image": poem.coverImage
+      ? (poem.coverImage.startsWith("http") ? poem.coverImage : `${siteConfig.url}${poem.coverImage}`)
+      : `${siteConfig.url}/author.jpg`,
+    "publisher": {
+      "@type": "Person",
+      "name": siteConfig.author,
+      "url": siteConfig.url
+    }
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       <Link
         href="/poems"
         className="mb-10 inline-flex items-center gap-2 text-xs tracking-[0.2em] text-white/50 uppercase hover:text-white/80"

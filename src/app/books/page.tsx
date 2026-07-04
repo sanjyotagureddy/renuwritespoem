@@ -6,6 +6,9 @@ import { getPrisma } from "@/lib/db";
 export const metadata: Metadata = {
   title: "Books",
   description: "Explore books by Renu — poetry collections and more.",
+  alternates: {
+    canonical: "/books",
+  },
 };
 
 function statusLabel(status: string): string {
