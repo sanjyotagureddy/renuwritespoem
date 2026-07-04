@@ -64,19 +64,28 @@ export default async function AdminBooksPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div>
           <h1 className="text-3xl text-white md:text-4xl">Books</h1>
           <p className="mt-2 text-sm text-white/45">
             Manage book visibility, featured slots, and purchase readiness.
           </p>
         </div>
-        <Link
-          href="/admin/books/new"
-          className="rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-xs tracking-[0.18em] text-white uppercase transition-colors hover:bg-white/20"
-        >
-          + New Book
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/books"
+            target="_blank"
+            className="rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-xs tracking-[0.18em] text-white/65 uppercase transition-colors hover:bg-white/10 hover:text-white"
+          >
+            View public page ↗
+          </Link>
+          <Link
+            href="/admin/books/new"
+            className="rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-xs tracking-[0.18em] text-white uppercase transition-colors hover:bg-white/20"
+          >
+            + New Book
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-6">

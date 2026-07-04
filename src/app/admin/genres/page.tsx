@@ -26,13 +26,21 @@ export default async function AdminGenresPage() {
             help readers browse by mood or theme.
           </p>
         </div>
-        <Link
-          href="/genres"
-          target="_blank"
-          className="rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-xs tracking-[0.18em] text-white/65 uppercase transition-colors hover:bg-white/10 hover:text-white"
-        >
-          View public page ↗
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/genres"
+            target="_blank"
+            className="rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-xs tracking-[0.18em] text-white/65 uppercase transition-colors hover:bg-white/10 hover:text-white"
+          >
+            View public page ↗
+          </Link>
+          <a
+            href="#add-genre"
+            className="rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-xs tracking-[0.18em] text-white uppercase transition-colors hover:bg-white/20"
+          >
+            + New Genre
+          </a>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -53,7 +61,10 @@ export default async function AdminGenresPage() {
         ))}
       </div>
 
-      <section className="rounded-2xl border border-amber-200/15 bg-gradient-to-br from-amber-500/10 via-white/[0.03] to-rose-500/10 p-5">
+      <section
+        id="add-genre"
+        className="rounded-2xl border border-amber-200/15 bg-gradient-to-br from-amber-500/10 via-white/[0.03] to-rose-500/10 p-5"
+      >
         <h2 className="text-lg text-white">Add new genre</h2>
         <form action={createGenre} className="mt-4 grid gap-3 md:grid-cols-[0.7fr_1fr_auto]">
           <label className="space-y-1.5">

@@ -16,6 +16,7 @@ type PoemsPageProps = {
     language?: string | string[];
     page?: string | string[];
     size?: string | string[];
+    sort?: string | string[];
   }>;
 };
 
@@ -27,6 +28,8 @@ export const metadata: Metadata = {
 
 const PAGE_SIZE_OPTIONS = [6, 9, 12, 15] as const;
 const DEFAULT_PAGE_SIZE = 9;
+const SORT_OPTIONS = ["popular", "newest"] as const;
+type PoemSort = (typeof SORT_OPTIONS)[number];
 
 function formatDate(date: Date | null): string {
   if (!date) return "Unpublished";
@@ -47,6 +50,10 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     ? params.genre[0]
     : params.genre;
   const selectedGenreSlug = genreValue?.trim() || "";
+  const sortValue = Array.isArray(params.sort) ? params.sort[0] : params.sort;
+  const selectedSort: PoemSort = SORT_OPTIONS.includes(sortValue as PoemSort)
+    ? (sortValue as PoemSort)
+    : "popular";
 
   const selectedLanguage = poemLanguageOptions.includes(languageValue as PoemLanguage)
     ? (languageValue as PoemLanguage)
@@ -70,7 +77,15 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
   const [poems, totalCount, selectedGenre] = await Promise.all([
     prisma.poem.findMany({
       where: whereClause,
-      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      orderBy:
+        selectedSort === "popular"
+          ? [
+              { likes: { _count: "desc" } },
+              { comments: { _count: "desc" } },
+              { publishedAt: "desc" },
+              { createdAt: "desc" },
+            ]
+          : [{ publishedAt: "desc" }, { createdAt: "desc" }],
       skip: (currentPage - 1) * perPage,
       take: perPage,
       include: {
@@ -94,9 +109,28 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     const params = new URLSearchParams();
     if (selectedLanguage !== "ALL") params.set("language", selectedLanguage);
     if (selectedGenreSlug) params.set("genre", selectedGenreSlug);
+    if (selectedSort !== "popular") params.set("sort", selectedSort);
     if (page > 1) params.set("page", String(page));
     const s = size ?? perPage;
     if (s !== DEFAULT_PAGE_SIZE) params.set("size", String(s));
+    const qs = params.toString();
+    return `/poems${qs ? `?${qs}` : ""}`;
+  }
+
+  function buildFilterUrl({
+    language = selectedLanguage,
+    genre = selectedGenreSlug,
+    sort = selectedSort,
+  }: {
+    language?: PoemLanguage | "ALL";
+    genre?: string;
+    sort?: PoemSort;
+  }) {
+    const params = new URLSearchParams();
+    if (language !== "ALL") params.set("language", language);
+    if (genre) params.set("genre", genre);
+    if (sort !== "popular") params.set("sort", sort);
+    if (perPage !== DEFAULT_PAGE_SIZE) params.set("size", String(perPage));
     const qs = params.toString();
     return `/poems${qs ? `?${qs}` : ""}`;
   }
@@ -113,7 +147,7 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
 
         <div className="mt-7 flex flex-wrap items-center gap-2">
           <Link
-            href={selectedGenreSlug ? `/poems?genre=${selectedGenreSlug}` : "/poems"}
+            href={buildFilterUrl({ language: "ALL" })}
             className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
               selectedLanguage === "ALL"
                 ? "border-white/40 bg-white/10 text-white"
@@ -126,7 +160,7 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
           {poemLanguageOptions.map((language) => (
             <Link
               key={language}
-              href={`/poems?language=${language}${selectedGenreSlug ? `&genre=${selectedGenreSlug}` : ""}`}
+              href={buildFilterUrl({ language })}
               className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
                 selectedLanguage === language
                   ? "border-white/40 bg-white/10 text-white"
@@ -139,15 +173,41 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
 
           {selectedGenre && (
             <Link
-              href={selectedLanguage === "ALL" ? "/poems" : `/poems?language=${selectedLanguage}`}
+              href={buildFilterUrl({ genre: "" })}
               className="rounded-full border border-amber-300/25 bg-amber-400/10 px-4 py-2 text-xs tracking-wider text-amber-100/80 uppercase transition-colors hover:border-amber-200/40 hover:text-amber-100"
             >
               Genre: {selectedGenre.name} ×
             </Link>
           )}
 
+          <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+            <span className="text-xs tracking-[0.16em] text-white/30 uppercase">
+              Sort
+            </span>
+            <Link
+              href={buildFilterUrl({ sort: "popular" })}
+              className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
+                selectedSort === "popular"
+                  ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
+                  : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+              }`}
+            >
+              Popular
+            </Link>
+            <Link
+              href={buildFilterUrl({ sort: "newest" })}
+              className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
+                selectedSort === "newest"
+                  ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
+                  : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+              }`}
+            >
+              Newest
+            </Link>
+          </div>
+
           {totalCount > 0 && (
-            <span className="ml-auto text-xs text-white/30">
+            <span className="text-xs text-white/30">
               {totalCount} poem{totalCount !== 1 ? "s" : ""}
             </span>
           )}
