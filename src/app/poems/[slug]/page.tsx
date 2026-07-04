@@ -35,7 +35,9 @@ async function getPoemBySlug(slug: string) {
   });
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const prisma = getPrisma();
   const { slug } = await params;
   const poem = await prisma.poem.findUnique({ where: { slug } });
@@ -65,39 +67,42 @@ export default async function PoemDetailPage({ params }: PageProps) {
   const lang = poemLanguageToHtmlLang(language);
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+    <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
       <Link
         href="/poems"
-        className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-white/50 hover:text-white/80 mb-10"
+        className="mb-10 inline-flex items-center gap-2 text-xs tracking-[0.2em] text-white/50 uppercase hover:text-white/80"
       >
         ← Back to Poems
       </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px]">
         {/* Poem content */}
-        <article className="rounded-2xl border border-white/15 bg-white/[0.03] p-7 md:p-10">
+        <article className="rounded-3xl border border-amber-100/15 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.06),transparent_42%),rgba(255,255,255,0.03)] p-7 shadow-2xl shadow-black/20 md:p-12">
           <div className="mb-6 flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs uppercase tracking-wider text-white/80">
+            <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs tracking-wider text-white/80 uppercase">
               {poemLanguageLabel(language)}
             </span>
             {poem.genre ? (
-              <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-wider text-white/60">
+              <span className="rounded-full border border-white/15 px-3 py-1 text-xs tracking-wider text-white/60 uppercase">
                 {poem.genre.name}
               </span>
             ) : null}
-            <span className="ml-auto text-xs uppercase tracking-wider text-white/40">
+            <span className="ml-auto text-xs tracking-wider text-white/40 uppercase">
               {formatDate(poem.publishedAt)}
             </span>
           </div>
 
-          <h1 lang={lang} className={`text-4xl md:text-5xl text-white mb-4 ${poemLanguageFontClass(language)}`}>
+          <h1
+            lang={lang}
+            className={`max-w-2xl text-4xl leading-tight text-white md:text-5xl ${poemLanguageFontClass(language)}`}
+          >
             {poem.title}
           </h1>
 
           {poem.excerpt ? (
             <p
               lang={lang}
-              className={`text-lg text-white/60 leading-relaxed mb-8 ${poemLanguageFontClass(language)}`}
+              className={`mt-5 max-w-2xl border-l border-amber-200/25 pl-4 text-lg leading-relaxed text-white/70 ${poemLanguageFontClass(language)}`}
             >
               {poem.excerpt}
             </p>
@@ -105,17 +110,17 @@ export default async function PoemDetailPage({ params }: PageProps) {
 
           <div
             lang={lang}
-            className={`text-white/85 whitespace-pre-line leading-loose text-lg ${poemLanguageFontClass(language)}`}
+            className={`mt-10 max-w-[42rem] text-lg leading-[2] whitespace-pre-line text-white/90 md:text-xl ${poemLanguageFontClass(language)}`}
           >
             {poem.content}
           </div>
 
           {poem.tags.length > 0 ? (
-            <div className="mt-10 pt-8 border-t border-white/10 flex flex-wrap gap-2">
+            <div className="mt-10 flex flex-wrap gap-2 border-t border-white/10 pt-8">
               {poem.tags.map(({ tag }) => (
                 <span
                   key={tag.slug}
-                  className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[11px] uppercase tracking-wider text-white/50"
+                  className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[11px] tracking-wider text-white/50 uppercase"
                 >
                   {tag.name}
                 </span>
@@ -126,7 +131,7 @@ export default async function PoemDetailPage({ params }: PageProps) {
 
         {/* Sidebar — Likes & Comments */}
         <aside className="lg:sticky lg:top-[96px]">
-          <div className="rounded-2xl border border-white/15 bg-white/[0.03] p-5 space-y-6">
+          <div className="space-y-6 rounded-2xl border border-white/15 bg-white/[0.03] p-5">
             <LikeButton slug={poem.slug} />
             <div className="border-t border-white/10 pt-5">
               <CommentSection slug={poem.slug} />

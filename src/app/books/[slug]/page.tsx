@@ -100,9 +100,11 @@ export default async function BookDetailPage({ params }: PageProps) {
             publishedAt: book.publishedAt
               ? book.publishedAt.toISOString()
               : null,
-            price: book.price ?? 0,
-            discountedPrice: book.discountedPrice,
-            shippingCharge: book.shippingCharge,
+            price: Number(book.price ?? 0),
+            discountedPrice: book.discountedPrice
+              ? Number(book.discountedPrice)
+              : null,
+            shippingCharge: Number(book.shippingCharge),
           }}
         />
       </div>

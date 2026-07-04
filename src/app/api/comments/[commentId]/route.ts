@@ -24,7 +24,10 @@ export async function PATCH(
   }
 
   if (comment.userId !== session.user.id) {
-    return NextResponse.json({ error: "You can only edit your own comments." }, { status: 403 });
+    return NextResponse.json(
+      { error: "You can only edit your own comments." },
+      { status: 403 },
+    );
   }
 
   const body = await request.json();
@@ -42,7 +45,11 @@ export async function PATCH(
     data: { body: text, edited: true },
   });
 
-  return NextResponse.json({ id: updated.id, body: updated.body, edited: updated.edited });
+  return NextResponse.json({
+    id: updated.id,
+    body: updated.body,
+    edited: updated.edited,
+  });
 }
 
 export async function DELETE(
@@ -66,8 +73,11 @@ export async function DELETE(
     return NextResponse.json({ error: "Comment not found." }, { status: 404 });
   }
 
-  if (comment.userId !== session.user.id) {
-    return NextResponse.json({ error: "You can only delete your own comments." }, { status: 403 });
+  if (comment.userId !== session.user.id && session.user.role !== "ADMIN") {
+    return NextResponse.json(
+      { error: "You cannot delete this comment." },
+      { status: 403 },
+    );
   }
 
   await prisma.comment.delete({ where: { id: commentId } });
