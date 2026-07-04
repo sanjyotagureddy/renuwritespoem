@@ -35,7 +35,13 @@ export default async function AdminOrdersPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl text-white md:text-4xl">Orders</h1>
+        <div>
+          <h1 className="text-3xl text-white md:text-4xl">Orders</h1>
+          <p className="mt-2 text-sm text-white/45">
+            New orders stay pending until you verify the payment and confirm
+            them.
+          </p>
+        </div>
         <span className="text-sm text-white/50">
           {orders.length} total • {pendingCount} pending
         </span>
@@ -90,10 +96,29 @@ export default async function AdminOrdersPage() {
                     <span>{formatDate(order.createdAt)}</span>
                     <span className="text-white/20">{order.id}</span>
                   </div>
+                  {order.trackingNumber && (
+                    <div className="text-xs text-purple-200/70">
+                      {order.trackingProvider} • {order.trackingNumber}
+                      {order.trackingUrl && (
+                        <>
+                          {" "}
+                          •{" "}
+                          <a
+                            href={order.trackingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline underline-offset-2"
+                          >
+                            Track ↗
+                          </a>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}
-                <div className="flex shrink-0 items-center gap-3">
+                <div className="flex shrink-0 flex-col items-end gap-3">
                   {/* View payment screenshot */}
                   <a
                     href={`/api/orders/${order.id}/screenshot`}
@@ -107,7 +132,7 @@ export default async function AdminOrdersPage() {
                   {/* Status update */}
                   <form
                     action={updateOrderStatus}
-                    className="flex items-center gap-2"
+                    className="grid w-full gap-2 sm:w-[420px] sm:grid-cols-2"
                   >
                     <input type="hidden" name="id" value={order.id} />
                     <select
@@ -121,11 +146,41 @@ export default async function AdminOrdersPage() {
                       <option value="DELIVERED">Delivered</option>
                       <option value="REJECTED">Rejected</option>
                     </select>
+                    <input
+                      name="trackingProvider"
+                      defaultValue={order.trackingProvider ?? ""}
+                      maxLength={100}
+                      placeholder="Delivery provider"
+                      className="rounded-lg border border-white/15 bg-black/30 px-3 py-1.5 text-xs text-white outline-none placeholder:text-white/25"
+                    />
+                    <input
+                      name="trackingNumber"
+                      defaultValue={order.trackingNumber ?? ""}
+                      maxLength={150}
+                      placeholder="Tracking number"
+                      className="rounded-lg border border-white/15 bg-black/30 px-3 py-1.5 text-xs text-white outline-none placeholder:text-white/25"
+                    />
+                    <input
+                      name="trackingUrl"
+                      type="url"
+                      defaultValue={order.trackingUrl ?? ""}
+                      maxLength={500}
+                      placeholder="Tracking URL (optional)"
+                      className="rounded-lg border border-white/15 bg-black/30 px-3 py-1.5 text-xs text-white outline-none placeholder:text-white/25"
+                    />
+                    <textarea
+                      name="adminNote"
+                      defaultValue={order.adminNote ?? ""}
+                      maxLength={1000}
+                      rows={2}
+                      placeholder="Message to buyer (optional)"
+                      className="resize-none rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-xs text-white outline-none placeholder:text-white/25 sm:col-span-2"
+                    />
                     <button
                       type="submit"
-                      className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs text-white/70 transition-colors hover:bg-white/10"
+                      className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs text-white/70 transition-colors hover:bg-white/10 sm:col-span-2"
                     >
-                      Update
+                      Save update & notify buyer
                     </button>
                   </form>
                 </div>

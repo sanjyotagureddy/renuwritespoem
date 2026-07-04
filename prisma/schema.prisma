@@ -312,6 +312,9 @@ model BookOrder {
   paymentMime      String?
   status           OrderStatus @default(PENDING)
   adminNote        String?
+  trackingProvider String?
+  trackingNumber   String?
+  trackingUrl      String?
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 

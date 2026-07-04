@@ -99,15 +99,37 @@ export async function sendOrderConfirmation({
   await mailer.sendMail({
     from: FROM_EMAIL,
     to: buyerEmail,
-    subject: `Order Received — ${bookTitle}`,
+    subject: `Thank you for your order — ${bookTitle}`,
     replyTo: FROM_EMAIL,
+    text: `Thank you for choosing Renu Writes Poem, ${buyerName}!
+
+We are delighted that ${bookTitle} will soon find a place with you. Your order has been received and is currently awaiting payment verification.
+
+Once the payment screenshot is reviewed, we will send you a confirmation email. You will receive another update with tracking details when your book is shipped.
+
+Order ID: ${orderId}
+Book: ${bookTitle}
+Copies: ${copies}
+Total: ₹${totalAmount.toLocaleString("en-IN")}
+
+With gratitude,
+Renu Writes Poem`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 16px; color: #111827;">
-        <h2 style="margin: 0 0 12px; font-size: 24px;">Thank you, ${safeBuyerName}!</h2>
-        <p style="margin: 0; color: #4b5563;">Your order for <strong>${safeBookTitle}</strong> has been received.</p>
+        <div style="padding: 28px 24px; border-radius: 18px; background: #111827; color: #ffffff; text-align: center;">
+          <p style="margin: 0 0 8px; color: #fbbf24; font-size: 12px; letter-spacing: 2px; text-transform: uppercase;">Renu Writes Poem</p>
+          <h2 style="margin: 0 0 12px; font-family: Georgia, serif; font-size: 28px;">Thank you, ${safeBuyerName}!</h2>
+          <p style="margin: 0; color: #d1d5db; line-height: 1.65;">We are delighted that <strong style="color: #ffffff;">${safeBookTitle}</strong> will soon find a place with you.</p>
+        </div>
+        <div style="padding: 24px 4px 0;">
+          <p style="margin: 0 0 12px; color: #4b5563; line-height: 1.7;">Your order has been received and is currently awaiting payment verification.</p>
+          <div style="margin: 18px 0; padding: 16px 18px; border-left: 3px solid #f59e0b; background: #fffbeb; color: #78350f; line-height: 1.6;">
+            <strong>What happens next?</strong><br />We will review your payment screenshot and email you once the order is confirmed. When your book ships, you will receive the delivery provider and tracking details.
+          </div>
+        </div>
         ${orderTable}
         ${supportFooter}
-        <p style="margin-top: 22px; color: #9ca3af; font-size: 13px;">— Renu Writes Poem</p>
+        <p style="margin-top: 22px; color: #6b7280; font-family: Georgia, serif; font-size: 15px; font-style: italic;">With gratitude,<br />Renu Writes Poem</p>
       </div>
     `,
   });
@@ -173,6 +195,98 @@ export async function sendContactMessage({
         </table>
         <div style="margin-top: 20px; padding: 18px; border-radius: 12px; background: #f3f4f6; line-height: 1.65;">${safeMessage}</div>
         <p style="margin-top: 18px; color: #6b7280; font-size: 13px;">Reply to this email to respond directly to ${safeName}.</p>
+      </div>
+    `,
+  });
+}
+
+export async function sendOrderStatusUpdate({
+  buyerEmail,
+  buyerName,
+  bookTitle,
+  orderId,
+  status,
+  trackingProvider,
+  trackingNumber,
+  trackingUrl,
+  note,
+}: {
+  buyerEmail: string;
+  buyerName: string;
+  bookTitle: string;
+  orderId: string;
+  status: "CONFIRMED" | "SHIPPED" | "DELIVERED" | "REJECTED";
+  trackingProvider?: string | null;
+  trackingNumber?: string | null;
+  trackingUrl?: string | null;
+  note?: string | null;
+}): Promise<void> {
+  const mailer = getMailer();
+  if (!mailer || !FROM_EMAIL) throw new Error("Order email is not configured.");
+
+  const statusCopy = {
+    CONFIRMED: {
+      subject: "Payment verified — order confirmed",
+      heading: "Your order is confirmed",
+      message:
+        "We have verified your payment and your order is now being prepared.",
+    },
+    SHIPPED: {
+      subject: "Your order has shipped",
+      heading: "Your book is on the way",
+      message: "Your order has been handed to the delivery provider.",
+    },
+    DELIVERED: {
+      subject: "Your order was delivered",
+      heading: "Order delivered",
+      message:
+        "Your order has been marked as delivered. We hope you enjoy the book.",
+    },
+    REJECTED: {
+      subject: "Update about your order",
+      heading: "We could not confirm your order",
+      message:
+        "We were unable to verify the payment for this order. Please reply if you need help.",
+    },
+  }[status];
+
+  const safeName = escapeHtml(buyerName);
+  const safeBook = escapeHtml(bookTitle);
+  const safeOrderId = escapeHtml(orderId);
+  const safeProvider = trackingProvider ? escapeHtml(trackingProvider) : "";
+  const safeNumber = trackingNumber ? escapeHtml(trackingNumber) : "";
+  const safeNote = note ? escapeHtml(note).replaceAll("\n", "<br />") : "";
+  const safeTrackingUrl =
+    trackingUrl && /^https?:\/\//i.test(trackingUrl)
+      ? escapeHtml(trackingUrl)
+      : "";
+
+  const trackingBlock =
+    status === "SHIPPED"
+      ? `
+    <div style="margin: 20px 0; padding: 18px; border-radius: 12px; background: #f3f4f6;">
+      <p style="margin: 0 0 8px;"><strong>Delivery provider:</strong> ${safeProvider}</p>
+      <p style="margin: 0;"><strong>Tracking number:</strong> ${safeNumber}</p>
+      ${safeTrackingUrl ? `<p style="margin: 14px 0 0;"><a href="${safeTrackingUrl}" style="display: inline-block; padding: 10px 16px; border-radius: 999px; background: #111827; color: #ffffff; text-decoration: none;">Track your order</a></p>` : ""}
+    </div>
+  `
+      : "";
+
+  await mailer.sendMail({
+    from: FROM_EMAIL,
+    to: buyerEmail,
+    replyTo: FROM_EMAIL,
+    subject: `${statusCopy.subject} — ${bookTitle}`,
+    text: `${statusCopy.heading}\n\nHi ${buyerName},\n${statusCopy.message}\nBook: ${bookTitle}\nOrder ID: ${orderId}${trackingProvider ? `\nProvider: ${trackingProvider}` : ""}${trackingNumber ? `\nTracking: ${trackingNumber}` : ""}${trackingUrl ? `\nTrack: ${trackingUrl}` : ""}${note ? `\n\nNote: ${note}` : ""}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 16px; color: #111827;">
+        <h2 style="margin: 0 0 12px; font-size: 24px;">${statusCopy.heading}</h2>
+        <p>Hi ${safeName},</p>
+        <p style="color: #4b5563; line-height: 1.6;">${statusCopy.message}</p>
+        <p><strong>Book:</strong> ${safeBook}<br /><strong>Order ID:</strong> ${safeOrderId}</p>
+        ${trackingBlock}
+        ${safeNote ? `<div style="margin-top: 18px; padding: 14px; border-left: 3px solid #d1d5db; color: #4b5563;">${safeNote}</div>` : ""}
+        <p style="margin-top: 24px; color: #9ca3af; font-size: 13px;">— Renu Writes Poem</p>
       </div>
     `,
   });
