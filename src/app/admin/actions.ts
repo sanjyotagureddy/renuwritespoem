@@ -74,6 +74,7 @@ export async function createPoem(formData: FormData) {
   const content = String(formData.get("content") ?? "").trim();
   const language = String(formData.get("language") ?? "EN") as PoemLanguage;
   const genreId = String(formData.get("genreId") ?? "").trim();
+  const font = String(formData.get("font") ?? "").trim() || null;
   const publishNow = formData.get("publishNow") === "on";
   const tags = parseTags(formData);
 
@@ -97,6 +98,7 @@ export async function createPoem(formData: FormData) {
       published: publishNow,
       publishedAt: publishNow ? new Date() : null,
       tags: { create: createTagRelations(tags) },
+      font,
     },
   });
 
@@ -116,6 +118,7 @@ export async function updatePoem(formData: FormData) {
   const content = String(formData.get("content") ?? "").trim();
   const language = String(formData.get("language") ?? "EN") as PoemLanguage;
   const genreId = String(formData.get("genreId") ?? "").trim();
+  const font = String(formData.get("font") ?? "").trim() || null;
   const publishNow = formData.get("publishNow") === "on";
   const tags = parseTags(formData);
 
@@ -138,6 +141,7 @@ export async function updatePoem(formData: FormData) {
       published: publishNow,
       publishedAt:
         publishNow && !existing.publishedAt ? new Date() : existing.publishedAt,
+      font,
       tags: {
         deleteMany: {},
         create: createTagRelations(tags),

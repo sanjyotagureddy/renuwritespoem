@@ -78,7 +78,7 @@ async function main() {
 
   const poem2 = await prisma.poem.upsert({
     where: { slug: "unspoken-words" },
-    update: {},
+    update: { font: "Playfair Display" },
     create: {
       language: "EN",
       title: "Unspoken Words",
@@ -88,6 +88,7 @@ async function main() {
       published: true,
       publishedAt: new Date("2025-06-15"),
       genreId: love.id,
+      font: "Playfair Display",
     },
   });
 
@@ -123,7 +124,7 @@ async function main() {
 
   const poem5 = await prisma.poem.upsert({
     where: { slug: "sannata-bolta-hai" },
-    update: {},
+    update: { font: "Yatra One" },
     create: {
       language: "HI",
       title: "सन्नाटा बोलता है",
@@ -141,12 +142,13 @@ async function main() {
       published: true,
       publishedAt: new Date("2025-08-01"),
       genreId: solitude.id,
+      font: "Yatra One",
     },
   });
 
   const poem6 = await prisma.poem.upsert({
     where: { slug: "paus-gandh" },
-    update: {},
+    update: { font: "Kalam" },
     create: {
       language: "MR",
       title: "पावसाचा गंध",
@@ -164,6 +166,7 @@ async function main() {
       published: true,
       publishedAt: new Date("2025-08-10"),
       genreId: nature.id,
+      font: "Kalam",
     },
   });
 

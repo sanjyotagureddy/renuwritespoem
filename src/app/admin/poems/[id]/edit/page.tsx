@@ -76,6 +76,36 @@ export default async function EditPoemPage({ params }: EditPoemPageProps) {
           </div>
 
           <div>
+            <label htmlFor="font" className="mb-2 block text-sm text-white/80">
+              Font Family
+            </label>
+            <select
+              id="font"
+              name="font"
+              defaultValue={poem.font ?? ""}
+              className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40"
+            >
+              <option value="">Default Language Font</option>
+              <optgroup label="English Fonts">
+                <option value="Playfair Display">Playfair Display (Elegant Serif)</option>
+                <option value="Lora">Lora (Classic Book Serif)</option>
+                <option value="Cormorant Garamond">Cormorant Garamond (Premium Serif)</option>
+                <option value="Cinzel">Cinzel (Cinematic Serif)</option>
+                <option value="Caveat">Caveat (Handwriting Style)</option>
+                <option value="Montserrat">Montserrat (Clean Sans)</option>
+              </optgroup>
+              <optgroup label="Hindi / Marathi (Devanagari) Fonts">
+                <option value="Rozha One">Rozha One (Artistic Thick)</option>
+                <option value="Yatra One">Yatra One (Historic Calligraphy)</option>
+                <option value="Kalam">Kalam (Handwritten Style)</option>
+                <option value="Amita">Amita (Flowing Decorative)</option>
+                <option value="Martel">Martel (Elegant Serif)</option>
+                <option value="Mukta">Mukta (Modern Clean Sans)</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div>
             <label
               htmlFor="genreId"
               className="mb-2 block text-sm text-white/80"

@@ -140,6 +140,14 @@ export default async function PoemDetailPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+      {poem.font && (
+        <link
+          rel="stylesheet"
+          href={`https://fonts.googleapis.com/css2?family=${encodeURIComponent(
+            poem.font
+          )}:wght@300;400;500;600;700;800&display=swap`}
+        />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
@@ -171,6 +179,7 @@ export default async function PoemDetailPage({ params }: PageProps) {
           <h1
             lang={lang}
             className={`max-w-2xl text-4xl leading-tight text-white md:text-5xl ${poemLanguageFontClass(language)}`}
+            style={poem.font ? { fontFamily: `'${poem.font}', serif` } : undefined}
           >
             {poem.title}
           </h1>
@@ -179,6 +188,7 @@ export default async function PoemDetailPage({ params }: PageProps) {
             <p
               lang={lang}
               className={`mt-5 max-w-2xl border-l border-amber-200/25 pl-4 text-lg leading-relaxed text-white/70 ${poemLanguageFontClass(language)}`}
+              style={poem.font ? { fontFamily: `'${poem.font}', serif` } : undefined}
             >
               {poem.excerpt}
             </p>
@@ -187,6 +197,7 @@ export default async function PoemDetailPage({ params }: PageProps) {
           <div
             lang={lang}
             className={`mt-10 max-w-[42rem] text-lg leading-[2] whitespace-pre-line text-white/90 md:text-xl ${poemLanguageFontClass(language)}`}
+            style={poem.font ? { fontFamily: `'${poem.font}', serif` } : undefined}
           >
             {poem.content}
           </div>
