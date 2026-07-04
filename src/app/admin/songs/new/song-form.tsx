@@ -17,9 +17,10 @@ export default function NewSongForm() {
 
     try {
       await createSong(formData);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err?.message || "An unexpected error occurred during upload.");
+      const message = err instanceof Error ? err.message : "An unexpected error occurred during upload.";
+      setError(message);
       setLoading(false);
     }
   }

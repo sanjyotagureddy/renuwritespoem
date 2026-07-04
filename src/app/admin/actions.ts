@@ -943,9 +943,10 @@ export async function createSong(formData: FormData) {
       });
       coverUrl = coverBlob.url;
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error("Vercel Blob upload failed:", error);
-    throw new Error(`Failed to upload media files: ${error?.message || error}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to upload media files: ${message}`);
   }
 
   const baseSlug = slugify(title);

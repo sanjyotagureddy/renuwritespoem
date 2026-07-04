@@ -35,7 +35,6 @@ export default function AudioPlayer({
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
-      audioRef.current.volume = volume;
     }
 
     const audio = audioRef.current;
