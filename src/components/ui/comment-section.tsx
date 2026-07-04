@@ -33,20 +33,20 @@ function CommentLikeButton({
   initialLiked,
   initialCount,
   disabled,
-  isBook,
+  type,
 }: {
   commentId: string;
   initialLiked: boolean;
   initialCount: number;
   disabled: boolean;
-  isBook: boolean;
+  type: "poem" | "book" | "song";
 }) {
   const [liked, setLiked] = useState(initialLiked);
   const [count, setCount] = useState(initialCount);
 
   async function handleToggle() {
     if (disabled) return;
-    const path = isBook ? "book-comments" : "comments";
+    const path = type === "book" ? "book-comments" : type === "song" ? "song-comments" : "comments";
     const res = await fetch(`/api/${path}/${commentId}/likes`, {
       method: "POST",
     });
@@ -81,7 +81,7 @@ export default function CommentSection({
   type,
 }: {
   slug: string;
-  type: "poem" | "book";
+  type: "poem" | "book" | "song";
 }) {
   const { data: session } = useSession();
   const [comments, setComments] = useState<CommentData[]>([]);
@@ -97,9 +97,8 @@ export default function CommentSection({
   const [loadingMore, setLoadingMore] = useState(false);
   const [expandCount, setExpandCount] = useState(0);
 
-  const isBook = type === "book";
-  const commentsApi = `/api/${isBook ? "books" : "poems"}/${slug}/comments`;
-  const commentItemApi = (commentId: string) => `/api/${isBook ? "book-comments" : "comments"}/${commentId}`;
+  const commentsApi = `/api/${type === "book" ? "books" : type === "song" ? "songs" : "poems"}/${slug}/comments`;
+  const commentItemApi = (commentId: string) => `/api/${type === "book" ? "book-comments" : type === "song" ? "song-comments" : "comments"}/${commentId}`;
 
   useEffect(() => {
     fetch(`${commentsApi}?limit=4&offset=0`)
@@ -198,7 +197,7 @@ export default function CommentSection({
 
   async function handleTogglePin(commentId: string, currentPinned: boolean) {
     try {
-      await toggleCommentPin(commentId, isBook, !currentPinned);
+      await toggleCommentPin(commentId, type, !currentPinned);
       setComments((prev) => {
         const updated = prev.map((c) => (c.id === commentId ? { ...c, pinned: !currentPinned } : c));
         return [...updated].sort((a, b) => {
@@ -214,7 +213,7 @@ export default function CommentSection({
   async function handleDisable(commentId: string) {
     if (!confirm("Are you sure you want to disable (soft-delete) this comment?")) return;
     try {
-      await updateCommentStatus(commentId, isBook, "REJECTED");
+      await updateCommentStatus(commentId, type, "REJECTED");
       setComments((prev) => prev.filter((c) => c.id !== commentId));
       setTotalCount((prev) => Math.max(0, prev - 1));
     } catch {
@@ -345,7 +344,7 @@ export default function CommentSection({
                           initialLiked={comment.liked}
                           initialCount={comment.likeCount}
                           disabled={!session?.user}
-                          isBook={isBook}
+                          type={type}
                         />
 
                         {session?.user?.role === "ADMIN" && (

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { updateCommentStatus, deleteCommentAdmin, toggleCommentPin } from "@/app/admin/actions";
-import { Check, X, Trash2, BookOpen, FileText, Pin } from "lucide-react";
+import { Check, X, Trash2, BookOpen, FileText, Pin, Music } from "lucide-react";
 
 export type CommentItem = {
   id: string;
@@ -11,7 +11,7 @@ export type CommentItem = {
   createdAt: string; // ISO string from server
   status: "PENDING" | "APPROVED" | "REJECTED";
   user: { name: string | null; email: string };
-  isBook: boolean;
+  commentType: "poem" | "book" | "song";
   targetTitle: string;
   targetLink: string;
   pinned: boolean;
@@ -41,14 +41,14 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
 
   async function handleStatusChange(
     id: string,
-    isBook: boolean,
+    commentType: "poem" | "book" | "song",
     newStatus: "PENDING" | "APPROVED" | "REJECTED",
   ) {
     startTransition(async () => {
       try {
-        await updateCommentStatus(id, isBook, newStatus);
+        await updateCommentStatus(id, commentType, newStatus);
         setComments((prev) =>
-          prev.map((c) => (c.id === id && c.isBook === isBook ? { ...c, status: newStatus } : c)),
+          prev.map((c) => (c.id === id && c.commentType === commentType ? { ...c, status: newStatus } : c)),
         );
       } catch (err) {
         alert(err instanceof Error ? err.message : "Failed to update status.");
@@ -56,12 +56,12 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
     });
   }
 
-  async function handleTogglePin(id: string, isBook: boolean, newPinned: boolean) {
+  async function handleTogglePin(id: string, commentType: "poem" | "book" | "song", newPinned: boolean) {
     startTransition(async () => {
       try {
-        await toggleCommentPin(id, isBook, newPinned);
+        await toggleCommentPin(id, commentType, newPinned);
         setComments((prev) =>
-          prev.map((c) => (c.id === id && c.isBook === isBook ? { ...c, pinned: newPinned } : c)),
+          prev.map((c) => (c.id === id && c.commentType === commentType ? { ...c, pinned: newPinned } : c)),
         );
       } catch (err) {
         alert(err instanceof Error ? err.message : "Failed to update pin status.");
@@ -69,12 +69,12 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
     });
   }
 
-  async function handleDelete(id: string, isBook: boolean) {
+  async function handleDelete(id: string, commentType: "poem" | "book" | "song") {
     if (!confirm("Are you sure you want to permanently delete this comment?")) return;
     startTransition(async () => {
       try {
-        await deleteCommentAdmin(id, isBook);
-        setComments((prev) => prev.filter((c) => !(c.id === id && c.isBook === isBook)));
+        await deleteCommentAdmin(id, commentType);
+        setComments((prev) => prev.filter((c) => !(c.id === id && c.commentType === commentType)));
       } catch (err) {
         alert(err instanceof Error ? err.message : "Failed to delete comment.");
       }
@@ -120,7 +120,7 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
         <div className="space-y-4">
           {filteredComments.map((comment) => (
             <div
-              key={`${comment.isBook ? "book" : "poem"}-${comment.id}`}
+              key={`${comment.commentType}-${comment.id}`}
               className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all"
             >
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -135,7 +135,7 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
                       {comment.user.email}
                     </span>
                     <span>&middot;</span>
-                    <span>{new Date(comment.createdAt).toLocaleString("en-IN")}</span>
+                    <span className="relative font-[family-name:var(--font-inter)]">{new Date(comment.createdAt).toLocaleString("en-IN")}</span>
                     <span>&middot;</span>
                     <span className={`rounded-full border px-2.5 py-0.5 text-[10px] uppercase font-semibold ${statusBadge(comment.status)}`}>
                       {comment.status}
@@ -150,13 +150,15 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
 
                   {/* Target reference */}
                   <div className="flex items-center gap-1.5 text-xs">
-                    {comment.isBook ? (
+                    {comment.commentType === "book" ? (
                       <BookOpen className="h-3.5 w-3.5 text-emerald-400/80" />
+                    ) : comment.commentType === "song" ? (
+                      <Music className="h-3.5 w-3.5 text-sky-400/80" />
                     ) : (
                       <FileText className="h-3.5 w-3.5 text-amber-400/80" />
                     )}
                     <span className="text-white/40 uppercase tracking-wider text-[10px]">
-                      {comment.isBook ? "Book" : "Poem"}:
+                      {comment.commentType}:
                     </span>
                     <Link
                       href={comment.targetLink}
@@ -178,7 +180,7 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
                   {comment.status === "PENDING" && (
                     <>
                       <button
-                        onClick={() => handleStatusChange(comment.id, comment.isBook, "APPROVED")}
+                        onClick={() => handleStatusChange(comment.id, comment.commentType, "APPROVED")}
                         disabled={isPending}
                         className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 text-xs tracking-wider text-emerald-400 uppercase transition-colors hover:bg-emerald-500/20 disabled:opacity-40"
                         title="Approve comment"
@@ -187,7 +189,7 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
                         Approve
                       </button>
                       <button
-                        onClick={() => handleStatusChange(comment.id, comment.isBook, "REJECTED")}
+                        onClick={() => handleStatusChange(comment.id, comment.commentType, "REJECTED")}
                         disabled={isPending}
                         className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 px-3 text-xs tracking-wider text-rose-400 uppercase transition-colors hover:bg-rose-500/20 disabled:opacity-40"
                         title="Reject comment"
@@ -201,7 +203,7 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
                   {comment.status === "APPROVED" && (
                     <>
                       <button
-                        onClick={() => handleTogglePin(comment.id, comment.isBook, !comment.pinned)}
+                        onClick={() => handleTogglePin(comment.id, comment.commentType, !comment.pinned)}
                         disabled={isPending}
                         className={`inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs tracking-wider uppercase transition-colors ${
                           comment.pinned
@@ -215,7 +217,7 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
                       </button>
 
                       <button
-                        onClick={() => handleStatusChange(comment.id, comment.isBook, "REJECTED")}
+                        onClick={() => handleStatusChange(comment.id, comment.commentType, "REJECTED")}
                         disabled={isPending}
                         className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-3 text-xs tracking-wider text-rose-400/80 uppercase transition-colors hover:bg-rose-500/10"
                         title="Reject/Unpublish comment"
@@ -227,7 +229,7 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
 
                   {comment.status === "REJECTED" && (
                     <button
-                      onClick={() => handleStatusChange(comment.id, comment.isBook, "APPROVED")}
+                      onClick={() => handleStatusChange(comment.id, comment.commentType, "APPROVED")}
                       disabled={isPending}
                       className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-3 text-xs tracking-wider text-emerald-400/80 uppercase transition-colors hover:bg-emerald-500/10"
                       title="Approve comment"
@@ -237,7 +239,7 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
                   )}
 
                   <button
-                    onClick={() => handleDelete(comment.id, comment.isBook)}
+                    onClick={() => handleDelete(comment.id, comment.commentType)}
                     disabled={isPending}
                     className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white/40 uppercase transition-colors hover:bg-rose-500/10 hover:border-rose-500/20 hover:text-rose-400 disabled:opacity-40"
                     title="Delete permanently"

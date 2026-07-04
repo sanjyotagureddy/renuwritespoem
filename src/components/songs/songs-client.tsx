@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import AudioPlayer from "./audio-player";
+import LikeButton from "@/components/ui/like-button";
+import CommentSection from "@/components/ui/comment-section";
 
 type Track = {
   id: string;
@@ -16,6 +18,7 @@ type Track = {
 export default function SongsClient({ initialSongs }: { initialSongs: Track[] }) {
   const [activeTrack, setActiveTrack] = useState<Track | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [openCommentsSong, setOpenCommentsSong] = useState<Track | null>(null);
 
   function handleTrackSelect(track: Track) {
     if (activeTrack?.id === track.id) {
@@ -111,10 +114,21 @@ export default function SongsClient({ initialSongs }: { initialSongs: Track[] })
                 <p className="mt-1 text-sm text-white/50 line-clamp-2 font-[family-name:var(--font-inter)] leading-relaxed">
                   {song.description || "No description provided."}
                 </p>
-                <div className="mt-3.5 flex items-center gap-1.5 text-xs text-white/35">
-                  <span>Stream track</span>
-                  <span>•</span>
-                  <span>Audio Protected</span>
+                <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2 border-t border-white/5 pt-3" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-2">
+                    <LikeButton slug={song.slug} type="song" />
+                    <button
+                      type="button"
+                      onClick={() => setOpenCommentsSong(song)}
+                      className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs text-white/60 transition-colors hover:border-white/30 hover:text-white"
+                    >
+                      <span>💬</span>
+                      <span>Comments</span>
+                    </button>
+                  </div>
+                  <div className="text-[10px] text-white/30 font-[family-name:var(--font-inter)] select-none">
+                    Audio Protected
+                  </div>
                 </div>
               </div>
             </div>
@@ -130,6 +144,32 @@ export default function SongsClient({ initialSongs }: { initialSongs: Track[] })
         onNextTrack={activeIndex < initialSongs.length - 1 ? playNext : undefined}
         onPrevTrack={activeIndex > 0 ? playPrev : undefined}
       />
+
+      {/* Drawer overlay for comments */}
+      {openCommentsSong && (
+        <div
+          className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+          onClick={() => setOpenCommentsSong(null)}
+        >
+          <div
+            className="w-full max-w-md h-full bg-neutral-950 border-l border-white/10 p-6 overflow-y-auto flex flex-col shadow-2xl transition-transform duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
+              <h2 className="text-lg font-bold text-white truncate pr-4">Comments: {openCommentsSong.title}</h2>
+              <button
+                onClick={() => setOpenCommentsSong(null)}
+                className="text-white/40 hover:text-white text-lg h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto pr-1">
+              <CommentSection slug={openCommentsSong.slug} type="song" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

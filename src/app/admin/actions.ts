@@ -814,13 +814,18 @@ export async function updateOrderStatus(formData: FormData) {
 
 export async function updateCommentStatus(
   id: string,
-  isBook: boolean,
+  typeOrIsBook: boolean | string,
   status: "PENDING" | "APPROVED" | "REJECTED",
 ) {
   await requireAdmin();
   const prisma = getPrisma();
 
-  if (isBook) {
+  if (typeOrIsBook === "song") {
+    await prisma.songComment.update({
+      where: { id },
+      data: { status },
+    });
+  } else if (typeOrIsBook === true || typeOrIsBook === "book") {
     await prisma.bookComment.update({
       where: { id },
       data: { status },
@@ -834,11 +839,15 @@ export async function updateCommentStatus(
   revalidatePath("/admin/comments");
 }
 
-export async function deleteCommentAdmin(id: string, isBook: boolean) {
+export async function deleteCommentAdmin(id: string, typeOrIsBook: boolean | string) {
   await requireAdmin();
   const prisma = getPrisma();
 
-  if (isBook) {
+  if (typeOrIsBook === "song") {
+    await prisma.songComment.delete({
+      where: { id },
+    });
+  } else if (typeOrIsBook === true || typeOrIsBook === "book") {
     await prisma.bookComment.delete({
       where: { id },
     });
@@ -850,13 +859,16 @@ export async function deleteCommentAdmin(id: string, isBook: boolean) {
   revalidatePath("/admin/comments");
 }
 
-export async function toggleCommentPin(id: string, isBook: boolean, pin: boolean) {
+export async function toggleCommentPin(id: string, typeOrIsBook: boolean | string, pin: boolean) {
   await requireAdmin();
   const prisma = getPrisma();
 
-  if (isBook) {
-    // Optional: Unpin other comments for the same book if only one pinned is allowed,
-    // but usually multiple pinned are fine. We will just toggle the status on this comment.
+  if (typeOrIsBook === "song") {
+    await prisma.songComment.update({
+      where: { id },
+      data: { pinned: pin },
+    });
+  } else if (typeOrIsBook === true || typeOrIsBook === "book") {
     await prisma.bookComment.update({
       where: { id },
       data: { pinned: pin },
