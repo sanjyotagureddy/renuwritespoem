@@ -71,7 +71,7 @@ export async function POST(
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const session = await getServerAuthSession();
@@ -85,20 +85,34 @@ export async function GET(
 
   const userId = session?.user?.id;
 
-  const comments = await prisma.bookComment.findMany({
-    where: { bookId: book.id, status: "APPROVED" },
-    orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
-    include: {
-      user: { select: { name: true, image: true, email: true } },
-      _count: { select: { likes: true } },
-      ...(userId
-        ? { likes: { where: { userId }, select: { userId: true } } }
-        : {}),
-    },
-  });
+  const url = new URL(request.url);
+  const limit = parseInt(url.searchParams.get("limit") ?? "4", 10);
+  const offset = parseInt(url.searchParams.get("offset") ?? "0", 10);
 
-  return NextResponse.json(
-    comments.map((c) => {
+  const [comments, totalCount] = await Promise.all([
+    prisma.bookComment.findMany({
+      where: { bookId: book.id, status: "APPROVED" },
+      orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
+      skip: offset,
+      take: limit + 1,
+      include: {
+        user: { select: { name: true, image: true, email: true } },
+        _count: { select: { likes: true } },
+        ...(userId
+          ? { likes: { where: { userId }, select: { userId: true } } }
+          : {}),
+      },
+    }),
+    prisma.bookComment.count({
+      where: { bookId: book.id, status: "APPROVED" },
+    }),
+  ]);
+
+  const hasMore = comments.length > limit;
+  const paginatedComments = hasMore ? comments.slice(0, limit) : comments;
+
+  return NextResponse.json({
+    comments: paginatedComments.map((c) => {
       const likesArr = "likes" in c && Array.isArray(c.likes) ? c.likes : [];
       return {
         id: c.id,
@@ -115,5 +129,7 @@ export async function GET(
         pinned: c.pinned,
       };
     }),
-  );
+    hasMore,
+    totalCount,
+  });
 }

@@ -192,15 +192,21 @@ async function main() {
   }
 
   // ─── Books ───────────────────────────────────────────────
-  await prisma.book.upsert({
+  const book = await prisma.book.upsert({
     where: { slug: "where-words-bloom" },
-    update: {},
+    update: {
+      status: "AVAILABLE",
+      price: 299,
+      discountedPrice: 199,
+    },
     create: {
       title: "Where Words Bloom",
       slug: "where-words-bloom",
       description:
         "A debut collection of poetry exploring love, loss, nature, and the quiet moments that shape us.",
-      status: "COMING_SOON",
+      status: "AVAILABLE",
+      price: 299,
+      discountedPrice: 199,
     },
   });
 
@@ -214,6 +220,117 @@ async function main() {
       role: "ADMIN",
     },
   });
+
+  // ─── Dummy Users for Likes & Comments ───────────────────
+  const user1 = await prisma.user.upsert({
+    where: { email: "alice@example.com" },
+    update: {},
+    create: { email: "alice@example.com", name: "Alice Smith" },
+  });
+  const user2 = await prisma.user.upsert({
+    where: { email: "bob@example.com" },
+    update: {},
+    create: { email: "bob@example.com", name: "Bob Johnson" },
+  });
+  const user3 = await prisma.user.upsert({
+    where: { email: "charlie@example.com" },
+    update: {},
+    create: { email: "charlie@example.com", name: "Charlie Brown" },
+  });
+  const user4 = await prisma.user.upsert({
+    where: { email: "diana@example.com" },
+    update: {},
+    create: { email: "diana@example.com", name: "Diana Prince" },
+  });
+  const user5 = await prisma.user.upsert({
+    where: { email: "ethan@example.com" },
+    update: {},
+    create: { email: "ethan@example.com", name: "Ethan Hunt" },
+  });
+
+  // ─── Dummy Poem Comments (Whispers of the Wind) ─────────
+  const countPoemComments = await prisma.comment.count({ where: { poemId: poem1.id } });
+  if (countPoemComments === 0) {
+    const dummyComments = [
+      { body: "This is a beautiful poem! Truly touched my heart.", userId: user1.id },
+      { body: "The imagery of wind carrying secrets is so vivid.", userId: user2.id },
+      { body: "Reminds me of quiet autumn evenings.", userId: user3.id },
+      { body: "Absolutely wonderful writing. Kudos to the writer!", userId: user4.id },
+      { body: "I read this twice, it's so comforting.", userId: user5.id },
+      { body: "Is there a printed collection of these poems?", userId: user1.id },
+      { body: "Perfect words for a lazy Sunday morning.", userId: user2.id },
+      { body: "So simple yet so profound.", userId: user3.id },
+      { body: "Love the rhythm of this piece.", userId: user4.id },
+      { body: "This wind whispers to my soul as well.", userId: user5.id },
+    ];
+
+    for (let i = 0; i < dummyComments.length; i++) {
+      const c = dummyComments[i];
+      await prisma.comment.create({
+        data: {
+          body: c.body,
+          poemId: poem1.id,
+          userId: c.userId,
+          status: "APPROVED",
+          createdAt: new Date(Date.now() - (10 - i) * 3600000),
+        },
+      });
+    }
+  }
+
+  // ─── Dummy Book Comments (Where Words Bloom) ────────────
+  const countBookComments = await prisma.bookComment.count({ where: { bookId: book.id } });
+  if (countBookComments === 0) {
+    const dummyBookComments = [
+      { body: "Can't wait to get my hands on this book!", userId: user1.id },
+      { body: "The title 'Where Words Bloom' is beautiful.", userId: user2.id },
+      { body: "Pre-ordered! Super excited.", userId: user3.id },
+      { body: "Is this book available in print or only digital?", userId: user4.id },
+      { body: "I've been following your poems, this book is a must-buy.", userId: user5.id },
+      { body: "Beautiful cover and description. Highly anticipating this.", userId: user1.id },
+      { body: "Congratulations on the launch!", userId: user2.id },
+      { body: "Will there be a book signing event?", userId: user3.id },
+      { body: "Already loving the preview pages.", userId: user4.id },
+      { body: "Indeed, where words bloom, emotions rise.", userId: user5.id },
+    ];
+
+    for (let i = 0; i < dummyBookComments.length; i++) {
+      const c = dummyBookComments[i];
+      await prisma.bookComment.create({
+        data: {
+          body: c.body,
+          bookId: book.id,
+          userId: c.userId,
+          status: "APPROVED",
+          createdAt: new Date(Date.now() - (10 - i) * 3600000),
+        },
+      });
+    }
+  }
+
+  // ─── Dummy Likes ─────────────────────────────────────────
+  const countPoemLikes = await prisma.like.count({ where: { poemId: poem1.id } });
+  if (countPoemLikes === 0) {
+    await prisma.like.createMany({
+      data: [
+        { poemId: poem1.id, userId: user1.id },
+        { poemId: poem1.id, userId: user2.id },
+        { poemId: poem1.id, userId: user3.id },
+      ],
+    });
+  }
+
+  const countBookLikes = await prisma.bookLike.count({ where: { bookId: book.id } });
+  if (countBookLikes === 0) {
+    await prisma.bookLike.createMany({
+      data: [
+        { bookId: book.id, userId: user2.id },
+        { bookId: book.id, userId: user3.id },
+        { bookId: book.id, userId: user4.id },
+        { bookId: book.id, userId: user5.id },
+      ],
+    });
+  }
 
   console.log("✅ Seed data created successfully");
 }
