@@ -314,6 +314,7 @@ model BookOrder {
   totalAmount      Decimal     @db.Decimal(10, 2)
   paymentData      String?
   paymentMime      String?
+  paymentUrl       String?
   status           OrderStatus @default(PENDING)
   adminNote        String?
   trackingProvider String?
@@ -352,4 +353,19 @@ model Campaign {
   createdAt DateTime @default(now())
 
   @@map("campaigns")
+}
+
+model Song {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  description String?
+  audioUrl    String
+  coverUrl    String?
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("songs")
 }

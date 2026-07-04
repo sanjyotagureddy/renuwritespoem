@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { put } from "@vercel/blob";
 import { getPrisma } from "@/lib/db";
 import { sendOrderConfirmation } from "@/lib/email";
 
@@ -195,6 +196,7 @@ export async function POST(request: Request) {
   // Process payment screenshot
   let paymentData: string | null = null;
   let paymentMime: string | null = null;
+  let paymentUrl: string | null = null;
 
   if (!ALLOWED_TYPES.has(screenshot.type)) {
     return NextResponse.json(
@@ -215,8 +217,24 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  paymentData = buffer.toString("base64");
-  paymentMime = screenshot.type;
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      const ext = screenshot.type.split("/")[1] || "png";
+      const screenshotBlob = await put(`orders/payment-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`, screenshot, {
+        access: "public",
+      });
+      paymentUrl = screenshotBlob.url;
+    } catch (err) {
+      console.error("Vercel Blob screenshot upload failed, falling back to base64 DB:", err);
+      paymentData = buffer.toString("base64");
+      paymentMime = screenshot.type;
+    }
+  } else {
+    paymentData = buffer.toString("base64");
+    paymentMime = screenshot.type;
+  }
+
   const orderNumber = await createUniqueOrderNumber(prisma);
 
   const order = await prisma.bookOrder.create({
@@ -235,12 +253,11 @@ export async function POST(request: Request) {
       totalAmount,
       paymentData,
       paymentMime,
+      paymentUrl,
       bookId: book.id,
     },
     select: { id: true, orderNumber: true },
   });
-
-  // Send emails (don't block the response if it fails)
   let buyerSent = false;
   let adminSent = false;
   try {

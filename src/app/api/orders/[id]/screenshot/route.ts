@@ -16,10 +16,18 @@ export async function GET(
 
   const order = await prisma.bookOrder.findUnique({
     where: { id },
-    select: { paymentData: true, paymentMime: true },
+    select: { paymentData: true, paymentMime: true, paymentUrl: true },
   });
 
-  if (!order?.paymentData || !order.paymentMime) {
+  if (!order) {
+    return new NextResponse(null, { status: 404 });
+  }
+
+  if (order.paymentUrl && order.paymentUrl.startsWith("http")) {
+    return NextResponse.redirect(order.paymentUrl);
+  }
+
+  if (!order.paymentData || !order.paymentMime) {
     return new NextResponse(null, { status: 404 });
   }
 

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { put, del } from "@vercel/blob";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
 import { sendOrderStatusUpdate } from "@/lib/email";
@@ -424,17 +425,33 @@ export async function createBook(formData: FormData) {
 
   let coverData: string | null = null;
   let coverMime: string | null = null;
+  let coverImage: string | null = null;
+
   if (coverFile && coverFile.size > 0) {
-    const result = await processBookCover(coverFile);
-    coverData = result.data;
-    coverMime = result.mime;
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        const coverBlob = await put(`books/cover-${Date.now()}-${coverFile.name}`, coverFile, {
+          access: "public",
+        });
+        coverImage = coverBlob.url;
+      } catch (err) {
+        console.error("Vercel Blob book cover upload failed, falling back to base64 DB:", err);
+        const result = await processBookCover(coverFile);
+        coverData = result.data;
+        coverMime = result.mime;
+      }
+    } else {
+      const result = await processBookCover(coverFile);
+      coverData = result.data;
+      coverMime = result.mime;
+    }
   }
 
   if (status === "AVAILABLE") {
     assertBookCanBeAvailable({
       title,
       price,
-      hasCover: Boolean(coverData),
+      hasCover: Boolean(coverData) || Boolean(coverImage),
     });
   }
 
@@ -450,7 +467,7 @@ export async function createBook(formData: FormData) {
       description: description || null,
       coverData,
       coverMime,
-      coverImage: null,
+      coverImage,
       price,
       discountedPrice,
       shippingCharge,
@@ -460,7 +477,7 @@ export async function createBook(formData: FormData) {
     },
   });
 
-  // Set coverImage to the API route now that we have the ID
+  // Set coverImage to the API route only if we used the database base64 fallback
   if (coverData) {
     await prisma.book.update({
       where: { id: book.id },
@@ -528,10 +545,34 @@ export async function updateBook(formData: FormData) {
   };
 
   if (coverFile && coverFile.size > 0) {
-    const result = await processBookCover(coverFile);
-    updateData.coverData = result.data;
-    updateData.coverMime = result.mime;
-    updateData.coverImage = `/api/book-covers/${id}`;
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        if (existing.coverImage && existing.coverImage.startsWith("http")) {
+          try {
+            await del(existing.coverImage);
+          } catch (e) {
+            console.error("Failed to delete old book cover from Vercel Blob:", e);
+          }
+        }
+        const coverBlob = await put(`books/cover-${Date.now()}-${coverFile.name}`, coverFile, {
+          access: "public",
+        });
+        updateData.coverImage = coverBlob.url;
+        updateData.coverData = null;
+        updateData.coverMime = null;
+      } catch (err) {
+        console.error("Vercel Blob cover update failed, falling back to base64 DB:", err);
+        const result = await processBookCover(coverFile);
+        updateData.coverData = result.data;
+        updateData.coverMime = result.mime;
+        updateData.coverImage = `/api/book-covers/${id}`;
+      }
+    } else {
+      const result = await processBookCover(coverFile);
+      updateData.coverData = result.data;
+      updateData.coverMime = result.mime;
+      updateData.coverImage = `/api/book-covers/${id}`;
+    }
   }
 
   if (status === "AVAILABLE") {
@@ -566,8 +607,18 @@ export async function deleteBook(formData: FormData) {
   if (!id) throw new Error("Book ID is required.");
 
   const prisma = getPrisma();
-  const existing = await prisma.book.findUnique({ where: { id } });
+  const existing = await prisma.book.findUnique({
+    where: { id },
+    select: { id: true, slug: true, coverImage: true },
+  });
   if (existing) {
+    if (existing.coverImage && existing.coverImage.startsWith("http") && process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        await del(existing.coverImage);
+      } catch (e) {
+        console.error("Failed to delete book cover from Vercel Blob:", e);
+      }
+    }
     await prisma.book.delete({ where: { id } });
     await invalidateCache(["home:featured-data", `book:details:${existing.slug}`]);
   }
@@ -840,3 +891,112 @@ export async function clearAllCache() {
   revalidatePath("/books");
   revalidatePath("/admin");
 }
+
+// ─── Songs / Audio ───────────────────────────────────────────
+
+export async function createSong(formData: FormData) {
+  await requireAdmin();
+
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const audioFile = formData.get("audioFile") as File;
+  const coverFile = formData.get("coverFile") as File;
+  const publishNow = formData.get("publishNow") === "on";
+
+  if (!title) {
+    throw new Error("Title is required.");
+  }
+  if (!audioFile || audioFile.size === 0) {
+    throw new Error("Audio file is required.");
+  }
+
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    throw new Error(
+      "Missing BLOB_READ_WRITE_TOKEN in environment variables. Please configure it in your Vercel Dashboard or .env.local file to enable audio uploads."
+    );
+  }
+
+  let audioUrl = "";
+  let coverUrl = null;
+
+  try {
+    const audioBlob = await put(`songs/audio-${Date.now()}-${audioFile.name}`, audioFile, {
+      access: "public",
+    });
+    audioUrl = audioBlob.url;
+
+    if (coverFile && coverFile.size > 0) {
+      const coverBlob = await put(`songs/cover-${Date.now()}-${coverFile.name}`, coverFile, {
+        access: "public",
+      });
+      coverUrl = coverBlob.url;
+    }
+  } catch (error: any) {
+    console.error("Vercel Blob upload failed:", error);
+    throw new Error(`Failed to upload media files: ${error?.message || error}`);
+  }
+
+  const baseSlug = slugify(title);
+  const randomSuffix = Math.random().toString(36).slice(2, 7);
+  const slug = `${baseSlug}-${randomSuffix}`;
+
+  const prisma = getPrisma();
+  await prisma.song.create({
+    data: {
+      title,
+      slug,
+      description: description || null,
+      audioUrl,
+      coverUrl,
+      published: publishNow,
+      publishedAt: publishNow ? new Date() : null,
+    },
+  });
+
+  revalidatePath("/songs");
+  revalidatePath("/admin/songs");
+  redirect("/admin/songs");
+}
+
+export async function updateSongStatus(id: string, published: boolean) {
+  await requireAdmin();
+  const prisma = getPrisma();
+  await prisma.song.update({
+    where: { id },
+    data: {
+      published,
+      publishedAt: published ? new Date() : null,
+    },
+  });
+  revalidatePath("/songs");
+  revalidatePath("/admin/songs");
+}
+
+export async function deleteSong(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "").trim();
+  if (!id) throw new Error("Song ID is required.");
+
+  const prisma = getPrisma();
+  const existing = await prisma.song.findUnique({ where: { id } });
+  if (!existing) throw new Error("Song not found.");
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      if (existing.audioUrl) {
+        await del(existing.audioUrl);
+      }
+      if (existing.coverUrl) {
+        await del(existing.coverUrl);
+      }
+    } catch (err) {
+      console.error("Failed to delete Vercel Blob files:", err);
+    }
+  }
+
+  await prisma.song.delete({ where: { id } });
+
+  revalidatePath("/songs");
+  revalidatePath("/admin/songs");
+}
+

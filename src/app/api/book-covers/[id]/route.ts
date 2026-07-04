@@ -10,10 +10,18 @@ export async function GET(
 
   const book = await prisma.book.findUnique({
     where: { id },
-    select: { coverData: true, coverMime: true },
+    select: { coverData: true, coverMime: true, coverImage: true },
   });
 
-  if (!book?.coverData || !book.coverMime) {
+  if (!book) {
+    return new NextResponse(null, { status: 404 });
+  }
+
+  if (book.coverImage && book.coverImage.startsWith("http")) {
+    return NextResponse.redirect(book.coverImage);
+  }
+
+  if (!book.coverData || !book.coverMime) {
     return new NextResponse(null, { status: 404 });
   }
 
