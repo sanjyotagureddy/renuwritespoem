@@ -6,6 +6,7 @@ import { getServerAuthSession } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
 import { sendOrderStatusUpdate } from "@/lib/email";
 import type { PoemLanguage } from "@/lib/poem-language";
+import { invalidateCache } from "@/lib/cache";
 
 async function requireAdmin() {
   const session = await getServerAuthSession();
@@ -99,6 +100,8 @@ export async function createPoem(formData: FormData) {
     },
   });
 
+  await invalidateCache("home:featured-data");
+
   revalidatePath("/poems");
   revalidatePath("/");
   revalidatePath("/admin");
@@ -142,6 +145,8 @@ export async function updatePoem(formData: FormData) {
     },
   });
 
+  await invalidateCache(["home:featured-data", `poem:details:${existing.slug}`]);
+
   revalidatePath("/poems");
   revalidatePath(`/poems/${existing.slug}`);
   revalidatePath("/");
@@ -156,7 +161,11 @@ export async function deletePoem(formData: FormData) {
   if (!id) throw new Error("Poem ID is required.");
 
   const prisma = getPrisma();
-  await prisma.poem.delete({ where: { id } });
+  const existing = await prisma.poem.findUnique({ where: { id } });
+  if (existing) {
+    await prisma.poem.delete({ where: { id } });
+    await invalidateCache(["home:featured-data", `poem:details:${existing.slug}`]);
+  }
 
   revalidatePath("/poems");
   revalidatePath("/");
@@ -183,6 +192,8 @@ export async function togglePublish(formData: FormData) {
         newPublished && !poem.publishedAt ? new Date() : poem.publishedAt,
     },
   });
+
+  await invalidateCache(["home:featured-data", `poem:details:${poem.slug}`]);
 
   revalidatePath("/poems");
   revalidatePath(`/poems/${poem.slug}`);
@@ -215,6 +226,8 @@ export async function toggleFeatured(formData: FormData) {
     where: { id },
     data: { featured: !poem.featured },
   });
+
+  await invalidateCache(["home:featured-data", `poem:details:${poem.slug}`]);
 
   revalidatePath("/poems");
   revalidatePath("/");
@@ -451,6 +464,8 @@ export async function createBook(formData: FormData) {
     });
   }
 
+  await invalidateCache("home:featured-data");
+
   revalidatePath("/books");
   revalidatePath("/");
   revalidatePath("/admin");
@@ -531,6 +546,8 @@ export async function updateBook(formData: FormData) {
     data: updateData,
   });
 
+  await invalidateCache(["home:featured-data", `book:details:${existing.slug}`]);
+
   revalidatePath("/books");
   revalidatePath(`/books/${existing.slug}`);
   revalidatePath("/");
@@ -545,7 +562,11 @@ export async function deleteBook(formData: FormData) {
   if (!id) throw new Error("Book ID is required.");
 
   const prisma = getPrisma();
-  await prisma.book.delete({ where: { id } });
+  const existing = await prisma.book.findUnique({ where: { id } });
+  if (existing) {
+    await prisma.book.delete({ where: { id } });
+    await invalidateCache(["home:featured-data", `book:details:${existing.slug}`]);
+  }
 
   revalidatePath("/books");
   revalidatePath("/");
@@ -578,6 +599,8 @@ export async function toggleBookFeatured(formData: FormData) {
     where: { id },
     data: { featured: !book.featured },
   });
+
+  await invalidateCache(["home:featured-data", `book:details:${book.slug}`]);
 
   revalidatePath("/books");
   revalidatePath("/");
@@ -627,6 +650,8 @@ export async function updateBookStatus(formData: FormData) {
           : book.publishedAt,
     },
   });
+
+  await invalidateCache(["home:featured-data", `book:details:${book.slug}`]);
 
   revalidatePath("/books");
   revalidatePath(`/books/${book.slug}`);

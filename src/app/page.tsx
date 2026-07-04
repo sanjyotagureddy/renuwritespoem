@@ -8,6 +8,7 @@ import {
   type PoemLanguage,
 } from "@/lib/poem-language";
 import { siteConfig } from "@/lib/seo";
+import { getCache, setCache } from "@/lib/cache";
 
 function formatDate(date: Date | null): string {
   if (!date) return "";
@@ -21,6 +22,95 @@ function formatDate(date: Date | null): string {
 function formatPrice(value: number | null): string {
   if (value == null) return "";
   return `₹${value.toLocaleString("en-IN")}`;
+}
+
+import { Poem } from "@prisma/client";
+
+type HomepageCacheData = {
+  featuredPoems: Array<Poem & { _count: { likes: number; comments: number } }>;
+  latestPoems: Array<Poem & { _count: { likes: number; comments: number } }>;
+  totalPoems: number;
+  featuredBooks: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    description: string | null;
+    coverImage: string | null;
+    price: number | null | { toString(): string };
+    discountedPrice: number | null | { toString(): string };
+    shippingCharge: number | null | { toString(): string };
+    _count: { likes: number; comments: number };
+  }>;
+  totalBooks: number;
+};
+
+async function getHomepageData(): Promise<HomepageCacheData> {
+  const cacheKey = "home:featured-data";
+  const cached = await getCache<HomepageCacheData>(cacheKey);
+  if (cached) {
+    const parseOptionalDate = (d: string | Date | null) => d ? new Date(d) : null;
+    const parseRequiredDate = (d: string | Date) => new Date(d);
+    
+    const processPoem = (p: Poem & { _count: { likes: number; comments: number } }) => ({
+      ...p,
+      publishedAt: parseOptionalDate(p.publishedAt),
+      createdAt: parseRequiredDate(p.createdAt),
+      updatedAt: parseRequiredDate(p.updatedAt),
+    });
+    return {
+      featuredPoems: cached.featuredPoems.map(processPoem),
+      latestPoems: cached.latestPoems.map(processPoem),
+      totalPoems: cached.totalPoems,
+      featuredBooks: cached.featuredBooks,
+      totalBooks: cached.totalBooks,
+    };
+  }
+
+  const prisma = getPrisma();
+  const [featuredPoems, latestPoems, totalPoems, featuredBooks, totalBooks] =
+    await Promise.all([
+      prisma.poem.findMany({
+        where: { featured: true, published: true },
+        orderBy: { publishedAt: "desc" },
+        take: 3,
+        include: { _count: { select: { likes: true, comments: true } } },
+      }),
+      prisma.poem.findMany({
+        where: { published: true },
+        orderBy: { publishedAt: "desc" },
+        take: 6,
+        include: { _count: { select: { likes: true, comments: true } } },
+      }),
+      prisma.poem.count({ where: { published: true } }),
+      prisma.book.findMany({
+        where: { featured: true, status: "AVAILABLE" },
+        orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+        take: 3,
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          description: true,
+          coverImage: true,
+          price: true,
+          discountedPrice: true,
+          shippingCharge: true,
+          _count: { select: { likes: true, comments: true } },
+        },
+      }),
+      prisma.book.count({ where: { status: "AVAILABLE" } }),
+    ]);
+
+  const data = {
+    featuredPoems,
+    latestPoems,
+    totalPoems,
+    featuredBooks,
+    totalBooks,
+  };
+  
+  await setCache(cacheKey, data, 3600); // cache for 1 hour
+  return data;
 }
 
 export default async function Home() {
@@ -46,41 +136,8 @@ export default async function Home() {
     "jobTitle": "Poet & Author"
   };
 
-  const prisma = getPrisma();
-
-  const [featuredPoems, latestPoems, totalPoems, featuredBooks, totalBooks] =
-    await Promise.all([
-    prisma.poem.findMany({
-      where: { featured: true, published: true },
-      orderBy: { publishedAt: "desc" },
-      take: 3,
-      include: { _count: { select: { likes: true, comments: true } } },
-    }),
-    prisma.poem.findMany({
-      where: { published: true },
-      orderBy: { publishedAt: "desc" },
-      take: 6,
-      include: { _count: { select: { likes: true, comments: true } } },
-    }),
-    prisma.poem.count({ where: { published: true } }),
-    prisma.book.findMany({
-      where: { featured: true, status: "AVAILABLE" },
-      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-      take: 3,
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        description: true,
-        coverImage: true,
-        price: true,
-        discountedPrice: true,
-        shippingCharge: true,
-        _count: { select: { likes: true, comments: true } },
-      },
-    }),
-    prisma.book.count({ where: { status: "AVAILABLE" } }),
-  ]);
+  const { featuredPoems, latestPoems, totalPoems, featuredBooks, totalBooks } =
+    await getHomepageData();
 
   return (
     <>

@@ -11,6 +11,7 @@ import {
 import LikeButton from "@/components/poems/like-button";
 import CommentSection from "@/components/poems/comment-section";
 import { siteConfig } from "@/lib/seo";
+import { getCache, setCache } from "@/lib/cache";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -25,29 +26,43 @@ function formatDate(date: Date | null): string {
   }).format(date);
 }
 
-async function getPoemBySlug(slug: string) {
+import { Poem } from "@prisma/client";
+
+type PoemWithRelations = Poem & {
+  genre: { name: string; slug: string } | null;
+  tags: Array<{ tag: { name: string; slug: string } }>;
+};
+
+async function getPoemBySlug(slug: string): Promise<PoemWithRelations | null> {
+  const cacheKey = `poem:details:${slug}`;
+  const cached = await getCache<PoemWithRelations>(cacheKey);
+  if (cached) {
+    if (cached.publishedAt) cached.publishedAt = new Date(cached.publishedAt);
+    if (cached.createdAt) cached.createdAt = new Date(cached.createdAt);
+    if (cached.updatedAt) cached.updatedAt = new Date(cached.updatedAt);
+    return cached;
+  }
+
   const prisma = getPrisma();
-  return prisma.poem.findUnique({
+  const poem = await prisma.poem.findUnique({
     where: { slug },
     include: {
       genre: { select: { name: true, slug: true } },
       tags: { include: { tag: { select: { name: true, slug: true } } } },
     },
   });
+  
+  if (poem) {
+    await setCache(cacheKey, poem, 86400); // Cache for 24 hours
+  }
+  return poem;
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const prisma = getPrisma();
   const { slug } = await params;
-  const poem = await prisma.poem.findUnique({
-    where: { slug },
-    include: {
-      genre: { select: { name: true } },
-      tags: { include: { tag: { select: { name: true } } } },
-    },
-  });
+  const poem = await getPoemBySlug(slug);
 
   if (!poem || !poem.published) {
     return {

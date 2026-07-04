@@ -7,6 +7,7 @@ import BookPurchaseLayout from "@/components/books/book-purchase-layout";
 import BookLikeButton from "@/components/books/like-button";
 import BookCommentSection from "@/components/books/comment-section";
 import { siteConfig } from "@/lib/seo";
+import { getCache, setCache } from "@/lib/cache";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -45,14 +46,36 @@ function formatDate(date: Date | null): string {
   }).format(date);
 }
 
+import { Book } from "@prisma/client";
+
+type BookCacheItem = Omit<Book, "coverData" | "coverMime">;
+
+async function getBookBySlug(slug: string): Promise<BookCacheItem | null> {
+  const cacheKey = `book:details:${slug}`;
+  const cached = await getCache<BookCacheItem>(cacheKey);
+  if (cached) {
+    if (cached.createdAt) cached.createdAt = new Date(cached.createdAt);
+    if (cached.updatedAt) cached.updatedAt = new Date(cached.updatedAt);
+    return cached;
+  }
+
+  const prisma = getPrisma();
+  const book = await prisma.book.findUnique({
+    where: { slug },
+    omit: { coverData: true, coverMime: true },
+  });
+
+  if (book) {
+    await setCache(cacheKey, book, 86400); // Cache for 24 hours
+  }
+  return book;
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const book = await getPrisma().book.findUnique({
-    where: { slug },
-    omit: { coverData: true, coverMime: true },
-  });
+  const book = await getBookBySlug(slug);
 
   if (!book) {
     return { title: "Book Not Found" };
@@ -85,12 +108,7 @@ export async function generateMetadata({
 
 export default async function BookDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const prisma = getPrisma();
-
-  const book = await prisma.book.findUnique({
-    where: { slug },
-    omit: { coverData: true, coverMime: true },
-  });
+  const book = await getBookBySlug(slug);
 
   if (!book || book.status === "ARCHIVED") {
     notFound();
