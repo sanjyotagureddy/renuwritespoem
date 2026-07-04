@@ -12,10 +12,8 @@ export const metadata: Metadata = {
 const navItems = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/poems", label: "Poems" },
-  { href: "/admin/poems/new", label: "New Poem" },
   { href: "/admin/genres", label: "Genres" },
   { href: "/admin/books", label: "Books" },
-  { href: "/admin/books/new", label: "New Book" },
   { href: "/admin/songs", label: "Songs" },
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/comments", label: "Comments" },
