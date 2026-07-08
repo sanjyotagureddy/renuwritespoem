@@ -59,14 +59,14 @@ export default function AudioClient({ initialAudio }: { initialAudio: Track[] })
 
   return (
     <div className="space-y-6 pb-24" onContextMenu={(e) => e.preventDefault()}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="columns-1 md:columns-2 gap-6 space-y-6">
         {initialAudio.map((track) => {
           const isActive = activeTrack?.id === track.id;
           return (
             <div
               key={track.id}
               onClick={() => handleTrackSelect(track)}
-              className={`group flex items-start gap-4 rounded-2xl border p-5 transition-all duration-300 cursor-pointer select-none ${
+              className={`break-inside-avoid group flex items-start gap-4 rounded-2xl border p-5 transition-all duration-300 cursor-pointer select-none ${
                 isActive
                   ? "border-violet-500 bg-violet-500/[0.03] shadow-lg shadow-violet-500/5"
                   : "border-white/10 bg-white/[0.02] hover:border-violet-500/30 hover:bg-violet-500/[0.01] hover:shadow-lg hover:shadow-violet-500/[0.02]"

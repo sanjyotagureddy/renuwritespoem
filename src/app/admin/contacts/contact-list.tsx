@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { replyToContact, deleteContact } from "../contact-actions";
-import { Mail, Trash2, ChevronDown, ChevronUp, CheckCircle2, Send } from "lucide-react";
+import { replyToContact, deleteContact, markAsUnread } from "../contact-actions";
+import { Mail, Trash2, ChevronDown, ChevronUp, CheckCircle2, Send, MailOpen } from "lucide-react";
 
 type ContactMessage = {
   id: string;
@@ -138,6 +138,30 @@ function MessageCard({ msg }: { msg: ContactMessage }) {
             <Mail className="h-3.5 w-3.5" />
             {replied ? "Re-reply" : "Reply"}
           </button>
+
+          {/* Mark as Unread */}
+          {replied && (
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const fd = new FormData(e.currentTarget);
+              startTransition(async () => {
+                await markAsUnread(fd);
+                setReplied(false);
+                setRepliedAt(null);
+              });
+            }}>
+              <input type="hidden" name="id" value={msg.id} />
+              <button
+                type="submit"
+                disabled={isPending}
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 text-[11px] font-bold uppercase tracking-wider text-amber-400 hover:bg-amber-500/20 transition-colors disabled:opacity-40"
+                title="Mark as unread"
+              >
+                <MailOpen className="h-3.5 w-3.5" />
+                Unread
+              </button>
+            </form>
+          )}
 
           {/* Delete */}
           <form onSubmit={handleDelete}>

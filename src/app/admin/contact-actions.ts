@@ -47,3 +47,18 @@ export async function deleteContact(formData: FormData) {
 
   revalidatePath("/admin/contacts");
 }
+
+export async function markAsUnread(formData: FormData) {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "").trim();
+  if (!id) throw new Error("Message ID is required.");
+
+  const prisma = getPrisma();
+  await prisma.contactMessage.update({
+    where: { id },
+    data: { repliedAt: null, repliedNote: null },
+  });
+
+  revalidatePath("/admin/contacts");
+}
