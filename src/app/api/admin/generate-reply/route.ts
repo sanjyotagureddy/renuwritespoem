@@ -68,7 +68,7 @@ Message: ${message}`;
     const fallbackReply = `Hi ${senderName},\n\nThank you for reaching out about \"${subject}\". I appreciate your message and will get back to you soon.\n\nWith gratitude,\nRenu`;
     // In development, return error details for debugging; otherwise just the fallback reply
     if (process.env.NODE_ENV !== "production") {
-      return NextResponse.json({ reply: fallbackReply, error: errorInfo }, { status: 500 });
+      return NextResponse.json({ reply: fallbackReply, error: errorInfo.message }, { status: 500 });
     }
     return NextResponse.json({ reply: fallbackReply });
   }

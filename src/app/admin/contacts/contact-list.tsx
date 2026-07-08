@@ -51,7 +51,10 @@ function MessageCard({ msg }: { msg: ContactMessage }) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to generate.");
+    if (!res.ok) {
+      const errMsg = typeof data.error === 'object' ? JSON.stringify(data.error) : data.error;
+      throw new Error(errMsg || "Failed to generate.");
+    }
       if (textareaRef.current) {
         textareaRef.current.value = data.reply;
       }
