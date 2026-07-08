@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { validateContactMessageTone } from "@/lib/contact-guard";
 import { sendContactMessage } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
+import { getPrisma } from "@/lib/db";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_PATTERN = /^[+\d][\d\s().-]{6,19}$/;
@@ -61,7 +62,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: toneError }, { status: 400 });
     }
 
+    // Persist to DB first
+    const prisma = getPrisma();
+    await prisma.contactMessage.create({
+      data: { name, email, phone, subject, message },
+    });
+
     await sendContactMessage({ name, email, phone, subject, message });
+
     return NextResponse.json({ sent: true });
   } catch (error) {
     console.error("Contact email failed:", error);

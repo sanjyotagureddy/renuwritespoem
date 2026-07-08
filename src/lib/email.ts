@@ -422,18 +422,7 @@ export async function sendOrderStatusUpdate({
     to: buyerEmail,
     replyTo: FROM_EMAIL,
     subject: `${statusCopy.subject} — Order ${orderId} — ${bookTitle}`,
-    text: `${statusCopy.heading}
-
-Hi ${buyerName},
-${statusCopy.message}
-
-Book: ${bookTitle}
-Order ID: ${orderId}${trackingProvider ? `\nProvider: ${trackingProvider}` : ""}${trackingNumber ? `\nTracking: ${trackingNumber}` : ""}${trackingUrl ? `\nTrack: ${trackingUrl}` : ""}${note ? `\n\nNote: ${note}` : ""}
-
-If you contact us about this order, please include Order ID: ${orderId}.
-
-With gratitude,
-Renu Writes Poem`,
+    text: `${statusCopy.heading}\r\n\r\nHi ${buyerName},\r\n${statusCopy.message}\r\n\r\nBook: ${bookTitle}\r\nOrder ID: ${orderId}${trackingProvider ? `\r\nProvider: ${trackingProvider}` : ""}${trackingNumber ? `\r\nTracking: ${trackingNumber}` : ""}${trackingUrl ? `\r\nTrack: ${trackingUrl}` : ""}${note ? `\r\n\r\nNote: ${note}` : ""}\r\n\r\nIf you contact us about this order, please include Order ID: ${orderId}.\r\n\r\nWith gratitude,\r\nRenu Writes Poem`,
     html: emailShell({
       eyebrow: statusCopy.eyebrow,
       badge: statusCopy.badge,
@@ -452,6 +441,43 @@ Renu Writes Poem`,
         ${trackingBlock}
         ${safeNote ? callout({ tone: "warm", title: "A note from us", body: safeNote }) : ""}
         ${orderSupportBlock(safeOrderId)}
+      `,
+    }),
+  });
+}
+
+export async function sendContactReply({
+  toName,
+  toEmail,
+  originalSubject,
+  replyBody,
+}: {
+  toName: string;
+  toEmail: string;
+  originalSubject: string;
+  replyBody: string;
+}): Promise<void> {
+  const mailer = getMailer();
+  if (!mailer || !FROM_EMAIL) throw new Error("Email is not configured.");
+
+  const safeName = escapeHtml(toName);
+  const safeSubject = escapeHtml(originalSubject);
+  const safeBody = escapeHtml(replyBody).replaceAll("\n", "<br />");
+
+  await mailer.sendMail({
+    from: FROM_EMAIL,
+    to: toEmail,
+    replyTo: FROM_EMAIL,
+    subject: `Re: ${cleanSubjectPart(originalSubject)}`,
+    text: `Hi ${toName},\n\n${replyBody}\n\nWith gratitude,\nRenu Writes Poem`,
+    html: emailShell({
+      eyebrow: "Reply from Renu",
+      title: `Re: ${safeSubject}`,
+      subtitle: `A personal reply to your message.`,
+      children: `
+        <p style="margin:0 0 10px;">Hi ${safeName},</p>
+        <div style="margin:20px 0; padding:20px; border-radius:18px; background:#fff7ed; color:#431407; line-height:1.75;">${safeBody}</div>
+        <p style="margin:18px 0 0; color:#6b4f43;">Feel free to reply to this email if you have any follow-up questions.</p>
       `,
     }),
   });

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import SignOutButton from "@/components/auth/sign-out-button";
 import { getServerAuthSession } from "@/lib/auth";
+import { getPrisma } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: { default: "Admin", template: "%s | Admin" },
@@ -17,6 +18,7 @@ const navItems = [
   { href: "/admin/audio", label: "Audio" },
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/comments", label: "Comments" },
+  { href: "/admin/contacts", label: "Messages" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -39,6 +41,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
+  // Fetch unreplied messages count for the nav badge
+  let unrepliedCount = 0;
+  try {
+    unrepliedCount = await getPrisma().contactMessage.count({
+      where: { repliedAt: null },
+    });
+  } catch {
+    // Silently ignore — don't break the entire admin layout
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-10 md:py-14">
       {/* Top bar */}
@@ -58,9 +70,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link
             key={item.href}
             href={item.href}
-            className="rounded-lg px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors whitespace-nowrap"
+            className="relative rounded-lg px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors whitespace-nowrap"
           >
             {item.label}
+            {item.label === "Messages" && unrepliedCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-violet-500 px-1 text-[10px] font-bold text-white shadow-lg shadow-violet-500/30">
+                {unrepliedCount > 99 ? "99+" : unrepliedCount}
+              </span>
+            )}
           </Link>
         ))}
       </nav>
@@ -69,3 +86,4 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     </div>
   );
 }
+
