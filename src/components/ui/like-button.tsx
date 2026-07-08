@@ -11,7 +11,7 @@ export default function LikeButton({
   type,
 }: {
   slug: string;
-  type: "poem" | "book" | "song";
+  type: "poem" | "book" | "audio";
 }) {
   const { data: session } = useSession();
   const [liked, setLiked] = useState(false);
@@ -21,7 +21,7 @@ export default function LikeButton({
   const [loading, setLoading] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
 
-  const likesApi = `/api/${type === "book" ? "books" : type === "song" ? "songs" : "poems"}/${slug}/likes`;
+  const likesApi = `/api/${type === "book" ? "books" : type === "audio" ? "audio" : "poems"}/${slug}/likes`;
 
   useEffect(() => {
     fetch(likesApi)

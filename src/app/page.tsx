@@ -3,7 +3,7 @@ import { siteConfig } from "@/lib/seo";
 import { getCache, setCache } from "@/lib/cache";
 import SlidingBanner from "@/components/home/sliding-banner";
 
-import { Poem, Song } from "@prisma/client";
+import { Poem, Audio } from "@prisma/client";
 
 type HomepageCacheData = {
   featuredPoems: Array<Poem & { _count: { likes: number; comments: number } }>;
@@ -21,7 +21,7 @@ type HomepageCacheData = {
     _count: { likes: number; comments: number };
   }>;
   totalBooks: number;
-  latestSongs: Array<Song>;
+  latestAudio: Array<Audio>;
 };
 
 async function getHomepageData(): Promise<HomepageCacheData> {
@@ -43,7 +43,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
       totalPoems: cached.totalPoems,
       featuredBooks: cached.featuredBooks,
       totalBooks: cached.totalBooks,
-      latestSongs: (cached.latestSongs ?? []).map((s) => ({
+      latestAudio: (cached.latestAudio ?? []).map((s) => ({
         ...s,
         publishedAt: parseOptionalDate(s.publishedAt),
         createdAt: parseRequiredDate(s.createdAt),
@@ -53,7 +53,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
   }
 
   const prisma = getPrisma();
-  const [featuredPoems, latestPoems, totalPoems, featuredBooks, totalBooks, latestSongs] =
+  const [featuredPoems, latestPoems, totalPoems, featuredBooks, totalBooks, latestAudio] =
     await Promise.all([
       prisma.poem.findMany({
         where: { featured: true, published: true },
@@ -85,7 +85,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
         },
       }),
       prisma.book.count({ where: { status: "AVAILABLE" } }),
-      prisma.song.findMany({
+      prisma.audio.findMany({
         where: { published: true },
         orderBy: { publishedAt: "desc" },
         take: 3,
@@ -98,7 +98,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
     totalPoems,
     featuredBooks,
     totalBooks,
-    latestSongs,
+    latestAudio,
   };
   
   await setCache(cacheKey, data, 3600); // cache for 1 hour
@@ -128,7 +128,7 @@ export default async function Home() {
     "jobTitle": "Poet & Author"
   };
 
-  const { featuredPoems, featuredBooks, latestSongs } =
+  const { featuredPoems, featuredBooks, latestAudio } =
     await getHomepageData();
 
   return (
@@ -143,7 +143,7 @@ export default async function Home() {
       />
       <SlidingBanner
         featuredBooks={featuredBooks}
-        latestSongs={latestSongs}
+        latestAudio={latestAudio}
         featuredPoems={featuredPoems}
       />
     </>

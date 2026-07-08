@@ -14,38 +14,7 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-function statusLabel(status: string): string {
-  switch (status) {
-    case "AVAILABLE":
-      return "Available";
-    case "COMING_SOON":
-      return "Coming Soon";
-    case "ARCHIVED":
-      return "Archived";
-    default:
-      return status;
-  }
-}
-
-function statusColor(status: string): string {
-  switch (status) {
-    case "AVAILABLE":
-      return "border-emerald-400/30 text-emerald-400/80 bg-emerald-500/10";
-    case "COMING_SOON":
-      return "border-amber-400/30 text-amber-400/80 bg-amber-500/10";
-    default:
-      return "border-white/15 text-white/40 bg-white/5";
-  }
-}
-
-function formatDate(date: Date | null): string {
-  if (!date) return "";
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(date);
-}
+import { statusLabel, statusColor, formatDate } from "@/lib/utils";
 
 import { Book } from "@prisma/client";
 

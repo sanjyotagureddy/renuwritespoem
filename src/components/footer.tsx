@@ -4,7 +4,7 @@ const footerLinks = [
   { href: "/poems", label: "Poems" },
   { href: "/genres", label: "Genres" },
   { href: "/books", label: "Books" },
-  { href: "/songs", label: "Songs" },
+  { href: "/audio", label: "Audio" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];

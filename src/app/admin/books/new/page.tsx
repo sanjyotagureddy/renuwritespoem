@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createBook } from "../../actions";
+import { createBook } from "../../book-actions";
 
 export default function NewBookPage() {
   return (

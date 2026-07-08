@@ -1,17 +1,9 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { poemLanguageLabel, type PoemLanguage } from "@/lib/poem-language";
-import { toggleFeatured } from "./actions";
+import { toggleFeatured } from "./poem-actions";
 import ClearCacheButton from "@/components/admin/clear-cache-button";
-
-function formatDate(date: Date | null): string {
-  if (!date) return "—";
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
+import { formatDate } from "@/lib/utils";
 
 function bookStatusLabel(status: string): string {
   switch (status) {

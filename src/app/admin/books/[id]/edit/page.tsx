@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
-import { updateBook } from "../../../actions";
+import { updateBook } from "../../../book-actions";
 
 type EditBookPageProps = {
   params: Promise<{ id: string }>;

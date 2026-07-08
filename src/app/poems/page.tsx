@@ -35,14 +35,7 @@ const DEFAULT_PAGE_SIZE = 9;
 const SORT_OPTIONS = ["popular", "newest"] as const;
 type PoemSort = (typeof SORT_OPTIONS)[number];
 
-function formatDate(date: Date | null): string {
-  if (!date) return "Unpublished";
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
+import { formatDate } from "@/lib/utils";
 
 export default async function PoemsPage({ searchParams }: PoemsPageProps) {
   const prisma = getPrisma();
@@ -164,11 +157,19 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     return `/poems${qs ? `?${qs}` : ""}`;
   }
   return (
-    <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
-      <div className="mb-8">
-        <p className="text-sm uppercase tracking-[0.22em] text-white/40 mb-3">Poetry Collection</p>
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Poems</h1>
-        <p className="text-lg text-white/60 max-w-3xl font-[family-name:var(--font-inter)]">
+    <div className="relative max-w-6xl mx-auto px-6 py-16 md:py-24 overflow-hidden">
+      {/* Premium Visual Background Glow Accent */}
+      <div className="absolute -top-10 left-1/3 w-[35rem] h-[35rem] bg-amber-500/5 rounded-full blur-[130px] pointer-events-none -z-10" />
+
+      <div className="relative z-10 mb-8">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-medium tracking-wider text-amber-300 uppercase mb-4">
+          <span className="size-1.5 rounded-full bg-amber-400 animate-pulse" />
+          Poetry Collection
+        </span>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-amber-100 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
+          Poems
+        </h1>
+        <p className="text-lg text-white/60 max-w-3xl font-[family-name:var(--font-inter)] leading-relaxed">
           Explore verses written in English, Hindi, and Marathi. Each poem carries its own mood,
           language, and rhythm.
         </p>
@@ -267,7 +268,7 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
             return (
               <article
                 key={poem.id}
-                className="group relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.03] p-6 md:p-7 transition-colors hover:border-white/30"
+                className="group relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.03] p-6 md:p-7 transition-all duration-300 hover:border-amber-500/30 hover:bg-amber-500/[0.01] hover:shadow-lg hover:shadow-amber-500/[0.02]"
               >
                 <div className="mb-5 flex flex-wrap items-center gap-2">
                   <Link

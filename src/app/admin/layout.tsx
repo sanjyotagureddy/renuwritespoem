@@ -14,7 +14,7 @@ const navItems = [
   { href: "/admin/poems", label: "Poems" },
   { href: "/admin/genres", label: "Genres" },
   { href: "/admin/books", label: "Books" },
-  { href: "/admin/songs", label: "Songs" },
+  { href: "/admin/audio", label: "Audio" },
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/comments", label: "Comments" },
 ];

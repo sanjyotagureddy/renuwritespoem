@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { updateCommentStatus, deleteCommentAdmin, toggleCommentPin } from "@/app/admin/actions";
+import { updateCommentStatus, deleteCommentAdmin, toggleCommentPin } from "@/app/admin/comment-actions";
 import { Check, X, Trash2, BookOpen, FileText, Pin, Music } from "lucide-react";
 
 export type CommentItem = {
@@ -11,7 +11,7 @@ export type CommentItem = {
   createdAt: string; // ISO string from server
   status: "PENDING" | "APPROVED" | "REJECTED";
   user: { name: string | null; email: string };
-  commentType: "poem" | "book" | "song";
+  commentType: "poem" | "book" | "audio";
   targetTitle: string;
   targetLink: string;
   pinned: boolean;
@@ -19,6 +19,15 @@ export type CommentItem = {
 
 type CommentsListProps = {
   initialComments: CommentItem[];
+  counts: {
+    PENDING: number;
+    APPROVED: number;
+    REJECTED: number;
+    ALL: number;
+  };
+  filter: "PENDING" | "APPROVED" | "REJECTED" | "ALL";
+  page: number;
+  hasNextPage: boolean;
 };
 
 function statusBadge(status: string) {
@@ -34,29 +43,55 @@ function statusBadge(status: string) {
   }
 }
 
-export default function CommentsList({ initialComments }: CommentsListProps) {
+export default function CommentsList({
+  initialComments,
+  counts,
+  filter,
+  page,
+  hasNextPage,
+}: CommentsListProps) {
   const [comments, setComments] = useState<CommentItem[]>(initialComments);
-  const [filter, setFilter] = useState<"ALL" | "PENDING" | "APPROVED" | "REJECTED">("PENDING");
+  const [localCounts, setLocalCounts] = useState(counts);
   const [isPending, startTransition] = useTransition();
+
+  // Keep local comments state in sync when initialComments updates via SSR/URL changes
+  useState(() => {
+    setComments(initialComments);
+  });
+  useState(() => {
+    setLocalCounts(counts);
+  });
 
   async function handleStatusChange(
     id: string,
-    commentType: "poem" | "book" | "song",
+    commentType: "poem" | "book" | "audio",
     newStatus: "PENDING" | "APPROVED" | "REJECTED",
   ) {
+    const oldComment = comments.find((c) => c.id === id && c.commentType === commentType);
+    if (!oldComment) return;
+    const prevStatus = oldComment.status;
+
     startTransition(async () => {
       try {
         await updateCommentStatus(id, commentType, newStatus);
         setComments((prev) =>
           prev.map((c) => (c.id === id && c.commentType === commentType ? { ...c, status: newStatus } : c)),
         );
+        setLocalCounts((prev) => {
+          const next = { ...prev };
+          if (prevStatus !== newStatus) {
+            next[prevStatus] = Math.max(0, next[prevStatus] - 1);
+            next[newStatus] = next[newStatus] + 1;
+          }
+          return next;
+        });
       } catch (err) {
         alert(err instanceof Error ? err.message : "Failed to update status.");
       }
     });
   }
 
-  async function handleTogglePin(id: string, commentType: "poem" | "book" | "song", newPinned: boolean) {
+  async function handleTogglePin(id: string, commentType: "poem" | "book" | "audio", newPinned: boolean) {
     startTransition(async () => {
       try {
         await toggleCommentPin(id, commentType, newPinned);
@@ -69,12 +104,22 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
     });
   }
 
-  async function handleDelete(id: string, commentType: "poem" | "book" | "song") {
+  async function handleDelete(id: string, commentType: "poem" | "book" | "audio") {
+    const oldComment = comments.find((c) => c.id === id && c.commentType === commentType);
+    if (!oldComment) return;
+    const prevStatus = oldComment.status;
+
     if (!confirm("Are you sure you want to permanently delete this comment?")) return;
     startTransition(async () => {
       try {
         await deleteCommentAdmin(id, commentType);
         setComments((prev) => prev.filter((c) => !(c.id === id && c.commentType === commentType)));
+        setLocalCounts((prev) => {
+          const next = { ...prev };
+          next[prevStatus] = Math.max(0, next[prevStatus] - 1);
+          next.ALL = Math.max(0, next.ALL - 1);
+          return next;
+        });
       } catch (err) {
         alert(err instanceof Error ? err.message : "Failed to delete comment.");
       }
@@ -92,20 +137,20 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
         <div className="flex gap-2">
           {(["PENDING", "APPROVED", "REJECTED", "ALL"] as const).map((status) => {
-            const count = comments.filter((c) => status === "ALL" || c.status === status).length;
+            const count = localCounts[status];
             const isActive = filter === status;
             return (
-              <button
+              <Link
                 key={status}
-                onClick={() => setFilter(status)}
-                className={`rounded-lg px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
+                href={`/admin/comments?filter=${status.toLowerCase()}&page=1`}
+                className={`rounded-lg px-4 py-2 text-xs uppercase tracking-wider transition-colors border ${
                   isActive
-                    ? "bg-white/10 border border-white/20 text-white font-medium"
-                    : "text-white/60 hover:text-white hover:bg-white/5 border border-transparent"
+                    ? "bg-white/10 border-white/20 text-white font-medium"
+                    : "text-white/60 hover:text-white hover:bg-white/5 border-transparent"
                 }`}
               >
                 {status.toLowerCase()} ({count})
-              </button>
+              </Link>
             );
           })}
         </div>
@@ -152,8 +197,8 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
                   <div className="flex items-center gap-1.5 text-xs">
                     {comment.commentType === "book" ? (
                       <BookOpen className="h-3.5 w-3.5 text-emerald-400/80" />
-                    ) : comment.commentType === "song" ? (
-                      <Music className="h-3.5 w-3.5 text-sky-400/80" />
+                    ) : comment.commentType === "audio" ? (
+                      <Music className="h-3.5 w-3.5 text-violet-400/80" />
                     ) : (
                       <FileText className="h-3.5 w-3.5 text-amber-400/80" />
                     )}
@@ -252,6 +297,36 @@ export default function CommentsList({ initialComments }: CommentsListProps) {
           ))}
         </div>
       )}
+
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between border-t border-white/10 pt-6">
+        <span className="text-xs text-white/50">
+          Page <strong className="font-semibold text-white/80">{page}</strong> of{" "}
+          <strong className="font-semibold text-white/80">{Math.ceil(localCounts[filter] / 15) || 1}</strong>
+        </span>
+        <div className="flex gap-2">
+          <Link
+            href={`/admin/comments?filter=${filter.toLowerCase()}&page=${page - 1}`}
+            className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${
+              page === 1
+                ? "border-white/5 bg-white/[0.01] text-white/20 cursor-not-allowed pointer-events-none"
+                : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95"
+            }`}
+          >
+            Previous
+          </Link>
+          <Link
+            href={`/admin/comments?filter=${filter.toLowerCase()}&page=${page + 1}`}
+            className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${
+              !hasNextPage
+                ? "border-white/5 bg-white/[0.01] text-white/20 cursor-not-allowed pointer-events-none"
+                : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white hover:border-white/20 active:scale-95"
+            }`}
+          >
+            Next
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

@@ -32,9 +32,9 @@ model User {
   bookLikes        BookLike[]
   bookComments     BookComment[]
   bookCommentLikes BookCommentLike[]
-  songLikes        SongLike[]
-  songComments     SongComment[]
-  songCommentLikes SongCommentLike[]
+  audioLikes        AudioLike[]
+  audioComments     AudioComment[]
+  audioCommentLikes AudioCommentLike[]
 
   @@map("users")
 }
@@ -358,7 +358,7 @@ model Campaign {
   @@map("campaigns")
 }
 
-model Song {
+model Audio {
   id          String    @id @default(cuid())
   title       String
   slug        String    @unique
@@ -370,26 +370,26 @@ model Song {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  comments    SongComment[]
-  likes       SongLike[]
+  comments    AudioComment[]
+  likes       AudioLike[]
 
-  @@map("songs")
+  @@map("audio")
 }
 
-model SongLike {
-  songId    String
+model AudioLike {
+  audioId   String
   userId    String
   createdAt DateTime @default(now())
 
-  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audio Audio @relation(fields: [audioId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([songId, userId])
+  @@id([audioId, userId])
   @@index([userId])
-  @@map("song_likes")
+  @@map("audio_likes")
 }
 
-model SongComment {
+model AudioComment {
   id        String        @id @default(cuid())
   body      String
   edited    Boolean       @default(false)
@@ -398,28 +398,28 @@ model SongComment {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
-  songId String
-  song   Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
+  audioId String
+  audio   Audio   @relation(fields: [audioId], references: [id], onDelete: Cascade)
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  likes SongCommentLike[]
+  likes AudioCommentLike[]
 
-  @@index([songId, status])
+  @@index([audioId, status])
   @@index([userId])
-  @@map("song_comments")
+  @@map("audio_comments")
 }
 
-model SongCommentLike {
+model AudioCommentLike {
   commentId String
   userId    String
   createdAt DateTime @default(now())
 
-  comment SongComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment AudioComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([commentId, userId])
   @@index([userId])
-  @@map("song_comment_likes")
+  @@map("audio_comment_likes")
 }

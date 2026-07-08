@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { clearAllCache } from "@/app/admin/actions";
+import { clearAllCache } from "@/app/admin/shared-actions";
 
 export default function ClearCacheButton() {
   const [isPending, startTransition] = useTransition();

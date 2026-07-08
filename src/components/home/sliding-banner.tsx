@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Song, Poem } from "@prisma/client";
+import { Audio, Poem } from "@prisma/client";
 
 type SlidingBannerProps = {
   featuredBooks: Array<{
@@ -13,13 +13,13 @@ type SlidingBannerProps = {
     description: string | null;
     coverImage: string | null;
   }>;
-  latestSongs: Array<Song>;
+  latestAudio: Array<Audio>;
   featuredPoems: Array<Poem>;
 };
 
 export default function SlidingBanner({
   featuredBooks,
-  latestSongs,
+  latestAudio,
   featuredPoems,
 }: SlidingBannerProps) {
   const [activeSlide, setActiveSlide] = useState(0);
@@ -58,18 +58,18 @@ export default function SlidingBanner({
     });
   }
 
-  // Song slide
-  if (latestSongs.length > 0) {
-    const song = latestSongs[0];
+  // Audio slide
+  if (latestAudio.length > 0) {
+    const audioItem = latestAudio[0];
     slides.push({
       title: "Latest Audio Release",
-      headline: song.title,
-      description: song.description || "Listen to custom-recorded songs and spoken-word poetry with our custom player.",
-      image: song.coverUrl,
-      link: "/songs",
+      headline: audioItem.title,
+      description: audioItem.description || "Listen to custom-recorded songs and spoken-word poetry with our custom player.",
+      image: audioItem.coverUrl,
+      link: "/audio",
       linkText: "Listen Now",
       badge: "Audio",
-      icon: "🎵",
+      icon: "📻",
       isCircular: false,
     });
   }

@@ -11,29 +11,7 @@ export const metadata: Metadata = {
   },
 };
 
-function statusLabel(status: string): string {
-  switch (status) {
-    case "AVAILABLE":
-      return "Available";
-    case "COMING_SOON":
-      return "Coming Soon";
-    case "ARCHIVED":
-      return "Archived";
-    default:
-      return status;
-  }
-}
-
-function statusColor(status: string): string {
-  switch (status) {
-    case "AVAILABLE":
-      return "border-emerald-400/30 text-emerald-400/80 bg-emerald-500/10";
-    case "COMING_SOON":
-      return "border-amber-400/30 text-amber-400/80 bg-amber-500/10";
-    default:
-      return "border-white/15 text-white/40 bg-white/5";
-  }
-}
+import { statusLabel, statusColor } from "@/lib/utils";
 
 export default async function BooksPage() {
   const prisma = getPrisma();
@@ -48,11 +26,19 @@ export default async function BooksPage() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
-      <div className="mb-12 md:mb-16">
-        <p className="text-sm uppercase tracking-[0.22em] text-white/40 mb-3">Library</p>
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Books</h1>
-        <p className="text-lg text-white/60 max-w-3xl font-[family-name:var(--font-inter)]">
+    <div className="relative max-w-6xl mx-auto px-6 py-16 md:py-24 overflow-hidden">
+      {/* Premium Visual Background Glow Accent */}
+      <div className="absolute -top-10 left-1/3 w-[35rem] h-[35rem] bg-emerald-500/5 rounded-full blur-[130px] pointer-events-none -z-10" />
+
+      <div className="relative z-10 mb-12 md:mb-16">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-medium tracking-wider text-emerald-300 uppercase mb-4">
+          <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          Library
+        </span>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-emerald-100 via-emerald-300 to-teal-400 bg-clip-text text-transparent">
+          Books
+        </h1>
+        <p className="text-lg text-white/60 max-w-3xl font-[family-name:var(--font-inter)] leading-relaxed">
           Poetry collections, anthologies, and writings by Renu.
         </p>
       </div>
@@ -70,7 +56,7 @@ export default async function BooksPage() {
             <Link
               key={book.id}
               href={`/books/${book.slug}`}
-              className="group rounded-2xl border border-white/15 bg-white/[0.03] overflow-hidden transition-colors hover:border-white/30 flex flex-col sm:flex-row"
+              className="group rounded-2xl border border-white/15 bg-white/[0.03] overflow-hidden transition-all duration-300 hover:border-emerald-500/30 hover:bg-emerald-500/[0.01] hover:shadow-lg hover:shadow-emerald-500/[0.02] flex flex-col sm:flex-row"
             >
               {/* Cover Image */}
               <div className="sm:w-48 sm:shrink-0 aspect-[3/4] sm:aspect-auto relative bg-white/5">

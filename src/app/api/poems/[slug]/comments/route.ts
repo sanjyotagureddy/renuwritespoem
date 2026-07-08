@@ -86,8 +86,17 @@ export async function GET(
   const userId = session?.user?.id;
 
   const url = new URL(request.url);
-  const limit = parseInt(url.searchParams.get("limit") ?? "4", 10);
-  const offset = parseInt(url.searchParams.get("offset") ?? "0", 10);
+  let limit = parseInt(url.searchParams.get("limit") ?? "4", 10);
+  if (isNaN(limit) || limit < 1) {
+    limit = 4;
+  } else if (limit > 50) {
+    limit = 50;
+  }
+
+  let offset = parseInt(url.searchParams.get("offset") ?? "0", 10);
+  if (isNaN(offset) || offset < 0) {
+    offset = 0;
+  }
 
   const [comments, totalCount] = await Promise.all([
     prisma.comment.findMany({

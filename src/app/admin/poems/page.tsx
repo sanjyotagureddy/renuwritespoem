@@ -1,17 +1,9 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { poemLanguageLabel, type PoemLanguage } from "@/lib/poem-language";
-import { togglePublish, toggleFeatured } from "../actions";
+import { togglePublish, toggleFeatured } from "../poem-actions";
 import DeletePoemForm from "./delete-poem-form";
-
-function formatDate(date: Date | null): string {
-  if (!date) return "—";
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
+import { formatDate } from "@/lib/utils";
 
 export default async function AdminPoemsPage() {
   const prisma = getPrisma();

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { toggleCommentPin, updateCommentStatus } from "@/app/admin/actions";
+import { toggleCommentPin, updateCommentStatus } from "@/app/admin/comment-actions";
 
 type CommentData = {
   id: string;
@@ -39,14 +39,14 @@ function CommentLikeButton({
   initialLiked: boolean;
   initialCount: number;
   disabled: boolean;
-  type: "poem" | "book" | "song";
+  type: "poem" | "book" | "audio";
 }) {
   const [liked, setLiked] = useState(initialLiked);
   const [count, setCount] = useState(initialCount);
 
   async function handleToggle() {
     if (disabled) return;
-    const path = type === "book" ? "book-comments" : type === "song" ? "song-comments" : "comments";
+    const path = type === "book" ? "book-comments" : type === "audio" ? "audio-comments" : "comments";
     const res = await fetch(`/api/${path}/${commentId}/likes`, {
       method: "POST",
     });
@@ -81,7 +81,7 @@ export default function CommentSection({
   type,
 }: {
   slug: string;
-  type: "poem" | "book" | "song";
+  type: "poem" | "book" | "audio";
 }) {
   const { data: session } = useSession();
   const [comments, setComments] = useState<CommentData[]>([]);
@@ -97,8 +97,8 @@ export default function CommentSection({
   const [loadingMore, setLoadingMore] = useState(false);
   const [expandCount, setExpandCount] = useState(0);
 
-  const commentsApi = `/api/${type === "book" ? "books" : type === "song" ? "songs" : "poems"}/${slug}/comments`;
-  const commentItemApi = (commentId: string) => `/api/${type === "book" ? "book-comments" : type === "song" ? "song-comments" : "comments"}/${commentId}`;
+  const commentsApi = `/api/${type === "book" ? "books" : type === "audio" ? "audio" : "poems"}/${slug}/comments`;
+  const commentItemApi = (commentId: string) => `/api/${type === "book" ? "book-comments" : type === "audio" ? "audio-comments" : "comments"}/${commentId}`;
 
   useEffect(() => {
     fetch(`${commentsApi}?limit=4&offset=0`)

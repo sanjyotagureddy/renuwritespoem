@@ -127,8 +127,8 @@ export default function AudioPlayer({
               />
             </div>
           ) : (
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-lg">
-              🎵
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-lg text-violet-400">
+              📻
             </div>
           )}
           <div className="min-w-0 flex-1">
@@ -143,20 +143,20 @@ export default function AudioPlayer({
             <button
               onClick={onPrevTrack}
               disabled={!onPrevTrack}
-              className="text-white/40 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="text-white/40 hover:text-violet-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               ⏮
             </button>
             <button
               onClick={togglePlay}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105 hover:bg-violet-400"
             >
               {isPlaying ? "⏸" : "▶"}
             </button>
             <button
               onClick={onNextTrack}
               disabled={!onNextTrack}
-              className="text-white/40 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="text-white/40 hover:text-violet-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               ⏭
             </button>
@@ -171,7 +171,7 @@ export default function AudioPlayer({
               max={duration || 100}
               value={currentTime}
               onChange={handleSeek}
-              className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-white/20 accent-white outline-none focus:outline-none"
+              className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-white/20 accent-violet-400 outline-none focus:outline-none"
             />
             <span>{formatTime(duration)}</span>
           </div>
@@ -181,7 +181,7 @@ export default function AudioPlayer({
         <div className="hidden items-center justify-end gap-2 md:flex md:w-1/4">
           <button
             onClick={() => setIsMuted(!isMuted)}
-            className="text-white/50 hover:text-white transition-colors text-xs"
+            className="text-white/50 hover:text-violet-400 transition-colors text-xs"
           >
             {isMuted || volume === 0 ? "🔇" : volume < 0.5 ? "🔉" : "🔊"}
           </button>
@@ -195,7 +195,7 @@ export default function AudioPlayer({
               setVolume(parseFloat(e.target.value));
               setIsMuted(false);
             }}
-            className="h-1 w-20 cursor-pointer appearance-none rounded-lg bg-white/20 accent-white outline-none"
+            className="h-1 w-20 cursor-pointer appearance-none rounded-lg bg-white/20 accent-violet-400 outline-none"
           />
         </div>
 

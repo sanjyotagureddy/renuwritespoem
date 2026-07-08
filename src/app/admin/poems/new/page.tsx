@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
-import { createPoem } from "../../actions";
+import { createPoem } from "../../poem-actions";
 
 export default async function NewPoemPage() {
   const [existingTags, genres] = await Promise.all([

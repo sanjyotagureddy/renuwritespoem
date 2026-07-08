@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
-import { createGenre, updateGenre } from "../actions";
+import { createGenre, updateGenre } from "../genre-actions";
 import DeleteGenreForm from "./delete-genre-form";
 
 export default async function AdminGenresPage() {

@@ -1,16 +1,7 @@
 import OrderStatusForm from "@/components/admin/order-status-form";
 import { getPrisma } from "@/lib/db";
-import { updateOrderStatus } from "../actions";
-
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
+import { updateOrderStatus } from "../order-actions";
+import { formatDateTime as formatDate } from "@/lib/utils";
 
 const statusColors: Record<string, string> = {
   PENDING: "border-amber-400/30 text-amber-400/80 bg-amber-500/10",

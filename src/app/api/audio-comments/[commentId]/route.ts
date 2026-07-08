@@ -14,7 +14,7 @@ export async function PATCH(
   const { commentId } = await params;
   const prisma = getPrisma();
 
-  const comment = await prisma.songComment.findUnique({
+  const comment = await prisma.audioComment.findUnique({
     where: { id: commentId },
     select: { userId: true },
   });
@@ -40,7 +40,7 @@ export async function PATCH(
     );
   }
 
-  const updated = await prisma.songComment.update({
+  const updated = await prisma.audioComment.update({
     where: { id: commentId },
     data: { body: text, edited: true },
   });
@@ -64,7 +64,7 @@ export async function DELETE(
   const { commentId } = await params;
   const prisma = getPrisma();
 
-  const comment = await prisma.songComment.findUnique({
+  const comment = await prisma.audioComment.findUnique({
     where: { id: commentId },
     select: { userId: true },
   });
@@ -80,7 +80,7 @@ export async function DELETE(
     );
   }
 
-  await prisma.songComment.delete({ where: { id: commentId } });
+  await prisma.audioComment.delete({ where: { id: commentId } });
 
   return NextResponse.json({ deleted: true });
 }

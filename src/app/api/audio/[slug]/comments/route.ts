@@ -8,7 +8,7 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  const limitCheck = await rateLimit("song-comments", 5, 60000); // 5 per min
+  const limitCheck = await rateLimit("audio-comments", 5, 60000); // 5 per min
   if (limitCheck.limited) {
     return NextResponse.json(
       { error: "Too many comments posted. Please try again in a minute." },
@@ -23,9 +23,9 @@ export async function POST(
   const { slug } = await params;
   const prisma = getPrisma();
 
-  const song = await prisma.song.findUnique({ where: { slug }, select: { id: true } });
-  if (!song) {
-    return NextResponse.json({ error: "Song not found." }, { status: 404 });
+  const audio = await prisma.audio.findUnique({ where: { slug }, select: { id: true } });
+  if (!audio) {
+    return NextResponse.json({ error: "Audio not found." }, { status: 404 });
   }
 
   const body = await request.json();
@@ -41,10 +41,10 @@ export async function POST(
   const toneCheck = checkCommentTone(text);
   const status = toneCheck.isAbusive ? "PENDING" : "APPROVED";
 
-  const comment = await prisma.songComment.create({
+  const comment = await prisma.audioComment.create({
     data: {
       body: text,
-      songId: song.id,
+      audioId: audio.id,
       userId: session.user.id,
       status,
     },
@@ -78,20 +78,29 @@ export async function GET(
   const { slug } = await params;
   const prisma = getPrisma();
 
-  const song = await prisma.song.findUnique({ where: { slug }, select: { id: true } });
-  if (!song) {
-    return NextResponse.json({ error: "Song not found." }, { status: 404 });
+  const audio = await prisma.audio.findUnique({ where: { slug }, select: { id: true } });
+  if (!audio) {
+    return NextResponse.json({ error: "Audio not found." }, { status: 404 });
   }
 
   const userId = session?.user?.id;
 
   const url = new URL(request.url);
-  const limit = parseInt(url.searchParams.get("limit") ?? "4", 10);
-  const offset = parseInt(url.searchParams.get("offset") ?? "0", 10);
+  let limit = parseInt(url.searchParams.get("limit") ?? "4", 10);
+  if (isNaN(limit) || limit < 1) {
+    limit = 4;
+  } else if (limit > 50) {
+    limit = 50;
+  }
+
+  let offset = parseInt(url.searchParams.get("offset") ?? "0", 10);
+  if (isNaN(offset) || offset < 0) {
+    offset = 0;
+  }
 
   const [comments, totalCount] = await Promise.all([
-    prisma.songComment.findMany({
-      where: { songId: song.id, status: "APPROVED" },
+    prisma.audioComment.findMany({
+      where: { audioId: audio.id, status: "APPROVED" },
       orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
       skip: offset,
       take: limit + 1,
@@ -103,8 +112,8 @@ export async function GET(
           : {}),
       },
     }),
-    prisma.songComment.count({
-      where: { songId: song.id, status: "APPROVED" },
+    prisma.audioComment.count({
+      where: { audioId: audio.id, status: "APPROVED" },
     }),
   ]);
 

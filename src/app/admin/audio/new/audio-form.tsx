@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { createSong } from "../../actions";
+import { createAudio } from "../../audio-actions";
 
-export default function NewSongForm() {
+export default function NewAudioForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +22,7 @@ export default function NewSongForm() {
     }
 
     try {
-      await createSong(formData);
+      await createAudio(formData);
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : "An unexpected error occurred during upload.";
@@ -49,7 +49,7 @@ export default function NewSongForm() {
           required
           disabled={loading}
           className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40 disabled:opacity-50"
-          placeholder="Song title"
+          placeholder="Audio title"
         />
       </div>
 
@@ -63,7 +63,7 @@ export default function NewSongForm() {
           rows={3}
           disabled={loading}
           className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40 disabled:opacity-50"
-          placeholder="Song context, lyrics, or notes..."
+          placeholder="Audio context, lyrics, or notes..."
         />
       </div>
 
@@ -115,7 +115,7 @@ export default function NewSongForm() {
           {loading ? "Uploading..." : "Upload & Create"}
         </button>
         <Link
-          href="/admin/songs"
+          href="/admin/audio"
           className="rounded-full border border-white/15 px-6 py-3 text-xs tracking-[0.18em] text-white/60 uppercase transition-colors hover:border-white/30 hover:text-white"
         >
           Cancel

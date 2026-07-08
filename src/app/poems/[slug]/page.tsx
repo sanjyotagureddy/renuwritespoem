@@ -17,14 +17,7 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-function formatDate(date: Date | null): string {
-  if (!date) return "Unpublished";
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(date);
-}
+import { formatDate } from "@/lib/utils";
 
 import { Poem } from "@prisma/client";
 

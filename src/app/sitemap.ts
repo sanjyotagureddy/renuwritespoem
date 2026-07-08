@@ -25,6 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/poems"), lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
     { url: absoluteUrl("/genres"), lastModified: new Date(), changeFrequency: "weekly", priority: 0.75 },
     { url: absoluteUrl("/books"), lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    { url: absoluteUrl("/audio"), lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
     { url: absoluteUrl("/about"), lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
     { url: absoluteUrl("/contact"), lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
   ];
