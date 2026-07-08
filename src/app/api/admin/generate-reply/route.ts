@@ -55,10 +55,21 @@ Message: ${message}`;
 
     return NextResponse.json({ reply });
   } catch (err) {
-    console.error("Gemini API error:", err);
-    return NextResponse.json(
-      { error: "Failed to generate reply. Please try again." },
-      { status: 500 },
-    );
+    // Build a detailed error object
+    const errorInfo = {
+      timestamp: new Date().toISOString(),
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+      payload: { senderName, subject, message },
+    };
+    // Log to server console (visible in dev logs)
+    console.error("Gemini API error:", errorInfo);
+    // Fallback reply for the user
+    const fallbackReply = `Hi ${senderName},\n\nThank you for reaching out about \"${subject}\". I appreciate your message and will get back to you soon.\n\nWith gratitude,\nRenu`;
+    // In development, return error details for debugging; otherwise just the fallback reply
+    if (process.env.NODE_ENV !== "production") {
+      return NextResponse.json({ reply: fallbackReply, error: errorInfo }, { status: 500 });
+    }
+    return NextResponse.json({ reply: fallbackReply });
   }
 }
