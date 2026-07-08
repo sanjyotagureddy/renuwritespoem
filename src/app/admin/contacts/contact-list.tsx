@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState, useTransition, useCallback } from "react";
 import { replyToContact, deleteContact, markAsUnread } from "../contact-actions";
-import { Mail, Trash2, ChevronDown, ChevronUp, CheckCircle2, Send, MailOpen } from "lucide-react";
+import { Mail, Trash2, ChevronDown, ChevronUp, CheckCircle2, Send, MailOpen, Sparkles } from "lucide-react";
 
 type ContactMessage = {
   id: string;
@@ -33,9 +33,34 @@ function MessageCard({ msg }: { msg: ContactMessage }) {
   const [replied, setReplied] = useState(!!msg.repliedAt);
   const [repliedAt, setRepliedAt] = useState<Date | null>(msg.repliedAt);
   const [error, setError] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const defaultReply = `Hi ${msg.name},\n\nThank you for reaching out! I've received your message about "${msg.subject}" and will get back to you shortly.\n\nWith gratitude,\nRenu`;
+  const generateAiDraft = useCallback(async () => {
+    setIsGenerating(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/generate-reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          senderName: msg.name,
+          subject: msg.subject,
+          message: msg.message,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to generate.");
+      if (textareaRef.current) {
+        textareaRef.current.value = data.reply;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "AI generation failed.");
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [msg.name, msg.subject, msg.message]);
 
   function handleReply(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -119,13 +144,12 @@ function MessageCard({ msg }: { msg: ContactMessage }) {
           {/* Expand */}
           <button
             onClick={() => setExpanded((p) => !p)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-colors"
-            title={expanded ? "Collapse" : "Expand message"}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-3 text-[11px] font-bold uppercase tracking-wider text-white/50 hover:text-white hover:bg-white/10 transition-colors"
           >
             {expanded ? (
-              <ChevronUp className="h-4 w-4" />
+              <><ChevronUp className="h-3.5 w-3.5" /> Hide Message</>
             ) : (
-              <ChevronDown className="h-4 w-4" />
+              <><ChevronDown className="h-3.5 w-3.5" /> Show Message</>
             )}
           </button>
 
@@ -211,16 +235,28 @@ function MessageCard({ msg }: { msg: ContactMessage }) {
               )}
 
               <div>
-                <label className="mb-1.5 block text-xs uppercase tracking-wider text-white/40">
-                  Reply to {msg.name} &lt;{msg.email}&gt;
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs uppercase tracking-wider text-white/40">
+                    Reply to {msg.name} &lt;{msg.email}&gt;
+                  </label>
+                  <button
+                    type="button"
+                    onClick={generateAiDraft}
+                    disabled={isGenerating || isPending}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-violet-400 hover:bg-violet-500/20 transition-all disabled:opacity-40"
+                  >
+                    <Sparkles className={`h-3 w-3 ${isGenerating ? "animate-spin" : ""}`} />
+                    {isGenerating ? "Drafting…" : "Draft with AI"}
+                  </button>
+                </div>
                 <textarea
+                  ref={textareaRef}
                   name="replyBody"
                   rows={7}
                   required
                   disabled={isPending}
-                  defaultValue={defaultReply}
-                  className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-violet-500/50 disabled:opacity-50 resize-none"
+                  placeholder="Write your reply or click 'Draft with AI' to generate one…"
+                  className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-violet-500/50 disabled:opacity-50 resize-none placeholder:text-white/20"
                 />
               </div>
 
