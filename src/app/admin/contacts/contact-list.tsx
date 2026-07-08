@@ -3,7 +3,6 @@
 import { useRef, useState, useTransition, useCallback } from "react";
 import { replyToContact, deleteContact, markAsUnread } from "../contact-actions";
 import { Mail, Trash2, ChevronDown, ChevronUp, CheckCircle2, Send, MailOpen, Sparkles } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type ContactMessage = {
   id: string;
@@ -92,10 +91,10 @@ function MessageCard({ msg }: { msg: ContactMessage }) {
 
   return (
     <div
-      className={`rounded-xl border backdrop-blur-sm transition-all ${
+      className={`rounded-2xl border transition-all ${
         replied
-          ? "border-white/[0.06] bg-white/[0.03]"
-          : "border-violet-500/20 bg-violet-500/[0.05] shadow-[0_0_20px_rgba(139,92,246,0.04)]"
+          ? "border-white/8 bg-white/[0.02]"
+          : "border-violet-500/20 bg-violet-500/[0.03]"
       }`}
     >
       {/* Header row */}
@@ -233,9 +232,9 @@ function MessageCard({ msg }: { msg: ContactMessage }) {
               <input type="hidden" name="id" value={msg.id} />
 
               {error && (
-                <Alert variant="destructive" className="mt-2">
-                  <AlertDescription>⚠️ {error}</AlertDescription>
-                </Alert>
+                <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-3 text-xs text-rose-300">
+                  ⚠️ {error}
+                </div>
               )}
 
               <div>

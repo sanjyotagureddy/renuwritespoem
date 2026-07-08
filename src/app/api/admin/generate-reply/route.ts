@@ -1,10 +1,4 @@
-import { z } from "zod";
-
-const contactMessageSchema = z.object({
-  senderName: z.string().min(1, "Sender name required"),
-  subject:    z.string().min(1, "Subject required"),
-  message:    z.string().min(1, "Message required"),
-});
+import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getServerAuthSession } from "@/lib/auth";
 
@@ -23,13 +17,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = await request.json();
-  const validation = contactMessageSchema.safeParse(body);
-  if (!validation.success) {
-    const messages = validation.error.errors.map(e => e.message).join(", ");
-    return NextResponse.json({ error: messages }, { status: 400 });
-  }
-  const { senderName, subject, message } = validation.data;
+  const { senderName, subject, message } = await request.json();
   if (!senderName || !subject || !message) {
     return NextResponse.json({ error: "Missing fields." }, { status: 400 });
   }
