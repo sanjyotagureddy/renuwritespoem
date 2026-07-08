@@ -70,11 +70,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link
             key={item.href}
             href={item.href}
-            className="relative rounded-lg px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors whitespace-nowrap"
+            className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors whitespace-nowrap"
           >
             {item.label}
             {item.label === "Messages" && unrepliedCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-violet-500 px-1 text-[10px] font-bold text-white shadow-lg shadow-violet-500/30">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-violet-500 px-1.5 text-[10px] font-bold text-white">
                 {unrepliedCount > 99 ? "99+" : unrepliedCount}
               </span>
             )}
