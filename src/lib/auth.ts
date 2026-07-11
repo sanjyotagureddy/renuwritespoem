@@ -32,11 +32,21 @@ export const authOptions: NextAuthOptions = {
       }
 
       const isAdmin = getAdminEmails().has(user.email.toLowerCase());
-
-      await getPrisma().user.updateMany({
+      const dbUser = await getPrisma().user.findUnique({
         where: { email: user.email },
-        data: { role: isAdmin ? "ADMIN" : "READER" },
+        select: { disabledAt: true },
       });
+
+      if (dbUser?.disabledAt) {
+        return false;
+      }
+
+      if (isAdmin) {
+        await getPrisma().user.updateMany({
+          where: { email: user.email },
+          data: { role: "ADMIN" },
+        });
+      }
 
       return true;
     },
@@ -55,14 +65,31 @@ export const authOptions: NextAuthOptions = {
       }
 
       const email = (user?.email ?? token.email)?.toLowerCase();
-      const isAdmin = email ? getAdminEmails().has(email) : false;
-      token.role = isAdmin ? "ADMIN" : "READER";
+      const isEnvAdmin = email ? getAdminEmails().has(email) : false;
+
+      if (isEnvAdmin) {
+        token.role = "ADMIN";
+        token.disabled = false;
+      } else if (token.userId) {
+        const dbUser = await getPrisma().user.findUnique({
+          where: { id: token.userId as string },
+          select: { role: true, disabledAt: true },
+        });
+        const disabled = Boolean(dbUser?.disabledAt);
+        token.disabled = disabled;
+        token.role = dbUser && !disabled ? dbUser.role : "READER";
+      } else {
+        token.role = "READER";
+        token.disabled = false;
+      }
 
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = (token.userId as string | undefined) ?? "";
+        session.user.id = token.disabled
+          ? ""
+          : (token.userId as string | undefined) ?? "";
         session.user.role = (token.role as "ADMIN" | "READER" | undefined) ?? "READER";
       }
       return session;

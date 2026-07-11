@@ -1,5 +1,9 @@
 # Development Checklist
 
+This checklist reflects the current repository state after review. Checked items
+are already represented in the app; unchecked items are remaining product, UX,
+admin, and technical work.
+
 ## Phase 1: Project Setup & Infrastructure
 
 - [x] Initialize Next.js 15 project with App Router and TypeScript
@@ -7,172 +11,389 @@
 - [x] Install and configure shadcn/ui
 - [x] Set up ESLint and Prettier
 - [x] Set up Prisma ORM
-- [x] Configure PostgreSQL connection (Supabase/local Docker)
-- [x] Define database schema (Poems, Genres, Tags, Books, Comments, Subscribers, Campaigns, Users)
-- [x] Run initial migration
+- [x] Configure PostgreSQL connection
+- [x] Define database schema for users, poems, genres, tags, books, comments, subscribers, campaigns, orders, audio, invites, contact messages, attribution logs
+- [x] Run initial and follow-up migrations
 - [x] Seed database with sample data
-- [x] Set up environment variables (.env.example)
-- [x] Configure Vercel project
+- [x] Set up environment variables
+- [x] Configure Vercel-oriented build/deployment scripts
+- [ ] Update README docs to reflect current features and admin modules
+- [ ] Clean up or document legacy migrations if they are still needed
 
-## Phase 2: Authentication
+## Phase 2: Authentication & Access Control
 
 - [x] Install and configure Auth.js
 - [x] Set up Google OAuth provider
 - [x] Create auth API routes
 - [x] Implement session management
-- [x] Create role-based access (Admin, Reader)
-- [x] Protect admin routes with middleware
+- [x] Create ADMIN and READER roles
+- [x] Protect admin routes with middleware in production
+- [x] Add admin layout role check
+- [x] Add admin UI for user and role management
+- [ ] Fail safely in production if auth secrets are missing
+- [ ] Revisit development auto-admin behavior before launch
 
 ## Phase 3: Database & Data Layer
 
-- [x] Create Prisma models for all entities
-- [ ] Set up data access functions (queries/mutations)
-- [ ] Implement PostgreSQL Full Text Search for poems
-- [x] Add database indexes for performance
+- [x] Create Prisma models for all main entities
+- [x] Add database indexes for common queries
+- [x] Add poem views tracking
+- [x] Add invite and attribution models
+- [x] Add unsubscribe suppression model
+- [ ] Set up reusable data access functions for repeated query/mutation patterns
+- [ ] Implement PostgreSQL full-text search for poems
+- [ ] Add audit fields/logs for important admin actions
+- [ ] Add stronger subscriber/campaign delivery models if campaign sending is built
 
-## Phase 4: Public Website - Layout & Navigation
+## Phase 4: Public Layout & Navigation
 
 - [x] Create root layout with metadata
 - [x] Build header/navigation component
 - [x] Build footer component
 - [x] Create mobile-responsive navigation
 - [x] Set up global styles and typography
+- [x] Add floating social links
+- [x] Add invited-reader welcome banner
+- [ ] Add active navigation state
+- [ ] Review floating UI overlap on small screens
 
-## Phase 5: Public Pages - Home
+## Phase 5: Home Page
 
-- [x] Build Home page layout
-- [x] Author introduction section
-- [ ] Featured poems section (display 3 featured poems on home)
-- [ ] Latest poems section
-- [ ] Featured book section
-- [ ] Newsletter signup section
+- [x] Build home page layout
+- [x] Add author welcome / hero slide
+- [x] Add featured book support in homepage carousel
+- [x] Add latest audio support in homepage carousel
+- [x] Add featured poem support in homepage carousel
+- [x] Add reader testimonials/reactions section
+- [ ] Add visible latest poems section below hero
+- [ ] Add visible featured books section below hero
+- [ ] Add visible latest audio section below hero
+- [ ] Add homepage newsletter/signup section
+- [ ] Reduce reliance on carousel-only discovery
+- [ ] Add clearer primary calls to action for reading, buying, and subscribing
 
-## Phase 6: Public Pages - Poems
+## Phase 6: Public Poems
 
-- [x] Poems listing page with like & comment count icons
-- [x] Poem detail page with sidebar (likes + comments)
-- [ ] Poems pagination
-- [ ] Genre filter on poems listing
-- [ ] Tag filter on poems listing
-- [x] Language filter on poems listing (All/English/Hindi/Marathi)
-- [ ] Search functionality (PostgreSQL FTS)
+- [x] Poems listing page
+- [x] Poem detail page with sidebar actions
+- [x] Like and comment counts on poem cards
+- [x] Poem views display
+- [x] Poems pagination
+- [x] Page size selector
+- [x] Language filter
+- [x] Genre filter
+- [x] Tag filter
+- [x] Popular/newest/most-read sorting
+- [x] Reading time display
+- [x] Multilingual font handling for English, Hindi, and Marathi
+- [x] Open Graph image route for poems
+- [ ] Search functionality with PostgreSQL full-text search
 - [ ] Related poems section on detail page
+- [ ] Curated collections or mood-based browsing
+- [ ] Better empty-state suggestions when filters return no results
 
-## Phase 7: Public Pages - Genres
+## Phase 7: Public Genres
 
-- [ ] Genres listing page
-- [ ] Genre detail page (poems by genre)
+- [x] Genres listing page
+- [x] Show published poem counts per genre
+- [x] Show recent poems inside each genre card
+- [x] Link genre cards to filtered poem results
+- [ ] Dedicated genre detail pages
+- [ ] Genre-specific metadata and Open Graph content
 
-## Phase 8: Public Pages - Books
+## Phase 8: Books & Orders
 
-- [ ] Books listing page
-- [ ] Book detail page
-- [ ] Book status display (Coming Soon / Available / Archived)
-- [ ] Purchase link integration
+- [x] Books listing page
+- [x] Book detail page
+- [x] Book status display: Coming Soon, Available, Archived
+- [x] Featured book display
+- [x] Book like and comment support
+- [x] Book sharing and invite support
+- [x] Purchase flow for available books
+- [x] Payment screenshot upload
+- [x] Order creation with idempotency key
+- [x] Order confirmation emails
+- [x] Order numbers
+- [x] Payment screenshot admin access
+- [x] Order status and tracking fields
+- [x] Book JSON-LD structured data
+- [x] Book Open Graph image route
+- [ ] Add buyer-facing order lookup/status page
+- [ ] Add order cancellation/refund notes if needed
+- [ ] Add inventory or stock count if physical copies are limited
 
-## Phase 9: Public Pages - Static
+## Phase 9: Audio
 
-- [x] About Author page
+- [x] Audio listing/player page
+- [x] Custom audio client/player
+- [x] Audio admin CRUD
+- [x] Audio likes
+- [x] Audio comments
+- [x] Audio comment likes
+- [x] Audio Open Graph image route
+- [ ] Dedicated audio detail pages if sharing individual tracks matters
+- [ ] Audio search/filtering
+- [ ] Transcript or lyrics field for SEO/accessibility
+
+## Phase 10: Static Pages & Contact
+
+- [x] About author page
 - [x] Contact page
-- [ ] Newsletter subscription page
+- [x] Contact form
+- [x] Contact message admin inbox
+- [x] Admin reply-note/replied tracking
+- [x] AI-assisted reply generation endpoint
+- [ ] Newsletter subscription/preferences page
+- [ ] Privacy policy page
+- [ ] Terms/refund/shipping policy pages for book purchases
 
-## Phase 10: SEO & Metadata
+## Phase 11: SEO & Metadata
 
-- [ ] Configure metadata for all pages (title, description, canonical)
-- [ ] Add Open Graph metadata
-- [ ] Add Twitter card metadata
-- [ ] Add structured data (JSON-LD) for poems
-- [ ] Add structured data for books
-- [ ] Generate sitemap.xml
-- [ ] Generate robots.txt
+- [x] Configure base metadata
+- [x] Add per-page metadata for major public pages
+- [x] Add Open Graph metadata
+- [x] Add Twitter card metadata
+- [x] Add homepage Website and Person JSON-LD
+- [x] Add book JSON-LD
+- [x] Add breadcrumb JSON-LD for books
+- [x] Generate sitemap.xml
+- [x] Generate robots.txt
+- [x] Add Open Graph image routes for poems, books, and audio
+- [ ] Add poem JSON-LD structured data
+- [ ] Add canonical handling for filtered poem URLs where needed
+- [ ] Final SEO audit before launch
 
-## Phase 11: Comments & Likes System
+## Phase 12: Comments & Likes
 
-- [x] Like model & API route (toggle like/unlike per poem)
-- [x] Like button with user popup on poem detail page
-- [x] Like & comment counts on poems listing cards
-- [x] Comment form component (authenticated users only)
-- [x] Display approved comments on poem detail sidebar
-- [x] Submit comment API route
-- [x] Comment like model & API route (per-comment likes)
-- [x] Comment like button on each comment
-- [ ] Comment moderation in admin (Pending/Approved/Rejected)
+- [x] Poem like model and API route
+- [x] Poem like button with user popup
+- [x] Book like model and API route
+- [x] Audio like model and API route
+- [x] Comment form components for authenticated users
+- [x] Display approved comments
+- [x] Submit comment API routes for poems, books, and audio
+- [x] Comment like models and API routes
+- [x] Admin comments moderation page
+- [x] Status filters for pending, approved, rejected, all
+- [x] Approve/reject/delete/pin moderation actions
+- [x] Basic tone check before publishing comments
+- [ ] Decide final comment policy: all pending by default vs auto-approve clean comments
+- [ ] Align admin copy with actual comment approval behavior
+- [ ] Add stronger spam controls and abuse reporting
+- [ ] Add user-level moderation history
 
-## Phase 12: Newsletter System
+## Phase 13: Newsletter & Subscriber System
 
-- [ ] Subscriber signup form
+- [x] Subscriber model exists
+- [x] Campaign model exists
+- [x] Unsubscribed email suppression model exists
+- [x] Unsubscribe endpoint exists for invite suppression
+- [x] Analytics counts new subscribers
+- [ ] Public subscriber signup form
+- [ ] Subscriber signup API route
 - [ ] Email verification flow
-- [ ] Configure Resend integration
 - [ ] Subscription confirmation email
-- [ ] Unsubscribe functionality
+- [ ] Subscriber preferences page
+- [ ] Proper newsletter unsubscribe flow for subscribers
+- [ ] Resubscribe flow
+- [ ] Duplicate email handling and normalized email storage
+- [ ] Admin subscribers list
+- [ ] Subscriber search and filters: verified, unverified, unsubscribed
+- [ ] Subscriber export CSV
+- [ ] Manual add/remove subscriber actions
+- [ ] Subscriber source tracking
 
-## Phase 13: Admin Dashboard - Layout
+## Phase 14: Campaign Management
 
-- [x] Admin layout with tab navigation
-- [x] Dashboard overview page (stats: total/published/drafts/featured)
-- [x] Admin route protection (role-based in layout)
+- [ ] Admin campaigns list
+- [ ] Create campaign form with subject and body
+- [ ] Campaign rich text or markdown editor
+- [ ] Campaign preview
+- [ ] Send test email
+- [ ] Send campaign to verified subscribers
+- [ ] Delivery history
+- [ ] Campaign status management: Draft, Scheduled, Sending, Sent, Failed
+- [ ] Unsubscribe links in every campaign email
+- [ ] Suppression check before sending
+- [ ] Basic analytics: sent, failed, opened/clicked if provider supports it
+- [ ] Optional "notify subscribers" action when publishing a poem, book, or audio item
 
-## Phase 14: Admin - Poems Management
+## Phase 15: User / Reader Management
+
+- [x] User model exists
+- [x] Google sign-in creates reader accounts
+- [x] Role is attached to session
+- [x] Signup source field exists
+- [x] Users can like, comment, and send invites
+- [x] Admin users list
+- [x] User search by name/email
+- [x] User detail page
+- [x] Show user role, signup source, joined date, comments, likes, invites, and orders
+- [x] Promote/demote user role from admin UI
+- [x] Disable or flag abusive users
+- [x] View user moderation history
+- [ ] Reader profile/account page
+- [ ] Reader liked/saved poems page
+- [ ] Reader comment history
+- [ ] Reader invite history
+- [ ] Reader order history
+- [ ] Reader newsletter preferences
+
+## Phase 16: Admin Dashboard & Navigation
+
+- [x] Admin layout with grouped navigation
+- [x] Dashboard overview page
+- [x] Poem stats
+- [x] Book stats
+- [x] Featured poem slots
+- [x] Featured book summary
+- [x] Recent poems and books
+- [x] Cache clear button
+- [x] Admin route protection
+- [x] Admin analytics page
+- [x] Admin invite monitoring page
+- [x] Add Users nav item
+- [ ] Add Subscribers nav item
+- [ ] Add Campaigns nav item
+- [ ] Consider moving admin navigation to a sidebar as modules grow
+- [ ] Add global admin search
+- [ ] Add admin activity/audit log
+
+## Phase 17: Admin Content Management
 
 - [x] Poems list with publish/draft status badges
-- [x] Create poem form (title, content, language, publish toggle)
-- [x] Edit poem form (pre-filled)
-- [x] Publish/unpublish poem toggle action
-- [x] Featured poem toggle (max 3 featured, with dashboard slots view)
-- [x] Delete poem with confirmation
-- [x] View published poem link
-- [ ] Genre & tag assignment in poem forms
-- [ ] Cover image upload
-- [ ] SEO fields in poem forms
-- [ ] Poem preview
-- [ ] "Notify Subscribers" option on publish
+- [x] Create/edit/delete poems
+- [x] Publish/unpublish poem toggle
+- [x] Featured poem toggle with max 3 featured
+- [x] Genre assignment in poem forms
+- [x] Tag assignment in poem forms
+- [x] Cover image field support
+- [x] Font field support
+- [x] Genres admin page
+- [x] Create/edit/delete genres
+- [x] Books list
+- [x] Create/edit/delete books
+- [x] Book status management
+- [x] Featured book toggle
+- [x] Book cover, price, discount, and shipping fields
+- [x] Audio list
+- [x] Create/edit/delete audio
+- [ ] Tag management admin page
+- [ ] SEO fields in poem/book forms
+- [ ] Poem/book/audio preview mode
+- [ ] Bulk actions for publish/unpublish/tag
+- [ ] Inventory/stock fields for books if needed
 
-## Phase 15: Admin - Books Management
+## Phase 18: Admin Orders
 
-- [ ] Books list
-- [ ] Create book form
-- [ ] Edit book form
-- [ ] Delete book action
-- [ ] Book status management
+- [x] Orders list
+- [x] Order status summary counts
+- [x] Buyer details display
+- [x] Shipping address display
+- [x] Payment screenshot link
+- [x] Update order status
+- [x] Tracking provider/number/url fields
+- [x] Admin notes
+- [ ] Order filters and search
+- [ ] Export orders CSV
+- [ ] Print packing slip / shipping label helper
+- [ ] Buyer-facing order status page
 
-## Phase 16: Admin - Comments Management
+## Phase 19: Admin Contacts & Moderation
 
-- [ ] Comments list with status filters
-- [ ] Approve comment action
-- [ ] Reject comment action
-- [ ] Delete comment action
+- [x] Contact messages list
+- [x] Unreplied messages badge in admin navigation
+- [x] Reply note / replied tracking
+- [x] Comment moderation hub
+- [x] Cross-content comment moderation for poems, books, and audio
+- [ ] Contact message search and filters
+- [ ] Spam detection for contact form
+- [ ] User-level moderation tools
 
-## Phase 17: Admin - Newsletter Management
+## Phase 20: Growth, Invites & Analytics
 
-- [ ] Subscribers list
-- [ ] Create campaign form (subject, content)
-- [ ] Campaign preview
-- [ ] Send campaign action
-- [ ] Campaign delivery history
-- [ ] Campaign status management (Draft/Scheduled/Sent)
+- [x] Invite modal
+- [x] Invite API route
+- [x] Invite email sending
+- [x] Daily invite limit
+- [x] Lifetime invite limit
+- [x] Suppressed email check
+- [x] Invites admin monitoring page
+- [x] Top inviters display
+- [x] Attribution log API
+- [x] Signup attribution API
+- [x] Analytics dashboard
+- [x] Clicks/signups by source table
+- [x] Weekly invite/subscriber snapshot
+- [x] Top shared poems
+- [ ] Track invite clicks and accepted signups end-to-end
+- [ ] Add conversion funnel: visit -> signup -> subscribe -> order
+- [ ] Add per-content analytics detail pages
+- [ ] Add UTM/source builder for sharing links
 
-## Phase 18: Performance & Accessibility
+## Phase 21: Performance, Reliability & Accessibility
 
-- [ ] Optimize images (next/image, proper sizes)
-- [ ] Implement proper loading states
-- [ ] Add error boundaries
-- [ ] Audit accessibility (ARIA, keyboard navigation, contrast)
-- [ ] Test mobile responsiveness
+- [x] Use next/image in major visual surfaces
+- [x] Add error pages/global error handling
+- [x] Add cache layer for homepage and book details
+- [x] Add Vercel Analytics and Speed Insights
+- [x] Respect prefers-reduced-motion in global CSS
+- [x] Add basic rate limiting helper
+- [ ] Run production build locally and fix any issues
+- [ ] Run TypeScript check
+- [ ] Run lint check
+- [ ] Add automated tests for key flows
+- [ ] Audit accessibility: keyboard navigation, focus states, ARIA, contrast
+- [ ] Test mobile responsiveness across public and admin pages
 - [ ] Lighthouse performance audit
+- [ ] Review large client components and carousel motion performance
+- [ ] Improve cache invalidation after content edits
 
-## Phase 19: Deployment & Production
+## Phase 22: Code Quality & Maintainability
 
-- [ ] Configure Vercel deployment
-- [ ] Set production environment variables
+- [ ] Add Zod schemas for API and server action validation
+- [ ] Reduce duplication across poem/book/audio comment APIs
+- [ ] Reduce duplication across like APIs
+- [ ] Split large UI components where they have grown too complex
+- [ ] Add tests for orders, invites, auth roles, comments, and unsubscribe tokens
+- [ ] Standardize icon usage
+- [ ] Review manual SVGs and replace with consistent icon components where practical
+- [ ] Add CI checks for typecheck, lint, and build
+
+## Phase 23: Deployment & Production
+
+- [x] Vercel-oriented config and scripts exist
+- [x] Production migration deploy script exists
+- [x] Environment variable examples exist
+- [ ] Confirm production environment variables
 - [ ] Configure custom domain
 - [ ] Test production build locally
 - [ ] Deploy to Vercel
-- [ ] Verify all features in production
+- [ ] Verify auth callback URLs
+- [ ] Verify email sending in production
+- [ ] Verify database migrations in production
+- [ ] Verify book order flow in production
+- [ ] Verify admin access in production
 
-## Phase 20: Polish & Launch
+## Phase 24: Legal, Trust & Launch
 
-- [ ] Final design review
-- [ ] Content review
+- [ ] Privacy policy
+- [ ] Terms of use
+- [ ] Shipping/refund policy for books
+- [ ] Contact/support policy
+- [ ] Newsletter consent copy
+- [ ] Final content review
+- [ ] Final UI/UX review
 - [ ] Cross-browser testing
 - [ ] Final SEO audit
+- [ ] Launch checklist
 - [ ] Launch
+
+## Highest Priority Next
+
+1. Build subscriber signup and admin subscriber management.
+2. Build campaign creation, preview, and sending.
+3. Decide comment moderation policy and make behavior match admin wording.
+4. Add public newsletter/signup CTAs on homepage and footer.
+5. Add poem search.
+6. Add reader account/profile pages.
