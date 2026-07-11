@@ -9,6 +9,13 @@ const footerLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
+const legalLinks = [
+  { href: "/privacy", label: "Privacy Policy" },
+  { href: "/terms", label: "Terms of Use" },
+  { href: "/shipping", label: "Shipping & Refunds" },
+  { href: "/support", label: "Support" },
+];
+
 const socialLinks = [
   {
     href: "https://www.instagram.com/renuwrites_poem/",
@@ -34,7 +41,7 @@ export default function Footer() {
   return (
     <footer className="bg-black/80 backdrop-blur-md border-t border-white/10">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand */}
           <div>
             <Link
@@ -55,6 +62,25 @@ export default function Footer() {
             </h3>
             <ul className="flex flex-col gap-2">
               {footerLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="font-[family-name:var(--font-inter)] text-sm text-white/60 hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h3 className="font-[family-name:var(--font-inter)] text-xs uppercase tracking-widest text-white/40 mb-4">
+              Legal
+            </h3>
+            <ul className="flex flex-col gap-2">
+              {legalLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}

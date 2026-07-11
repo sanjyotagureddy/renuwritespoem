@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getPrisma } from "@/lib/db";
 import CommentsList, { type CommentItem } from "@/components/admin/comments-list";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Comments Moderation",
   description: "Approve or reject comments on poems, books, and audio.",

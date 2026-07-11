@@ -5,6 +5,8 @@ import { getPrisma } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
 import { updateUserRole } from "../user-actions";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Users",
   description: "Manage reader accounts and admin roles.",

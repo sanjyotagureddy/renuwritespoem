@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import ContactList from "./contact-list";
 
+export const dynamic = "force-dynamic";
+
 type FilterType = "all" | "unreplied" | "replied";
 
 const PAGE_SIZE = 20;
