@@ -77,6 +77,12 @@ export default function Header() {
               {/* Dropdown on hover */}
               <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                 <div className="rounded-xl border border-white/15 bg-neutral-900 shadow-xl py-1 min-w-[140px]">
+                  <Link
+                    href="/account"
+                    className="block px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                  >
+                    My Account
+                  </Link>
                   {isAdmin && (
                     <Link
                       href="/admin"
@@ -133,6 +139,13 @@ export default function Header() {
 
               {isLoggedIn && (
                 <>
+                  <Link
+                    href="/account"
+                    className="block py-3 px-3 rounded-lg font-[family-name:var(--font-inter)] text-sm uppercase tracking-wider text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                    onClick={() => setOpen(false)}
+                  >
+                    My Account
+                  </Link>
                   {isAdmin && (
                     <Link
                       href="/admin"
