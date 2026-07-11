@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+// Reload bundler cache to sync with newly generated Prisma Client types
 
 const nextConfig: NextConfig = {
   experimental: {

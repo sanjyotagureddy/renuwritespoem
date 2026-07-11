@@ -2,6 +2,7 @@ import { getPrisma } from "@/lib/db";
 import { siteConfig } from "@/lib/seo";
 import { getCache, setCache } from "@/lib/cache";
 import SlidingBanner from "@/components/home/sliding-banner";
+import TestimonialsSection from "@/components/home/testimonials-section";
 
 import { Poem, Audio } from "@prisma/client";
 
@@ -22,10 +23,18 @@ type HomepageCacheData = {
   }>;
   totalBooks: number;
   latestAudio: Array<Audio>;
+  testimonials: Array<{
+    id: string;
+    body: string;
+    userName: string;
+    targetTitle: string;
+    targetLink: string;
+    createdAt: string;
+  }>;
 };
 
 async function getHomepageData(): Promise<HomepageCacheData> {
-  const cacheKey = "home:featured-data";
+  const cacheKey = "home:featured-data:v3";
   const cached = await getCache<HomepageCacheData>(cacheKey);
   if (cached) {
     const parseOptionalDate = (d: string | Date | null) => d ? new Date(d) : null;
@@ -49,11 +58,12 @@ async function getHomepageData(): Promise<HomepageCacheData> {
         createdAt: parseRequiredDate(s.createdAt),
         updatedAt: parseRequiredDate(s.updatedAt),
       })),
+      testimonials: cached.testimonials ?? [],
     };
   }
 
   const prisma = getPrisma();
-  const [featuredPoems, latestPoems, totalPoems, featuredBooks, totalBooks, latestAudio] =
+  const [featuredPoems, latestPoems, totalPoems, featuredBooks, totalBooks, latestAudio, poemComments, bookComments] =
     await Promise.all([
       prisma.poem.findMany({
         where: { featured: true, published: true },
@@ -90,7 +100,46 @@ async function getHomepageData(): Promise<HomepageCacheData> {
         orderBy: { publishedAt: "desc" },
         take: 3,
       }),
+      prisma.comment.findMany({
+        where: { status: "APPROVED" },
+        orderBy: { createdAt: "desc" },
+        take: 3,
+        include: {
+          user: { select: { name: true } },
+          poem: { select: { title: true, slug: true } }
+        }
+      }),
+      prisma.bookComment.findMany({
+        where: { status: "APPROVED" },
+        orderBy: { createdAt: "desc" },
+        take: 3,
+        include: {
+          user: { select: { name: true } },
+          book: { select: { title: true, slug: true } }
+        }
+      })
     ]);
+
+  const testimonials = [
+    ...poemComments.map(c => ({
+      id: c.id,
+      body: c.body,
+      userName: c.user?.name ?? "Anonymous Reader",
+      targetTitle: c.poem.title,
+      targetLink: `/poems/${c.poem.slug}`,
+      createdAt: c.createdAt.toISOString()
+    })),
+    ...bookComments.map(c => ({
+      id: c.id,
+      body: c.body,
+      userName: c.user?.name ?? "Anonymous Reader",
+      targetTitle: c.book.title,
+      targetLink: `/books/${c.book.slug}`,
+      createdAt: c.createdAt.toISOString()
+    }))
+  ]
+  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  .slice(0, 4);
 
   const data = {
     featuredPoems,
@@ -99,6 +148,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
     featuredBooks,
     totalBooks,
     latestAudio,
+    testimonials,
   };
   
   await setCache(cacheKey, data, 3600); // cache for 1 hour
@@ -128,7 +178,7 @@ export default async function Home() {
     "jobTitle": "Poet & Author"
   };
 
-  const { featuredPoems, featuredBooks, latestAudio } =
+  const { featuredPoems, featuredBooks, latestAudio, testimonials } =
     await getHomepageData();
 
   return (
@@ -146,6 +196,7 @@ export default async function Home() {
         latestAudio={latestAudio}
         featuredPoems={featuredPoems}
       />
+      <TestimonialsSection testimonials={testimonials} />
     </>
   );
 }

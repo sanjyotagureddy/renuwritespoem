@@ -54,6 +54,8 @@ function initPrisma(): PrismaClient {
 if (process.env.NODE_ENV === "production") {
   prismaInstance = initPrisma();
 } else {
+  // Clear stale singleton to force fresh client creation with updated schema models
+  globalForPrisma.prisma = undefined;
   if (!globalForPrisma.prisma) {
     globalForPrisma.prisma = initPrisma();
   }

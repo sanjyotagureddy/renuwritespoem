@@ -160,6 +160,7 @@ export default async function CommentsPage({ searchParams }: PageProps) {
       </div>
 
       <CommentsList
+        key={`${filter}-${page}`}
         initialComments={paginatedComments}
         counts={counts}
         filter={filter}
