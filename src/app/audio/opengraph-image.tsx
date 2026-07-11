@@ -67,6 +67,7 @@ export default async function Image() {
           {/* Title */}
           <div
             style={{
+              display: "flex",
               fontSize: 72,
               fontWeight: 700,
               color: "white",
@@ -80,6 +81,7 @@ export default async function Image() {
           {/* Description */}
           <div
             style={{
+              display: "flex",
               fontSize: 32,
               color: "rgba(255, 255, 255, 0.7)",
               lineHeight: 1.5,

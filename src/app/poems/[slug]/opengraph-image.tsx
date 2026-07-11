@@ -104,14 +104,12 @@ export default async function Image({
           {/* Title */}
           <div
             style={{
+              display: "flex",
               fontSize: 72,
               fontWeight: 700,
               color: "white",
               marginBottom: "32px",
               lineHeight: 1.2,
-              display: "-webkit-box",
-              WebkitBoxOrient: "vertical",
-              WebkitLineClamp: 2,
               overflow: "hidden",
             }}
           >
@@ -121,13 +119,11 @@ export default async function Image({
           {/* Excerpt */}
           <div
             style={{
+              display: "flex",
               fontSize: 32,
               color: "rgba(255, 255, 255, 0.7)",
               lineHeight: 1.5,
               maxWidth: "800px",
-              display: "-webkit-box",
-              WebkitBoxOrient: "vertical",
-              WebkitLineClamp: 3,
               overflow: "hidden",
             }}
           >

@@ -156,7 +156,7 @@ export default function ShareButton({
               </button>
 
               {/* Native Web Share Fallback */}
-              {typeof navigator !== "undefined" && navigator.share && (
+              {typeof navigator !== "undefined" && "share" in navigator && (
                 <button
                   onClick={handleNativeShare}
                   className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-white/80 transition-colors hover:bg-white/5 hover:text-white border-t border-white/5 mt-1 pt-2"
