@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 
 const PAGE_SIZE_OPTIONS = [6, 9, 12, 15] as const;
 const DEFAULT_PAGE_SIZE = 9;
-const SORT_OPTIONS = ["popular", "newest"] as const;
+const SORT_OPTIONS = ["popular", "newest", "views"] as const;
 type PoemSort = (typeof SORT_OPTIONS)[number];
 
 import { formatDate, getReadingTime } from "@/lib/utils";
@@ -81,7 +81,13 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     prisma.poem.findMany({
       where: whereClause,
       orderBy:
-        selectedSort === "popular"
+        selectedSort === "views"
+          ? [
+              { views: "desc" },
+              { publishedAt: "desc" },
+              { createdAt: "desc" },
+            ]
+          : selectedSort === "popular"
           ? [
               { likes: { _count: "desc" } },
               { comments: { _count: "desc" } },
@@ -232,6 +238,16 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
                 Popular
               </Link>
               <Link
+                href={buildFilterUrl({ sort: "views" })}
+                className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
+                  selectedSort === "views"
+                    ? "border-amber-300/40 bg-amber-400/10 text-amber-100"
+                    : "border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                Most Read
+              </Link>
+              <Link
                 href={buildFilterUrl({ sort: "newest" })}
                 className={`rounded-full border px-4 py-2 text-xs uppercase tracking-wider transition-colors ${
                   selectedSort === "newest"
@@ -303,6 +319,10 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
 
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-4 shrink-0">
+                    <span className="flex items-center gap-1 text-xs text-white/40" title="Views">
+                      <span>👁</span>
+                      {poem.views}
+                    </span>
                     <span className="flex items-center gap-1 text-xs text-white/40" title="Likes">
                       <span>♡</span>
                       {poem._count.likes}

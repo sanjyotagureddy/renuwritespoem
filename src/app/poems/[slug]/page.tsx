@@ -14,6 +14,7 @@ import ListenButton from "@/components/poems/listen-button";
 import CommentSection from "@/components/poems/comment-section";
 import ShareButton from "@/components/ui/share-button";
 import InviteModal from "@/components/ui/invite-modal";
+import ViewTracker from "@/components/poems/view-tracker";
 import { siteConfig } from "@/lib/seo";
 import { getCache, setCache } from "@/lib/cache";
 
@@ -404,6 +405,7 @@ export default async function PoemDetailPage({ params }: PageProps) {
           </div>
         </aside>
       </div>
+      <ViewTracker poemId={poem.id} />
     </div>
   );
 }

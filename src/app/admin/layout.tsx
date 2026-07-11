@@ -10,16 +10,38 @@ export const metadata: Metadata = {
   description: "Manage poems and content.",
 };
 
-const navItems = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/poems", label: "Poems" },
-  { href: "/admin/genres", label: "Genres" },
-  { href: "/admin/books", label: "Books" },
-  { href: "/admin/audio", label: "Audio" },
-  { href: "/admin/orders", label: "Orders" },
-  { href: "/admin/comments", label: "Comments" },
-  { href: "/admin/contacts", label: "Messages" },
-  { href: "/admin/invites", label: "Invitations" },
+const navGroups = [
+  {
+    title: "Core",
+    items: [
+      { href: "/admin", label: "Dashboard" },
+      { href: "/admin/analytics", label: "Analytics" },
+    ]
+  },
+  {
+    title: "Content",
+    items: [
+      { href: "/admin/poems", label: "Poems" },
+      { href: "/admin/genres", label: "Genres" },
+      { href: "/admin/books", label: "Books" },
+      { href: "/admin/audio", label: "Audio" },
+    ]
+  },
+  {
+    title: "Moderation",
+    items: [
+      { href: "/admin/moderation", label: "Hub" },
+      { href: "/admin/comments", label: "Comments" },
+      { href: "/admin/contacts", label: "Messages" },
+    ]
+  },
+  {
+    title: "Commerce & Growth",
+    items: [
+      { href: "/admin/orders", label: "Orders" },
+      { href: "/admin/invites", label: "Invitations" },
+    ]
+  }
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -85,20 +107,27 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </div>
 
       {/* Navigation */}
-      <nav className="flex items-center gap-1 mb-8 border-b border-white/10 pb-4 overflow-x-auto">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors whitespace-nowrap"
-          >
-            {item.label}
-            {item.label === "Messages" && unrepliedCount > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-violet-500 px-1.5 text-[10px] font-bold text-white">
-                {unrepliedCount > 99 ? "99+" : unrepliedCount}
-              </span>
+      <nav className="flex items-center gap-4 mb-8 border-b border-white/10 pb-4 overflow-x-auto">
+        {navGroups.map((group, index) => (
+          <div key={group.title} className="flex items-center gap-1">
+            {group.items.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors whitespace-nowrap"
+              >
+                {item.label}
+                {item.label === "Messages" && unrepliedCount > 0 && (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-violet-500 px-1.5 text-[10px] font-bold text-white">
+                    {unrepliedCount > 99 ? "99+" : unrepliedCount}
+                  </span>
+                )}
+              </Link>
+            ))}
+            {index < navGroups.length - 1 && (
+              <div className="w-px h-6 bg-white/10 mx-2 flex-shrink-0" />
             )}
-          </Link>
+          </div>
         ))}
       </nav>
 

@@ -129,6 +129,7 @@ model Poem {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   font        String?
+  views       Int      @default(0)
 
   genreId String?
   genre   Genre?  @relation(fields: [genreId], references: [id])
