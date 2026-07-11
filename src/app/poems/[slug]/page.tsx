@@ -24,7 +24,7 @@ import { Poem } from "@prisma/client";
 
 type PoemWithRelations = Poem & {
   genre: { name: string; slug: string } | null;
-  tags: Array<{ tag: { name: string; slug: string } }>;
+  tags: Array<{ tagId: string; tag: { name: string; slug: string } }>;
 };
 
 async function getPoemBySlug(slug: string): Promise<PoemWithRelations | null> {
@@ -103,42 +103,89 @@ export default async function PoemDetailPage({ params }: PageProps) {
   const prisma = getPrisma();
   const publishedDate = poem.publishedAt ?? poem.createdAt;
 
-  const [nextPoem, prevPoem] = await Promise.all([
-    prisma.poem.findFirst({
-      where: {
-        published: true,
-        OR: [
-          { publishedAt: { gt: publishedDate } },
-          {
-            publishedAt: publishedDate,
-            createdAt: { gt: poem.createdAt },
-          },
-        ],
+  const nextPoemWhere = {
+    published: true,
+    OR: [
+      { publishedAt: { gt: publishedDate } },
+      {
+        publishedAt: publishedDate,
+        createdAt: { gt: poem.createdAt },
       },
-      orderBy: [
-        { publishedAt: "asc" },
-        { createdAt: "asc" },
-      ],
-      select: { title: true, slug: true },
-    }),
-    prisma.poem.findFirst({
-      where: {
-        published: true,
-        OR: [
-          { publishedAt: { lt: publishedDate } },
-          {
-            publishedAt: publishedDate,
-            createdAt: { lt: poem.createdAt },
-          },
-        ],
+    ],
+  };
+
+  const prevPoemWhere = {
+    published: true,
+    OR: [
+      { publishedAt: { lt: publishedDate } },
+      {
+        publishedAt: publishedDate,
+        createdAt: { lt: poem.createdAt },
       },
-      orderBy: [
-        { publishedAt: "desc" },
-        { createdAt: "desc" },
-      ],
+    ],
+  };
+
+  // Next Poem Query:
+  let nextPoem = null;
+  if (poem.genreId) {
+    nextPoem = await prisma.poem.findFirst({
+      where: {
+        ...nextPoemWhere,
+        genreId: poem.genreId,
+      },
+      orderBy: [{ publishedAt: "asc" }, { createdAt: "asc" }],
       select: { title: true, slug: true },
-    }),
-  ]);
+    });
+  }
+  if (!nextPoem && poem.tags.length > 0) {
+    const tagIds = poem.tags.map((t) => t.tagId);
+    nextPoem = await prisma.poem.findFirst({
+      where: {
+        ...nextPoemWhere,
+        tags: { some: { tagId: { in: tagIds } } },
+      },
+      orderBy: [{ publishedAt: "asc" }, { createdAt: "asc" }],
+      select: { title: true, slug: true },
+    });
+  }
+  if (!nextPoem) {
+    nextPoem = await prisma.poem.findFirst({
+      where: nextPoemWhere,
+      orderBy: [{ publishedAt: "asc" }, { createdAt: "asc" }],
+      select: { title: true, slug: true },
+    });
+  }
+
+  // Previous Poem Query:
+  let prevPoem = null;
+  if (poem.genreId) {
+    prevPoem = await prisma.poem.findFirst({
+      where: {
+        ...prevPoemWhere,
+        genreId: poem.genreId,
+      },
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      select: { title: true, slug: true },
+    });
+  }
+  if (!prevPoem && poem.tags.length > 0) {
+    const tagIds = poem.tags.map((t) => t.tagId);
+    prevPoem = await prisma.poem.findFirst({
+      where: {
+        ...prevPoemWhere,
+        tags: { some: { tagId: { in: tagIds } } },
+      },
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      select: { title: true, slug: true },
+    });
+  }
+  if (!prevPoem) {
+    prevPoem = await prisma.poem.findFirst({
+      where: prevPoemWhere,
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      select: { title: true, slug: true },
+    });
+  }
 
   const language = poem.language as PoemLanguage;
   const lang = poemLanguageToHtmlLang(language);
@@ -195,7 +242,7 @@ export default async function PoemDetailPage({ params }: PageProps) {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+    <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
       {poem.font && (
         <link
           rel="stylesheet"

@@ -144,7 +144,7 @@ export default async function BookDetailPage({ params }: PageProps) {
 
   if (canPurchase) {
     return (
-      <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+      <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(bookSchema) }}
@@ -184,7 +184,7 @@ export default async function BookDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+    <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(bookSchema) }}

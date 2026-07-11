@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getServerAuthSession } from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   // Admin-only
   const session = await getServerAuthSession();
   if (!session?.user || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const limitCheck = await rateLimit("admin-ai-reply", 10, 300000); // 10 per 5 mins
+  if (limitCheck.limited) {
+    return NextResponse.json(
+      { error: "Too many AI generations. Please wait before trying again." },
+      { status: 429 },
+    );
   }
 
   const apiKey = process.env.GEMINI_API_KEY;

@@ -39,7 +39,7 @@ export default async function GenresPage() {
   const visibleGenres = genres.filter((genre) => genre._count.poems > 0);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+    <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
       <div className="mb-12 md:mb-16">
         <p className="mb-3 text-sm tracking-[0.22em] text-white/40 uppercase">
           Browse by theme

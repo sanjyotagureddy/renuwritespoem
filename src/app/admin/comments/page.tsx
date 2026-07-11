@@ -14,6 +14,19 @@ type PageProps = {
   }>;
 };
 
+type RawComment = {
+  id: string;
+  body: string;
+  createdAt: Date;
+  status: string;
+  pinned: boolean;
+  commentType: string;
+  targetTitle: string;
+  targetSlug: string;
+  userName: string | null;
+  userEmail: string;
+};
+
 export default async function CommentsPage({ searchParams }: PageProps) {
   const prisma = getPrisma();
   const { page: pageRaw, filter: filterRaw } = await searchParams;
@@ -24,47 +37,73 @@ export default async function CommentsPage({ searchParams }: PageProps) {
   const filter = validFilters.includes(activeFilter) ? activeFilter : "PENDING";
 
   const pageSize = 15;
-  const take = page * pageSize;
+  const skip = (page - 1) * pageSize;
+  const statusFilter = filter === "ALL" ? null : filter;
 
-  const whereClause = filter === "ALL" ? {} : { status: filter };
-
-  // Fetch comments up to current offset limit
+  // Fetch comments page and count in parallel
   const [
-    poemComments,
-    bookComments,
-    audioComments,
+    rawComments,
     // Status counts for filtering tabs
     pendingPoem, pendingBook, pendingAudio,
     approvedPoem, approvedBook, approvedAudio,
     rejectedPoem, rejectedBook, rejectedAudio,
   ] = await Promise.all([
-    prisma.comment.findMany({
-      where: whereClause,
-      orderBy: { createdAt: "desc" },
-      take,
-      include: {
-        user: { select: { name: true, email: true } },
-        poem: { select: { title: true, slug: true } },
-      },
-    }),
-    prisma.bookComment.findMany({
-      where: whereClause,
-      orderBy: { createdAt: "desc" },
-      take,
-      include: {
-        user: { select: { name: true, email: true } },
-        book: { select: { title: true, slug: true } },
-      },
-    }),
-    prisma.audioComment.findMany({
-      where: whereClause,
-      orderBy: { createdAt: "desc" },
-      take,
-      include: {
-        user: { select: { name: true, email: true } },
-        audio: { select: { title: true, slug: true } },
-      },
-    }),
+    prisma.$queryRaw<RawComment[]>`
+      SELECT 
+        c.id,
+        c.body,
+        c."createdAt" as "createdAt",
+        c.status::text as status,
+        c.pinned,
+        'poem' as "commentType",
+        p.title as "targetTitle",
+        p.slug as "targetSlug",
+        u.name as "userName",
+        u.email as "userEmail"
+      FROM comments c
+      JOIN poems p ON c."poemId" = p.id
+      JOIN users u ON c."userId" = u.id
+      WHERE (${statusFilter}::text IS NULL OR c.status::text = ${statusFilter})
+
+      UNION ALL
+
+      SELECT 
+        bc.id,
+        bc.body,
+        bc."createdAt" as "createdAt",
+        bc.status::text as status,
+        bc.pinned,
+        'book' as "commentType",
+        b.title as "targetTitle",
+        b.slug as "targetSlug",
+        u.name as "userName",
+        u.email as "userEmail"
+      FROM book_comments bc
+      JOIN books b ON bc."bookId" = b.id
+      JOIN users u ON bc."userId" = u.id
+      WHERE (${statusFilter}::text IS NULL OR bc.status::text = ${statusFilter})
+
+      UNION ALL
+
+      SELECT 
+        ac.id,
+        ac.body,
+        ac."createdAt" as "createdAt",
+        ac.status::text as status,
+        ac.pinned,
+        'audio' as "commentType",
+        a.title as "targetTitle",
+        a.slug as "targetSlug",
+        u.name as "userName",
+        u.email as "userEmail"
+      FROM audio_comments ac
+      JOIN audio a ON ac."audioId" = a.id
+      JOIN users u ON ac."userId" = u.id
+      WHERE (${statusFilter}::text IS NULL OR ac.status::text = ${statusFilter})
+
+      ORDER BY "createdAt" DESC
+      LIMIT ${pageSize} OFFSET ${skip}
+    `,
     prisma.comment.count({ where: { status: "PENDING" } }),
     prisma.bookComment.count({ where: { status: "PENDING" } }),
     prisma.audioComment.count({ where: { status: "PENDING" } }),
@@ -76,53 +115,25 @@ export default async function CommentsPage({ searchParams }: PageProps) {
     prisma.audioComment.count({ where: { status: "REJECTED" } }),
   ]);
 
-  const unifiedComments: CommentItem[] = [
-    ...poemComments.map((c) => ({
-      id: c.id,
-      body: c.body,
-      createdAt: c.createdAt.toISOString(),
-      status: c.status,
-      user: {
-        name: c.user.name,
-        email: c.user.email,
-      },
-      commentType: "poem" as const,
-      targetTitle: c.poem.title,
-      targetLink: `/poems/${c.poem.slug}`,
-      pinned: c.pinned,
-    })),
-    ...bookComments.map((c) => ({
-      id: c.id,
-      body: c.body,
-      createdAt: c.createdAt.toISOString(),
-      status: c.status,
-      user: {
-        name: c.user.name,
-        email: c.user.email,
-      },
-      commentType: "book" as const,
-      targetTitle: c.book.title,
-      targetLink: `/books/${c.book.slug}`,
-      pinned: c.pinned,
-    })),
-    ...audioComments.map((c) => ({
-      id: c.id,
-      body: c.body,
-      createdAt: c.createdAt.toISOString(),
-      status: c.status,
-      user: {
-        name: c.user.name,
-        email: c.user.email,
-      },
-      commentType: "audio" as const,
-      targetTitle: c.audio.title,
-      targetLink: `/audio`,
-      pinned: c.pinned,
-    })),
-  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-  const skip = (page - 1) * pageSize;
-  const paginatedComments = unifiedComments.slice(skip, skip + pageSize);
+  const paginatedComments: CommentItem[] = rawComments.map((c) => ({
+    id: c.id,
+    body: c.body,
+    createdAt: new Date(c.createdAt).toISOString(),
+    status: c.status as "PENDING" | "APPROVED" | "REJECTED",
+    user: {
+      name: c.userName,
+      email: c.userEmail,
+    },
+    commentType: c.commentType as "poem" | "book" | "audio",
+    targetTitle: c.targetTitle,
+    targetLink: 
+      c.commentType === "poem" 
+        ? `/poems/${c.targetSlug}` 
+        : c.commentType === "book" 
+          ? `/books/${c.targetSlug}` 
+          : "/audio",
+    pinned: c.pinned,
+  }));
 
   const pendingTotal = pendingPoem + pendingBook + pendingAudio;
   const approvedTotal = approvedPoem + approvedBook + approvedAudio;

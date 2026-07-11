@@ -27,7 +27,7 @@ export default async function AudioPage() {
   });
 
   return (
-    <div className="relative max-w-6xl mx-auto px-6 py-16 md:py-24 overflow-hidden">
+    <div className="relative max-w-7xl mx-auto px-6 py-16 md:py-24 overflow-hidden">
       {/* Premium Visual Background Glow Accent */}
       <div className="absolute -top-10 left-1/3 w-[35rem] h-[35rem] bg-violet-500/5 rounded-full blur-[130px] pointer-events-none -z-10" />
 

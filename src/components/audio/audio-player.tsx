@@ -112,7 +112,7 @@ export default function AudioPlayer({
       className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-black/75 p-4 backdrop-blur-xl transition-all duration-300 md:px-8"
       onContextMenu={(e) => e.preventDefault()} // Disable right-click context menu
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
         
         {/* Track Info */}
         <div className="flex items-center gap-3 md:w-1/4">

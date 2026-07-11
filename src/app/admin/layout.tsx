@@ -22,6 +22,9 @@ const navItems = [
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  // Defense-in-depth: Although middleware.ts restricts /admin routes to ADMINs,
+  // we check the session here too as a component-level safety fallback to prevent
+  // accidental data exposure if middleware matching rules are ever modified or bypassed.
   const session = await getServerAuthSession();
 
   if (!session?.user) {
