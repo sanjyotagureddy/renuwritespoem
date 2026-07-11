@@ -9,30 +9,25 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function run() {
-  // Add some clicks from whatsapp, invite, and ig-story
-  await prisma.attributionLog.createMany({
-    data: [
-      { source: "whatsapp", path: "/poems/whispers-of-the-wind" },
-      { source: "whatsapp", path: "/poems/whispers-of-the-wind" },
-      { source: "invite", path: "/" },
-      { source: "ig-story", path: "/books/morning-light" },
-      { source: "ig-story", path: "/books/morning-light" },
-      { source: "ig-story", path: "/books/morning-light" },
-    ]
-  });
-
-  // Update first user to have signed up from whatsapp
-  const user = await prisma.user.findFirst();
-  if (user) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { signUpSource: "whatsapp" }
+  try {
+    const clicksBySource = await prisma.attributionLog.groupBy({
+      by: ["source"],
+      _count: { id: true }
     });
-  }
+    console.log("clicksBySource:", clicksBySource);
 
-  console.log("Mock data inserted successfully!");
-  await prisma.$disconnect();
-  await pool.end();
+    const signupsBySource = await prisma.user.groupBy({
+      by: ["signUpSource"],
+      where: { signUpSource: { not: null } },
+      _count: { id: true }
+    });
+    console.log("signupsBySource:", signupsBySource);
+  } catch (err) {
+    console.error("Query Error:", err);
+  } finally {
+    await prisma.$disconnect();
+    await pool.end();
+  }
 }
 
 run();
