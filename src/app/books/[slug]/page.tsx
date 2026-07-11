@@ -6,6 +6,8 @@ import { getPrisma } from "@/lib/db";
 import BookPurchaseLayout from "@/components/books/book-purchase-layout";
 import BookLikeButton from "@/components/books/like-button";
 import BookCommentSection from "@/components/books/comment-section";
+import ShareButton from "@/components/ui/share-button";
+import InviteModal from "@/components/ui/invite-modal";
 import { siteConfig } from "@/lib/seo";
 import { getCache, setCache } from "@/lib/cache";
 import BookDescription from "@/components/books/book-description";
@@ -286,6 +288,16 @@ export default async function BookDetailPage({ params }: PageProps) {
           <aside className="lg:sticky lg:top-24">
             <div className="space-y-6 rounded-2xl border border-white/15 bg-white/3 p-5">
               <BookLikeButton slug={book.slug} />
+              <ShareButton
+                shareUrl={`${siteConfig.url}/books/${book.slug}`}
+                title={book.title}
+                shareText={`Check out the book "${book.title}"${book.price ? ` (₹${Number(book.price)})` : ""} on Renu Writes Poem:`}
+                accentClass="text-emerald-400 hover:bg-emerald-500/10 border-emerald-500/30"
+              />
+              <InviteModal
+                accentClass="text-emerald-400 border-emerald-500/30"
+                buttonAccent="hover:border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400"
+              />
               <div className="border-t border-white/10 pt-5">
                 <BookCommentSection slug={book.slug} />
               </div>

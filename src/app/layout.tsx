@@ -9,6 +9,7 @@ import AuthSessionProvider from "@/components/providers/session-provider";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/seo";
+import WelcomeBanner from "@/components/ui/welcome-banner";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -89,6 +90,7 @@ export default function RootLayout({
         className={`${playfair.variable} ${inter.variable} ${notoDevanagari.variable} antialiased bg-neutral-950 text-white`}
       >
         <AuthSessionProvider>
+          <WelcomeBanner />
           <Header />
           <main className="min-h-screen pt-[72px]">{children}</main>
           <Footer />

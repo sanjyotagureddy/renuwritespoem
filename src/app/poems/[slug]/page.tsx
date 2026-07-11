@@ -11,6 +11,8 @@ import {
 } from "@/lib/poem-language";
 import LikeButton from "@/components/poems/like-button";
 import CommentSection from "@/components/poems/comment-section";
+import ShareButton from "@/components/ui/share-button";
+import InviteModal from "@/components/ui/invite-modal";
 import { siteConfig } from "@/lib/seo";
 import { getCache, setCache } from "@/lib/cache";
 
@@ -241,6 +243,10 @@ export default async function PoemDetailPage({ params }: PageProps) {
     ],
   };
 
+  // Get the first line of the poem
+  const openingLine = poem.content.split("\n").map(l => l.trim()).filter(l => l.length > 0)[0] ?? "";
+  const shareText = `"${openingLine}"\n\nRead the full poem "${poem.title}" on Renu Writes Poem:`;
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
       {poem.font && (
@@ -379,6 +385,17 @@ export default async function PoemDetailPage({ params }: PageProps) {
         <aside className="lg:sticky lg:top-[96px]">
           <div className="space-y-6 rounded-2xl border border-white/15 bg-white/[0.03] p-5">
             <LikeButton slug={poem.slug} />
+            <ShareButton
+              shareUrl={`${siteConfig.url}/poems/${poem.slug}`}
+              title={poem.title}
+              shareText={shareText}
+              accentClass="text-amber-400 hover:bg-amber-500/10 border-amber-500/30"
+            />
+            <InviteModal
+              poemId={poem.id}
+              accentClass="text-amber-400 border-amber-500/30"
+              buttonAccent="hover:border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 text-amber-400"
+            />
             <div className="border-t border-white/10 pt-5">
               <CommentSection slug={poem.slug} />
             </div>
