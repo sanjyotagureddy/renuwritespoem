@@ -13,6 +13,11 @@ type MemoryCacheEntry = {
 
 const memoryCache = new Map<string, MemoryCacheEntry>();
 
+function getPrefixedKey(key: string): string {
+  const env = process.env.NODE_ENV === "production" ? "prod" : "dev";
+  return `${env}:${key}`;
+}
+
 function isDynamicServerError(err: unknown): boolean {
   if (err instanceof Error) {
     return (
@@ -25,9 +30,10 @@ function isDynamicServerError(err: unknown): boolean {
 }
 
 export async function getCache<T>(key: string): Promise<T | null> {
+  const prefixedKey = getPrefixedKey(key);
   if (redis) {
     try {
-      const val = await redis.get<T>(key);
+      const val = await redis.get<T>(prefixedKey);
       return val;
     } catch (err) {
       if (isDynamicServerError(err)) {
@@ -37,10 +43,10 @@ export async function getCache<T>(key: string): Promise<T | null> {
     }
   }
 
-  const entry = memoryCache.get(key);
+  const entry = memoryCache.get(prefixedKey);
   if (!entry) return null;
   if (Date.now() > entry.expiresAt) {
-    memoryCache.delete(key);
+    memoryCache.delete(prefixedKey);
     return null;
   }
   try {
@@ -55,9 +61,10 @@ export async function setCache<T>(
   value: T,
   ttlSeconds: number = 3600
 ): Promise<void> {
+  const prefixedKey = getPrefixedKey(key);
   if (redis) {
     try {
-      await redis.set(key, value, { ex: ttlSeconds });
+      await redis.set(prefixedKey, value, { ex: ttlSeconds });
       return;
     } catch (err) {
       if (isDynamicServerError(err)) {
@@ -68,7 +75,7 @@ export async function setCache<T>(
   }
 
   const expiresAt = Date.now() + ttlSeconds * 1000;
-  memoryCache.set(key, {
+  memoryCache.set(prefixedKey, {
     value: JSON.stringify(value),
     expiresAt,
   });
@@ -77,10 +84,11 @@ export async function setCache<T>(
 export async function invalidateCache(keys: string[] | string): Promise<void> {
   const keysArray = Array.isArray(keys) ? keys : [keys];
   if (keysArray.length === 0) return;
+  const prefixedKeys = keysArray.map(getPrefixedKey);
 
   if (redis) {
     try {
-      await redis.del(...keysArray);
+      await redis.del(...prefixedKeys);
       return;
     } catch (err) {
       if (isDynamicServerError(err)) {
@@ -90,7 +98,7 @@ export async function invalidateCache(keys: string[] | string): Promise<void> {
     }
   }
 
-  for (const k of keysArray) {
+  for (const k of prefixedKeys) {
     memoryCache.delete(k);
   }
 }

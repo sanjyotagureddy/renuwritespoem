@@ -34,7 +34,7 @@ type HomepageCacheData = {
 };
 
 async function getHomepageData(): Promise<HomepageCacheData> {
-  const cacheKey = "home:featured-data:v3";
+  const cacheKey = "home:featured-data";
   const cached = await getCache<HomepageCacheData>(cacheKey);
   if (cached) {
     const parseOptionalDate = (d: string | Date | null) => d ? new Date(d) : null;
