@@ -156,25 +156,16 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
 
             {/* Slider Navigation Controls */}
             {testimonials.length > 1 && (
-              <div className="flex items-center justify-between sm:justify-start gap-4 mt-8 px-4">
-                <div className="flex gap-2">
-                  <button
-                    onClick={handlePrev}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-colors"
-                    aria-label="Previous slide"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-colors"
-                    aria-label="Next slide"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </div>
+              <div className="flex items-center justify-between gap-4 mt-8 px-4 w-full">
+                <button
+                  onClick={handlePrev}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+                  aria-label="Previous slide"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
 
-                <div className="flex items-center gap-1.5 ml-auto sm:ml-6">
+                <div className="flex items-center justify-center gap-1.5 flex-1 max-w-xs mx-auto">
                   {testimonials.map((_, idx) => (
                     <button
                       key={idx}
@@ -186,6 +177,14 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
                     />
                   ))}
                 </div>
+
+                <button
+                  onClick={handleNext}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+                  aria-label="Next slide"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
               </div>
             )}
           </div>

@@ -34,7 +34,7 @@ type HomepageCacheData = {
 };
 
 async function getHomepageData(): Promise<HomepageCacheData> {
-  const cacheKey = "home:featured-data";
+  const cacheKey = "home:featured-data:v4";
   const cached = await getCache<HomepageCacheData>(cacheKey);
   if (cached) {
     const parseOptionalDate = (d: string | Date | null) => d ? new Date(d) : null;
@@ -63,7 +63,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
   }
 
   const prisma = getPrisma();
-  const [featuredPoems, latestPoems, totalPoems, featuredBooks, totalBooks, latestAudio, poemComments, bookComments] =
+  const [featuredPoems, latestPoems, totalPoems, featuredBooks, totalBooks, latestAudio, poemComments, bookComments, audioComments] =
     await Promise.all([
       prisma.poem.findMany({
         where: { featured: true, published: true },
@@ -103,7 +103,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
       prisma.comment.findMany({
         where: { status: "APPROVED" },
         orderBy: { createdAt: "desc" },
-        take: 3,
+        take: 10,
         include: {
           user: { select: { name: true } },
           poem: { select: { title: true, slug: true } }
@@ -112,10 +112,19 @@ async function getHomepageData(): Promise<HomepageCacheData> {
       prisma.bookComment.findMany({
         where: { status: "APPROVED" },
         orderBy: { createdAt: "desc" },
-        take: 3,
+        take: 10,
         include: {
           user: { select: { name: true } },
           book: { select: { title: true, slug: true } }
+        }
+      }),
+      prisma.audioComment.findMany({
+        where: { status: "APPROVED" },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        include: {
+          user: { select: { name: true } },
+          audio: { select: { title: true, slug: true } }
         }
       })
     ]);
@@ -127,7 +136,8 @@ async function getHomepageData(): Promise<HomepageCacheData> {
       userName: c.user?.name ?? "Anonymous Reader",
       targetTitle: c.poem.title,
       targetLink: `/poems/${c.poem.slug}`,
-      createdAt: c.createdAt.toISOString()
+      createdAt: c.createdAt.toISOString(),
+      pinned: c.pinned,
     })),
     ...bookComments.map(c => ({
       id: c.id,
@@ -135,11 +145,25 @@ async function getHomepageData(): Promise<HomepageCacheData> {
       userName: c.user?.name ?? "Anonymous Reader",
       targetTitle: c.book.title,
       targetLink: `/books/${c.book.slug}`,
-      createdAt: c.createdAt.toISOString()
+      createdAt: c.createdAt.toISOString(),
+      pinned: c.pinned,
+    })),
+    ...audioComments.map(c => ({
+      id: c.id,
+      body: c.body,
+      userName: c.user?.name ?? "Anonymous Reader",
+      targetTitle: c.audio.title,
+      targetLink: `/audio/${c.audio.slug}`,
+      createdAt: c.createdAt.toISOString(),
+      pinned: c.pinned,
     }))
   ]
-  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-  .slice(0, 4);
+  .sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  })
+  .slice(0, 15);
 
   const data = {
     featuredPoems,
