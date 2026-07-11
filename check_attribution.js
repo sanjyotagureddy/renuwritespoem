@@ -15,4 +15,24 @@ async function run() {
       { source: "whatsapp", path: "/poems/whispers-of-the-wind" },
       { source: "whatsapp", path: "/poems/whispers-of-the-wind" },
       { source: "invite", path: "/" },
-      { source: "ig-story"
+      { source: "ig-story", path: "/books/morning-light" },
+      { source: "ig-story", path: "/books/morning-light" },
+      { source: "ig-story", path: "/books/morning-light" },
+    ]
+  });
+
+  // Update first user to have signed up from whatsapp
+  const user = await prisma.user.findFirst();
+  if (user) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { signUpSource: "whatsapp" }
+    });
+  }
+
+  console.log("Mock data inserted successfully!");
+  await prisma.$disconnect();
+  await pool.end();
+}
+
+run();
