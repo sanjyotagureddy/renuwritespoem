@@ -60,3 +60,11 @@ export function slugify(value: string): string {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 }
+
+export function getReadingTime(content: string): string {
+  if (!content) return "0 min read";
+  const words = content.trim().split(/\s+/).length;
+  // Poetry is read slower, estimating at ~120 words per minute
+  const minutes = Math.ceil(words / 120);
+  return `${minutes} min read`;
+}

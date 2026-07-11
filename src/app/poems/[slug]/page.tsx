@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import {
@@ -17,7 +18,7 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-import { formatDate } from "@/lib/utils";
+import { formatDate, getReadingTime } from "@/lib/utils";
 
 import { Poem } from "@prisma/client";
 
@@ -65,7 +66,6 @@ export async function generateMetadata({
   }
 
   const description = poem.excerpt ?? (poem.content.slice(0, 150).trim() + "...");
-  const images = poem.coverImage ? [poem.coverImage] : ["/author.jpg"];
   const tagsList = poem.tags.map((t) => t.tag.name);
 
   return {
@@ -83,13 +83,11 @@ export async function generateMetadata({
       modifiedTime: poem.updatedAt?.toISOString(),
       authors: [siteConfig.author],
       tags: tagsList,
-      images: images,
     },
     twitter: {
       card: "summary_large_image",
       title: poem.title,
       description,
-      images: images,
     },
   };
 }
@@ -101,6 +99,46 @@ export default async function PoemDetailPage({ params }: PageProps) {
   if (!poem || !poem.published) {
     notFound();
   }
+
+  const prisma = getPrisma();
+  const publishedDate = poem.publishedAt ?? poem.createdAt;
+
+  const [nextPoem, prevPoem] = await Promise.all([
+    prisma.poem.findFirst({
+      where: {
+        published: true,
+        OR: [
+          { publishedAt: { gt: publishedDate } },
+          {
+            publishedAt: publishedDate,
+            createdAt: { gt: poem.createdAt },
+          },
+        ],
+      },
+      orderBy: [
+        { publishedAt: "asc" },
+        { createdAt: "asc" },
+      ],
+      select: { title: true, slug: true },
+    }),
+    prisma.poem.findFirst({
+      where: {
+        published: true,
+        OR: [
+          { publishedAt: { lt: publishedDate } },
+          {
+            publishedAt: publishedDate,
+            createdAt: { lt: poem.createdAt },
+          },
+        ],
+      },
+      orderBy: [
+        { publishedAt: "desc" },
+        { createdAt: "desc" },
+      ],
+      select: { title: true, slug: true },
+    }),
+  ]);
 
   const language = poem.language as PoemLanguage;
   const lang = poemLanguageToHtmlLang(language);
@@ -131,6 +169,31 @@ export default async function PoemDetailPage({ params }: PageProps) {
     }
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": siteConfig.url,
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Poems",
+        "item": `${siteConfig.url}/poems`,
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": poem.title,
+        "item": `${siteConfig.url}/poems/${poem.slug}`,
+      },
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
       {poem.font && (
@@ -144,6 +207,10 @@ export default async function PoemDetailPage({ params }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <Link
         href="/poems"
@@ -164,10 +231,25 @@ export default async function PoemDetailPage({ params }: PageProps) {
                 {poem.genre.name}
               </span>
             ) : null}
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs tracking-wider text-white/50 uppercase">
+              {getReadingTime(poem.content)}
+            </span>
             <span className="ml-auto text-xs tracking-wider text-white/40 uppercase">
               {formatDate(poem.publishedAt)}
             </span>
           </div>
+
+          {poem.coverImage && (
+            <div className="relative w-full h-64 md:h-[400px] mb-8 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
+              <Image
+                src={poem.coverImage}
+                alt={poem.title}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          )}
 
           <h1
             lang={lang}
@@ -207,6 +289,43 @@ export default async function PoemDetailPage({ params }: PageProps) {
               ))}
             </div>
           ) : null}
+
+          {/* Previous/Next Navigation */}
+          {(prevPoem || nextPoem) && (
+            <div className="mt-10 flex items-center justify-between gap-4 border-t border-white/10 pt-8">
+              {prevPoem ? (
+                <Link
+                  href={`/poems/${prevPoem.slug}`}
+                  className="group flex flex-col items-start text-left max-w-[45%]"
+                >
+                  <span className="text-[10px] uppercase tracking-wider text-white/40 mb-1 group-hover:text-white/60">
+                    ← Previous Poem
+                  </span>
+                  <span className="text-sm font-semibold text-white/80 group-hover:text-white transition-colors truncate w-full">
+                    {prevPoem.title}
+                  </span>
+                </Link>
+              ) : (
+                <div />
+              )}
+
+              {nextPoem ? (
+                <Link
+                  href={`/poems/${nextPoem.slug}`}
+                  className="group flex flex-col items-end text-right max-w-[45%]"
+                >
+                  <span className="text-[10px] uppercase tracking-wider text-white/40 mb-1 group-hover:text-white/60">
+                    Next Poem →
+                  </span>
+                  <span className="text-sm font-semibold text-white/80 group-hover:text-white transition-colors truncate w-full">
+                    {nextPoem.title}
+                  </span>
+                </Link>
+              ) : (
+                <div />
+              )}
+            </div>
+          )}
         </article>
 
         {/* Sidebar — Likes & Comments */}

@@ -35,7 +35,7 @@ const DEFAULT_PAGE_SIZE = 9;
 const SORT_OPTIONS = ["popular", "newest"] as const;
 type PoemSort = (typeof SORT_OPTIONS)[number];
 
-import { formatDate } from "@/lib/utils";
+import { formatDate, getReadingTime } from "@/lib/utils";
 
 export default async function PoemsPage({ searchParams }: PoemsPageProps) {
   const prisma = getPrisma();
@@ -268,7 +268,7 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
             return (
               <article
                 key={poem.id}
-                className="group relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.03] p-6 md:p-7 transition-all duration-300 hover:border-amber-500/30 hover:bg-amber-500/[0.01] hover:shadow-lg hover:shadow-amber-500/[0.02]"
+                className="group relative overflow-hidden rounded-2xl border border-white/15 bg-white/[0.03] p-6 md:p-7 transition-all duration-300 hover:border-amber-500/30 hover:bg-amber-500/[0.01] hover:shadow-lg hover:shadow-amber-500/[0.02] flex flex-col h-full"
               >
                 <div className="mb-5 flex flex-wrap items-center gap-2">
                   <Link
@@ -302,7 +302,7 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
                 </p>
 
                 <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 shrink-0">
                     <span className="flex items-center gap-1 text-xs text-white/40" title="Likes">
                       <span>♡</span>
                       {poem._count.likes}
@@ -325,15 +325,20 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
                   </div>
                 </div>
 
-                <Link
-                  href={`/poems/${poem.slug}`}
-                  className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.18em] text-white/85 hover:text-white"
-                >
-                  Read Poem
-                  <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">
-                    →
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                  <span className="text-xs uppercase tracking-wider text-white/40" title="Reading time">
+                    {getReadingTime(poem.content)}
                   </span>
-                </Link>
+                  <Link
+                    href={`/poems/${poem.slug}`}
+                    className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.18em] text-white/85 hover:text-amber-400 transition-all duration-300 hover:scale-105 origin-right"
+                  >
+                    Read Poem
+                    <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </Link>
+                </div>
               </article>
             );
           })}

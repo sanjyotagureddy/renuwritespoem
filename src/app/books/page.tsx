@@ -101,7 +101,7 @@ export default async function BooksPage() {
                     <span className="flex items-center gap-1">♡ {book._count.likes}</span>
                     <span className="flex items-center gap-1">💬 {book._count.comments}</span>
                   </div>
-                  <span className="text-xs uppercase tracking-[0.18em] text-white/60 group-hover:text-white transition-colors">
+                  <span className="text-xs uppercase tracking-[0.18em] text-white/60 group-hover:text-emerald-400 transition-all duration-300 group-hover:scale-105 origin-right">
                     View →
                   </span>
                 </div>

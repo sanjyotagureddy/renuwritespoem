@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 type LikeUser = { name: string; image: string | null };
 
@@ -76,7 +77,14 @@ export default function LikeButton({
           } ${!session?.user ? "cursor-not-allowed opacity-50" : ""}`}
           title={!session?.user ? "Sign in to like" : liked ? "Unlike" : "Like"}
         >
-          <span className="text-base">{liked ? "♥" : "♡"}</span>
+          <motion.span
+            className="text-base inline-block"
+            key={liked ? "liked" : "unliked"}
+            animate={{ scale: liked ? [1, 1.4, 0.9, 1.1, 1] : 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            {liked ? "♥" : "♡"}
+          </motion.span>
           <span>Like</span>
         </button>
 
