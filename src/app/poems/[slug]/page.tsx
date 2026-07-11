@@ -10,6 +10,7 @@ import {
   type PoemLanguage,
 } from "@/lib/poem-language";
 import LikeButton from "@/components/poems/like-button";
+import ListenButton from "@/components/poems/listen-button";
 import CommentSection from "@/components/poems/comment-section";
 import ShareButton from "@/components/ui/share-button";
 import InviteModal from "@/components/ui/invite-modal";
@@ -385,6 +386,7 @@ export default async function PoemDetailPage({ params }: PageProps) {
         <aside className="lg:sticky lg:top-[96px]">
           <div className="space-y-6 rounded-2xl border border-white/15 bg-white/[0.03] p-5">
             <LikeButton slug={poem.slug} />
+            <ListenButton content={poem.content} title={poem.title} language={language} />
             <ShareButton
               shareUrl={`${siteConfig.url}/poems/${poem.slug}`}
               title={poem.title}
