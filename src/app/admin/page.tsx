@@ -42,6 +42,8 @@ export default async function AdminDashboard() {
     availableBooks,
     featuredBooks,
     recentBooks,
+    clicksBySource,
+    signupsBySource,
   ] = await Promise.all([
     prisma.poem.count(),
     prisma.poem.count({ where: { published: true } }),
@@ -103,6 +105,15 @@ export default async function AdminDashboard() {
         discountedPrice: true,
       },
     }),
+    prisma.attributionLog.groupBy({
+      by: ["source"],
+      _count: { id: true }
+    }),
+    prisma.user.groupBy({
+      by: ["signUpSource"],
+      where: { signUpSource: { not: null } },
+      _count: { id: true }
+    })
   ]);
 
   const stats = [
@@ -398,6 +409,78 @@ export default async function AdminDashboard() {
               </div>
             ))
           )}
+        </div>
+      </section>
+
+      {/* Attribution Analytics */}
+      <section>
+        <div className="mb-4">
+          <h2 className="text-xl text-white">Attribution Analytics</h2>
+          <p className="text-xs text-white/40 mt-1">Track which sharing channels drive the most traffic and signup conversions.</p>
+        </div>
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/3 p-5">
+          {(() => {
+            const sourceMap: Record<string, { clicks: number; signups: number }> = {};
+
+            clicksBySource.forEach((c) => {
+              if (c.source) {
+                const src = c.source.toLowerCase();
+                if (!sourceMap[src]) sourceMap[src] = { clicks: 0, signups: 0 };
+                sourceMap[src].clicks += c._count.id;
+              }
+            });
+
+            signupsBySource.forEach((s) => {
+              if (s.signUpSource) {
+                const src = s.signUpSource.toLowerCase();
+                if (!sourceMap[src]) sourceMap[src] = { clicks: 0, signups: 0 };
+                sourceMap[src].signups += s._count.id;
+              }
+            });
+
+            const attributionData = Object.entries(sourceMap)
+              .map(([source, stats]) => ({
+                source,
+                clicks: stats.clicks,
+                signups: stats.signups,
+              }))
+              .sort((a, b) => b.clicks - a.clicks);
+
+            if (attributionData.length === 0) {
+              return (
+                <div className="py-6 text-center">
+                  <p className="font-(family-name:--font-inter) text-white/50">No attribution traffic logged yet.</p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-white/80">
+                  <thead>
+                    <tr className="border-b border-white/10 text-xs tracking-wider text-white/40 uppercase">
+                      <th className="pb-3 font-semibold">Source Channel</th>
+                      <th className="pb-3 font-semibold text-center">Clicks (Traffic)</th>
+                      <th className="pb-3 font-semibold text-center">Signups</th>
+                      <th className="pb-3 font-semibold text-right">Conversion Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {attributionData.map((data) => (
+                      <tr key={data.source} className="hover:bg-white/[0.01] transition-colors">
+                        <td className="py-3 font-medium text-amber-400 capitalize">{data.source}</td>
+                        <td className="py-3 text-center font-semibold">{data.clicks}</td>
+                        <td className="py-3 text-center font-semibold">{data.signups}</td>
+                        <td className="py-3 text-right font-semibold text-emerald-400">
+                          {data.clicks > 0 ? `${((data.signups / data.clicks) * 100).toFixed(1)}%` : "0.0%"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
         </div>
       </section>
     </div>

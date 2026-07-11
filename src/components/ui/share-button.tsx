@@ -23,6 +23,21 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+function appendSrc(url: string, src: string): string {
+  try {
+    // If it's a full absolute URL
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      const parsed = new URL(url);
+      parsed.searchParams.set("src", src);
+      return parsed.toString();
+    }
+  } catch {
+    // Fall through to fallback
+  }
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}src=${src}`;
+}
+
 export default function ShareButton({
   shareUrl,
   title,
@@ -50,7 +65,8 @@ export default function ShareButton({
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      const linkWithSrc = appendSrc(shareUrl, "copy-link");
+      await navigator.clipboard.writeText(linkWithSrc);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
     } catch (err) {
@@ -60,7 +76,8 @@ export default function ShareButton({
 
   const handleCopyText = async () => {
     try {
-      const fullText = `${shareText}\n${shareUrl}`;
+      const linkWithSrc = appendSrc(shareUrl, "copy-link");
+      const fullText = `${shareText}\n${linkWithSrc}`;
       await navigator.clipboard.writeText(fullText);
       setCopiedText(true);
       setTimeout(() => setCopiedText(false), 2000);
@@ -72,10 +89,11 @@ export default function ShareButton({
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
+        const linkWithSrc = appendSrc(shareUrl, "native-share");
         await navigator.share({
           title: title,
           text: shareText,
-          url: shareUrl,
+          url: linkWithSrc,
         });
       } catch (err) {
         console.error("Error invoking Web Share API:", err);
@@ -84,12 +102,12 @@ export default function ShareButton({
   };
 
   const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
-    `${shareText}\n${shareUrl}`
+    `${shareText}\n${appendSrc(shareUrl, "whatsapp")}`
   )}`;
 
   const emailShareUrl = `mailto:?subject=${encodeURIComponent(
     title
-  )}&body=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`;
+  )}&body=${encodeURIComponent(`${shareText}\n\n${appendSrc(shareUrl, "email")}`)}`;
 
   return (
     <div className="relative w-full" ref={dropdownRef}>

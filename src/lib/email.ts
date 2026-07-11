@@ -546,13 +546,13 @@ export async function sendInvitationEmail(
           ${poemCover ? `<img src="${escapeHtml(poemCover)}" alt="${escapeHtml(poemTitle)}" style="max-width:100%; height:auto; border-radius:12px; margin-bottom:16px; border:1px solid #f3e8df; max-height:220px; object-fit:cover;" />` : ""}
           <h3 style="margin:0 0 10px; color:#431407; font-family:Georgia,serif; font-size:20px; font-weight:700;">${escapeHtml(poemTitle)}</h3>
           ${poemExcerpt ? `<p style="margin:0 0 18px; color:#6b7280; font-size:14px; font-style:italic; line-height:1.6;">&ldquo;${escapeHtml(poemExcerpt)}&rdquo;</p>` : ""}
-          <a href="${escapeHtml(`${siteConfig.url}/poems/${poemSlug}?invitedBy=${encodeURIComponent(senderName)}`)}" style="display:inline-block; padding:12px 28px; background:#9a3412; color:#ffffff; text-decoration:none; border-radius:999px; font-weight:700; font-size:13px; letter-spacing:1.5px; text-transform:uppercase;">Read Full Poem</a>
+          <a href="${escapeHtml(`${siteConfig.url}/poems/${poemSlug}?invitedBy=${encodeURIComponent(senderName)}&src=invite`)}" style="display:inline-block; padding:12px 28px; background:#9a3412; color:#ffffff; text-decoration:none; border-radius:999px; font-weight:700; font-size:13px; letter-spacing:1.5px; text-transform:uppercase;">Read Full Poem</a>
         </div>
       ` : `
         <div style="background:#faf5f2; border:1px solid #f3e8df; border-radius:18px; padding:24px; margin:20px 0; text-align:center;">
           <h3 style="margin:0 0 10px; color:#431407; font-family:Georgia,serif; font-size:20px; font-weight:700;">Renu Writes Poem</h3>
           <p style="margin:0 0 18px; color:#6b7280; font-size:14px; line-height:1.6;">A warm, visual sanctuary of heartfelt verses, poetry anthologies, and voice recitations by Renu.</p>
-          <a href="${escapeHtml(`${siteConfig.url}?invitedBy=${encodeURIComponent(senderName)}`)}" style="display:inline-block; padding:12px 28px; background:#9a3412; color:#ffffff; text-decoration:none; border-radius:999px; font-weight:700; font-size:13px; letter-spacing:1.5px; text-transform:uppercase;">Explore Sanctuary</a>
+          <a href="${escapeHtml(`${siteConfig.url}?invitedBy=${encodeURIComponent(senderName)}&src=invite`)}" style="display:inline-block; padding:12px 28px; background:#9a3412; color:#ffffff; text-decoration:none; border-radius:999px; font-weight:700; font-size:13px; letter-spacing:1.5px; text-transform:uppercase;">Explore Sanctuary</a>
         </div>
       `}
 

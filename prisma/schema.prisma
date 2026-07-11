@@ -36,6 +36,7 @@ model User {
   audioComments     AudioComment[]
   audioCommentLikes AudioCommentLike[]
   invites           Invite[]
+  signUpSource      String?
 
   @@map("users")
 }
@@ -471,5 +472,16 @@ model UnsubscribedEmail {
   createdAt DateTime @default(now())
 
   @@map("unsubscribed_emails")
+}
+
+model AttributionLog {
+  id        String   @id @default(cuid())
+  source    String   // e.g. 'whatsapp', 'invite', 'ig-story', 'twitter', 'facebook', 'copy-link', etc.
+  path      String   // the URL path clicked (e.g. '/poems/whispers-of-the-wind')
+  createdAt DateTime @default(now())
+
+  @@index([source])
+  @@index([createdAt])
+  @@map("attribution_logs")
 }
 
