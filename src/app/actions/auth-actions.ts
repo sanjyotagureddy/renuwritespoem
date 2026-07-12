@@ -98,16 +98,9 @@ export async function resendVerificationAction(email: string): Promise<ActionRes
       select: { name: true, emailVerified: true, passwordHash: true }
     });
 
-    if (!user) {
-      return { error: "Account not found." };
-    }
-
-    if (user.emailVerified) {
-      return { error: "This account has already been verified. Please log in." };
-    }
-
-    if (!user.passwordHash) {
-      return { error: "This account is registered via Google OAuth and does not require verification." };
+    // Security best practice: don't reveal if user does not exist, is already verified, or uses Google OAuth
+    if (!user || user.emailVerified || !user.passwordHash) {
+      return { success: true };
     }
 
     // Generate new token

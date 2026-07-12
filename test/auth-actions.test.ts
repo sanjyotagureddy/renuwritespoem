@@ -163,19 +163,19 @@ describe("auth server actions", () => {
       expect(res.error).toContain("required");
     });
 
-    it("should fail if email is not found", async () => {
+    it("should return success even if email is not found (security precaution)", async () => {
       const res = await resendVerificationAction("nonexistent@example.com");
-      expect(res.error).toContain("not found");
+      expect(res.success).toBe(true);
     });
 
-    it("should fail if account is already verified", async () => {
+    it("should return success even if account is already verified (security precaution)", async () => {
       const res = await resendVerificationAction("verified@example.com");
-      expect(res.error).toContain("already been verified");
+      expect(res.success).toBe(true);
     });
 
-    it("should fail if account was created via Google", async () => {
+    it("should return success even if account was created via Google (security precaution)", async () => {
       const res = await resendVerificationAction("google@example.com");
-      expect(res.error).toContain("Google OAuth");
+      expect(res.success).toBe(true);
     });
 
     it("should catch database transaction errors", async () => {
