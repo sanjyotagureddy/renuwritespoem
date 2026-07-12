@@ -1,7 +1,10 @@
 import { createHmac } from "crypto";
 
 export function getUnsubscribeToken(email: string): string {
-  const secret = process.env.NEXTAUTH_SECRET || "default-secret-key-12345";
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error("NEXTAUTH_SECRET environment variable is not set. Cannot generate secure tokens.");
+  }
   return createHmac("sha256", secret).update(email).digest("hex").slice(0, 16);
 }
 
