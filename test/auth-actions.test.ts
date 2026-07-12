@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { signUpAction, resendVerificationAction, forgotPasswordAction, resetPasswordAction } from "../src/app/actions/auth-actions";
 
+// Mock rateLimit to prevent test failures
+vi.mock("@/lib/rate-limit", () => {
+  return {
+    rateLimit: vi.fn().mockResolvedValue({ limited: false, remaining: 99, resetTime: 0 }),
+  };
+});
+
 let simulateDbError = false;
 
 // Mock the database client
@@ -266,6 +273,17 @@ describe("auth server actions", () => {
 
       const res = await resetPasswordAction("valid-reset-token", formData);
       expect(res.error).toContain("An error occurred");
+    });
+  });
+
+  describe("Rate limiting protection", () => {
+    it("should reject signUpAction when rate limited", async () => {
+      const { rateLimit } = await import("@/lib/rate-limit");
+      vi.mocked(rateLimit).mockResolvedValueOnce({ limited: true, remaining: 0, resetTime: Date.now() });
+
+      const formData = new FormData();
+      const res = await signUpAction(formData);
+      expect(res.error).toContain("Too many registration attempts");
     });
   });
 });

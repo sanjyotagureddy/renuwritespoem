@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { getPrisma } from "@/lib/db";
 import { SignUpSchema, ForgotPasswordSchema, ResetPasswordSchema } from "@/lib/validations";
 import { sendAccountVerificationEmail, sendPasswordResetEmail } from "@/lib/email";
+import { rateLimit } from "@/lib/rate-limit";
 
 export type ActionResponse = {
   success?: boolean;
@@ -13,6 +14,11 @@ export type ActionResponse = {
 
 export async function signUpAction(formData: FormData): Promise<ActionResponse> {
   try {
+    const limitCheck = await rateLimit("signup", 3, 300000);
+    if (limitCheck.limited) {
+      return { error: "Too many registration attempts. Please try again in 5 minutes." };
+    }
+
     const rawData = Object.fromEntries(formData.entries());
     const parsed = SignUpSchema.safeParse(rawData);
 
@@ -77,6 +83,11 @@ export async function signUpAction(formData: FormData): Promise<ActionResponse> 
 
 export async function resendVerificationAction(email: string): Promise<ActionResponse> {
   try {
+    const limitCheck = await rateLimit("resend-verification", 3, 300000);
+    if (limitCheck.limited) {
+      return { error: "Too many verification requests. Please try again in 5 minutes." };
+    }
+
     if (!email) {
       return { error: "Email is required." };
     }
@@ -126,6 +137,11 @@ export async function resendVerificationAction(email: string): Promise<ActionRes
 
 export async function forgotPasswordAction(formData: FormData): Promise<ActionResponse> {
   try {
+    const limitCheck = await rateLimit("forgot-password", 3, 300000);
+    if (limitCheck.limited) {
+      return { error: "Too many password recovery requests. Please try again in 5 minutes." };
+    }
+
     const rawData = Object.fromEntries(formData.entries());
     const parsed = ForgotPasswordSchema.safeParse(rawData);
 
@@ -176,6 +192,11 @@ export async function forgotPasswordAction(formData: FormData): Promise<ActionRe
 
 export async function resetPasswordAction(token: string, formData: FormData): Promise<ActionResponse> {
   try {
+    const limitCheck = await rateLimit("reset-password", 5, 300000);
+    if (limitCheck.limited) {
+      return { error: "Too many password reset attempts. Please try again in 5 minutes." };
+    }
+
     if (!token) {
       return { error: "Reset token is missing or invalid." };
     }

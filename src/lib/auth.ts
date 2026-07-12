@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { getPrisma } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 
 function getAdminEmails(): Set<string> {
   const raw = process.env.ADMIN_EMAILS ?? "";
@@ -33,6 +34,11 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        const limitCheck = await rateLimit("login-attempts", 5, 300000);
+        if (limitCheck.limited) {
+          throw new Error("Too many login attempts. Please try again later.");
+        }
+
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Email and password are required");
         }

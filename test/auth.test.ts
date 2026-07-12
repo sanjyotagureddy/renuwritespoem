@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+// Mock rateLimit to prevent test failures
+vi.mock("@/lib/rate-limit", () => {
+  return {
+    rateLimit: vi.fn().mockResolvedValue({ limited: false, remaining: 99, resetTime: 0 }),
+  };
+});
+
 // Mock the next-auth credentials provider to be a pass-through
 vi.mock("next-auth/providers/credentials", () => {
   return {
