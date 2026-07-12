@@ -20,6 +20,7 @@ type BookPurchaseLayoutProps = {
     featured: boolean;
     status: string;
     publishedAt: string | null;
+    price: number;
     discountedPrice: number | null;
     shippingCharge: number;
     views: number;
