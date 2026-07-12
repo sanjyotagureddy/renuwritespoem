@@ -78,3 +78,40 @@ export async function toggleSubscriberStatus(id: string, action: "verify" | "uns
   revalidatePath("/admin/subscribers");
   return { success: true };
 }
+
+export async function bulkSubscribeUsers(users: { email: string; name: string | null }[]) {
+  await verifyAdmin();
+  if (users.length === 0) return { success: true, count: 0 };
+
+  const prisma = getPrisma();
+
+  await prisma.$transaction([
+    ...users.map((u) =>
+      prisma.subscriber.upsert({
+        where: { email: u.email },
+        create: {
+          email: u.email,
+          name: u.name,
+          verified: true,
+          verifyToken: null,
+          subscribedAt: new Date(),
+        },
+        update: {
+          verified: true,
+          verifyToken: null,
+          unsubscribedAt: null,
+        },
+      })
+    ),
+    prisma.unsubscribedEmail.deleteMany({
+      where: {
+        email: {
+          in: users.map((u) => u.email),
+        },
+      },
+    }),
+  ]);
+
+  revalidatePath("/admin/subscribers");
+  return { success: true, count: users.length };
+}

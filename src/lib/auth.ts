@@ -95,6 +95,30 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  events: {
+    async createUser({ user }) {
+      if (user.email) {
+        await getPrisma().subscriber.upsert({
+          where: { email: user.email },
+          create: {
+            email: user.email,
+            name: user.name ?? null,
+            verified: true,
+            verifyToken: null,
+            subscribedAt: new Date(),
+          },
+          update: {
+            verified: true,
+            verifyToken: null,
+            unsubscribedAt: null,
+          },
+        });
+        await getPrisma().unsubscribedEmail.deleteMany({
+          where: { email: user.email },
+        });
+      }
+    },
+  },
   pages: {
     signIn: "/login",
   },

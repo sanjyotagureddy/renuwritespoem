@@ -52,20 +52,26 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </p>
         </div>
 
-        <div className="rounded-3xl border border-white/15 bg-white/[0.04] p-8 md:p-10 text-center min-h-[560px] flex flex-col justify-center">
-          <p className="text-xs uppercase tracking-[0.22em] text-white/45 mb-3">Account Access</p>
-          <h1 className="text-3xl md:text-4xl text-white mb-4">Sign in</h1>
-          <p className="text-white/60 font-[family-name:var(--font-inter)] mb-8 max-w-sm mx-auto">
-            Continue with Google to sign in securely.
+        <div className="rounded-3xl border border-white/15 bg-white/[0.04] p-8 md:p-10 text-center min-h-[560px] flex flex-col justify-between">
+          <div className="flex-1 flex flex-col justify-center">
+            <p className="text-xs uppercase tracking-[0.22em] text-white/45 mb-3">Account Access</p>
+            <h1 className="text-3xl md:text-4xl text-white mb-4">Sign in</h1>
+            <p className="text-white/60 font-[family-name:var(--font-inter)] mb-8 max-w-sm mx-auto">
+              Continue with Google to sign in securely.
+            </p>
+
+            {authError ? (
+              <div className="mb-6 rounded-xl border border-rose-300/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100 font-[family-name:var(--font-inter)]">
+                {authError}
+              </div>
+            ) : null}
+
+            <GoogleSignInButton />
+          </div>
+
+          <p className="mt-auto pt-6 text-[10px] text-white/30 leading-relaxed font-[family-name:var(--font-inter)] max-w-xs mx-auto">
+            Note: By continuing with Google, you agree to create a reader account and subscribe to receive our email newsletter updates. You can manage your preferences or unsubscribe at any time.
           </p>
-
-          {authError ? (
-            <div className="mb-6 rounded-xl border border-rose-300/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100 font-[family-name:var(--font-inter)]">
-              {authError}
-            </div>
-          ) : null}
-
-          <GoogleSignInButton />
         </div>
       </div>
     </div>

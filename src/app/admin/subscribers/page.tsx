@@ -47,7 +47,7 @@ export default async function SubscribersAdminPage({ searchParams }: Subscribers
   const limit = 10;
   const offset = (page - 1) * limit;
 
-  const [subscribers, totalCount] = await Promise.all([
+  const [subscribers, totalCount, allSubscribers] = await Promise.all([
     prisma.subscriber.findMany({
       where,
       orderBy: { subscribedAt: "desc" },
@@ -55,7 +55,30 @@ export default async function SubscribersAdminPage({ searchParams }: Subscribers
       take: limit,
     }),
     prisma.subscriber.count({ where }),
+    prisma.subscriber.findMany({
+      select: { email: true },
+    }),
   ]);
+
+  const activeSubEmails = allSubscribers.map((s) => s.email.toLowerCase());
+
+  const unsubscribedUsers = await prisma.user.findMany({
+    where: {
+      NOT: {
+        email: {
+          in: activeSubEmails,
+        },
+      },
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -72,6 +95,7 @@ export default async function SubscribersAdminPage({ searchParams }: Subscribers
         currentPage={page}
         statusFilter={status}
         searchQuery={search}
+        unsubscribedUsers={JSON.parse(JSON.stringify(unsubscribedUsers))}
       />
     </div>
   );

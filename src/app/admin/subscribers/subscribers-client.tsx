@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { deleteSubscriber, toggleSubscriberStatus } from "../subscriber-actions";
+import { deleteSubscriber, toggleSubscriberStatus, bulkSubscribeUsers } from "../subscriber-actions";
+import { Loader2 } from "lucide-react";
 
 type SubscriberItem = {
   id: string;
@@ -12,18 +13,26 @@ type SubscriberItem = {
   unsubscribedAt: Date | string | null;
 };
 
+type UnsubscribedUser = {
+  id: string;
+  email: string;
+  name: string | null;
+};
+
 export default function SubscribersClient({
   initialSubscribers,
   totalCount,
   currentPage,
   statusFilter,
   searchQuery,
+  unsubscribedUsers = [],
 }: {
   initialSubscribers: SubscriberItem[];
   totalCount: number;
   currentPage: number;
   statusFilter: string;
   searchQuery: string;
+  unsubscribedUsers?: UnsubscribedUser[];
 }) {
   const [isPending, startTransition] = useTransition();
   const [addOpen, setAddOpen] = useState(false);
@@ -31,6 +40,16 @@ export default function SubscribersClient({
   const [newEmail, setNewEmail] = useState("");
   const [addError, setAddError] = useState("");
   const [addSubmitting, setAddSubmitting] = useState(false);
+  const [tab, setTab] = useState<"manual" | "existing">("manual");
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
+
+  const filteredUsers = unsubscribedUsers.filter((u) => {
+    const q = userSearch.toLowerCase().trim();
+    if (!q) return true;
+    return u.email.toLowerCase().includes(q) || (u.name && u.name.toLowerCase().includes(q));
+  });
 
   // Client-side actions
   async function handleAction(id: string, action: "verify" | "unsubscribe" | "delete") {
@@ -293,61 +312,209 @@ export default function SubscribersClient({
       {/* Add Modal */}
       {addOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 py-6 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-white/15 bg-[#0f1118] p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
+          <div className="w-full max-w-md rounded-2xl border border-white/15 bg-[#0f1118] p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
-                Add Subscriber Manually
+                New Subscriber
               </h3>
               <button
-                onClick={() => setAddOpen(false)}
+                onClick={() => {
+                  setAddOpen(false);
+                  setSelectedUserIds([]);
+                  setTab("manual");
+                }}
                 className="text-white/40 hover:text-white text-lg"
               >
                 ×
               </button>
             </div>
 
-            <form onSubmit={handleAddSubmit} className="space-y-4">
-              <div>
-                <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">
-                  Name (Optional)
-                </label>
+            {/* Modal Tabs */}
+            <div className="flex border-b border-white/10 text-xs font-medium">
+              <button
+                type="button"
+                onClick={() => {
+                  setTab("manual");
+                  setAddError("");
+                }}
+                className={`flex-1 pb-2 border-b-2 text-center transition-colors ${
+                  tab === "manual" ? "border-emerald-500 text-white font-semibold" : "border-transparent text-white/40 hover:text-white/70"
+                }`}
+              >
+                Add Manually
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTab("existing");
+                  setAddError("");
+                }}
+                className={`flex-1 pb-2 border-b-2 text-center transition-colors ${
+                  tab === "existing" ? "border-emerald-500 text-white font-semibold" : "border-transparent text-white/40 hover:text-white/70"
+                }`}
+              >
+                From Existing Users ({unsubscribedUsers.length})
+              </button>
+            </div>
+
+            {tab === "manual" ? (
+              <form onSubmit={handleAddSubmit} className="space-y-4 pt-1">
+                <div>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">
+                    Name (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="e.g. Rahul Sharma"
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-white/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="e.g. rahul@example.com"
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-white/20"
+                  />
+                </div>
+
+                {addError && (
+                  <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-[10px] text-rose-300">
+                    ⚠️ {addError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={addSubmitting}
+                  className="w-full rounded-full bg-emerald-500 hover:bg-emerald-400 py-2.5 text-xs font-semibold tracking-wider text-black uppercase transition-all disabled:opacity-40"
+                >
+                  {addSubmitting ? "Adding..." : "Add & Send Verification"}
+                </button>
+              </form>
+            ) : (
+              <div className="space-y-4 pt-1">
+                {/* Search Bar for Existing Users */}
                 <input
                   type="text"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="e.g. Rahul Sharma"
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-white/20"
+                  value={userSearch}
+                  placeholder="Filter users by name or email..."
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  id="existing-users-search"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white placeholder-white/35 outline-none focus:border-white/20"
                 />
-              </div>
 
-              <div>
-                <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="e.g. rahul@example.com"
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-white/20"
-                />
-              </div>
-
-              {addError && (
-                <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-[10px] text-rose-300">
-                  ⚠️ {addError}
+                {/* Bulk Select Helper Checkbox */}
+                <div className="flex items-center justify-between text-[10px] text-white/45 uppercase tracking-wider px-1">
+                  <span>Registered Accounts ({filteredUsers.length})</span>
+                  {filteredUsers.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const allFilteredIds = filteredUsers.map((u) => u.id);
+                        const isAllSelected = allFilteredIds.every((id) => selectedUserIds.includes(id));
+                        if (isAllSelected) {
+                          // Deselect only the filtered ones
+                          setSelectedUserIds((prev) => prev.filter((id) => !allFilteredIds.includes(id)));
+                        } else {
+                          // Select all filtered ones (union with existing selection)
+                          setSelectedUserIds((prev) => Array.from(new Set([...prev, ...allFilteredIds])));
+                        }
+                      }}
+                      className="text-emerald-400 hover:underline hover:text-emerald-300 font-bold"
+                    >
+                      {filteredUsers.every((u) => selectedUserIds.includes(u.id)) ? "Deselect All" : "Select All"}
+                    </button>
+                  )}
                 </div>
-              )}
 
-              <button
-                type="submit"
-                disabled={addSubmitting}
-                className="w-full rounded-full bg-emerald-500 hover:bg-emerald-400 py-2.5 text-xs font-semibold tracking-wider text-black uppercase transition-all disabled:opacity-40"
-              >
-                {addSubmitting ? "Adding..." : "Add & Send Verification"}
-              </button>
-            </form>
+                {/* Scrollable list of accounts */}
+                <div className="max-h-48 overflow-y-auto border border-white/10 rounded-xl bg-black/25 p-2 space-y-2 scrollbar-thin">
+                  {filteredUsers.length === 0 ? (
+                    <p className="text-center text-xs text-white/30 py-6">
+                      {userSearch ? "No matching users found." : "No unregistered users found."}
+                    </p>
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <label
+                        key={user.id}
+                        className="flex items-start gap-2.5 text-xs text-white/80 cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-colors border border-transparent hover:border-white/5"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedUserIds.includes(user.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedUserIds((prev) => [...prev, user.id]);
+                            } else {
+                              setSelectedUserIds((prev) => prev.filter((id) => id !== user.id));
+                            }
+                          }}
+                          className="accent-emerald-500 rounded border-white/20 mt-0.5"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-white truncate">
+                            {user.name || "—"}
+                          </p>
+                          <p className="text-[10px] text-white/40 truncate">
+                            {user.email}
+                          </p>
+                        </div>
+                      </label>
+                    ))
+                  )}
+                </div>
+
+                {addError && (
+                  <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-[10px] text-rose-300 animate-fadeIn">
+                    ⚠️ {addError}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    if (selectedUserIds.length === 0) return;
+                    setBulkSubmitting(true);
+                    setAddError("");
+                    const selectedUsers = unsubscribedUsers.filter((u) => selectedUserIds.includes(u.id));
+                    try {
+                      const res = await bulkSubscribeUsers(selectedUsers.map((u) => ({ email: u.email, name: u.name })));
+                      if (res.success) {
+                        setAddOpen(false);
+                        setSelectedUserIds([]);
+                        setTab("manual");
+                        window.location.reload();
+                      }
+                    } catch (err) {
+                      setAddError(err instanceof Error ? err.message : "Failed to bulk subscribe.");
+                    } finally {
+                      setBulkSubmitting(false);
+                    }
+                  }}
+                  disabled={selectedUserIds.length === 0 || bulkSubmitting}
+                  className="w-full rounded-full bg-emerald-500 hover:bg-emerald-400 py-2.5 text-xs font-semibold tracking-wider text-black uppercase transition-all disabled:opacity-40 flex items-center justify-center gap-1.5"
+                >
+                  {bulkSubmitting ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Subscribing...
+                    </>
+                  ) : (
+                    `Subscribe Selected (${selectedUserIds.length})`
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
