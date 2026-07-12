@@ -132,16 +132,28 @@ export default function EditAudioForm({ track }: EditAudioFormProps) {
         />
       </div>
 
-      <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-white/75">
-        <input
-          type="checkbox"
-          name="publishNow"
-          disabled={loading}
-          defaultChecked={track.published}
-          className="rounded border-white/20 bg-black/30 text-violet-500 focus:ring-0 focus:ring-offset-0 disabled:opacity-50"
-        />
-        <span>Publish immediately</span>
-      </label>
+      <div className="flex flex-col gap-2.5">
+        <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-white/75">
+          <input
+            type="checkbox"
+            name="publishNow"
+            disabled={loading}
+            defaultChecked={track.published}
+            className="rounded border-white/20 bg-black/30 text-violet-500 focus:ring-0 focus:ring-offset-0 disabled:opacity-50"
+          />
+          <span>Publish immediately</span>
+        </label>
+
+        <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-white/75">
+          <input
+            type="checkbox"
+            name="notifySubscribers"
+            disabled={loading}
+            className="accent-white"
+          />
+          <span>Notify subscribers via email on publish</span>
+        </label>
+      </div>
 
       <div className="flex gap-3 pt-2">
         <button

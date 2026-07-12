@@ -6,6 +6,20 @@ import { put, del } from "@vercel/blob";
 import { getPrisma } from "@/lib/db";
 import { requireAdmin } from "./shared-actions";
 import { slugify } from "@/lib/utils";
+import { siteConfig } from "@/lib/seo";
+import { createCampaign, sendCampaignAction } from "./campaign-actions";
+
+async function triggerAudioNotification(title: string, description: string | null) {
+  try {
+    const campaign = await createCampaign({
+      subject: `New Audio Recitation: "${title}"`,
+      body: `Listen to a new audio recitation voiced by Renu: **${title}**.\n\n${description || "Listen to the recitation."}\n\n[Listen Now](${siteConfig.url}/audio)`,
+    });
+    await sendCampaignAction(campaign.id);
+  } catch (error) {
+    console.error("Failed to trigger audio notification campaign:", error);
+  }
+}
 
 export async function createAudio(formData: FormData) {
   await requireAdmin();
@@ -15,6 +29,7 @@ export async function createAudio(formData: FormData) {
   const audioFile = formData.get("audioFile") as File;
   const coverFile = formData.get("coverFile") as File;
   const publishNow = formData.get("publishNow") === "on";
+  const notifySubscribers = formData.get("notifySubscribers") === "on";
 
   if (!title) {
     throw new Error("Title is required.");
@@ -72,6 +87,11 @@ export async function createAudio(formData: FormData) {
 
   revalidatePath("/audio");
   revalidatePath("/admin/audio");
+
+  if (publishNow && notifySubscribers) {
+    await triggerAudioNotification(title, description);
+  }
+
   redirect("/admin/audio");
 }
 
@@ -126,6 +146,7 @@ export async function updateAudio(formData: FormData) {
   const audioFile = formData.get("audioFile") as File | null;
   const coverFile = formData.get("coverFile") as File | null;
   const publishNow = formData.get("publishNow") === "on";
+  const notifySubscribers = formData.get("notifySubscribers") === "on";
 
   if (!id) throw new Error("Audio ID is required.");
   if (!title) throw new Error("Title is required.");
@@ -190,5 +211,10 @@ export async function updateAudio(formData: FormData) {
 
   revalidatePath("/audio");
   revalidatePath("/admin/audio");
+
+  if (publishNow && !existing.published && notifySubscribers) {
+    await triggerAudioNotification(title, description);
+  }
+
   redirect("/admin/audio");
 }

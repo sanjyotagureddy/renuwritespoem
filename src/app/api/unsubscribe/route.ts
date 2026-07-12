@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
 import { createHmac } from "crypto";
+import { sendAdminUnsubscribeNotification } from "@/lib/email";
 
 function getUnsubscribeToken(email: string): string {
   const secret = process.env.NEXTAUTH_SECRET || "default-secret-key-12345";
@@ -76,6 +77,10 @@ export async function GET(request: Request) {
         }
       })
     ]);
+
+    await sendAdminUnsubscribeNotification(email).catch((err) =>
+      console.error("Failed to notify admin of unsubscribe:", err)
+    );
 
     return new NextResponse(
       `<html>

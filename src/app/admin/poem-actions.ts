@@ -7,6 +7,20 @@ import type { PoemLanguage } from "@/lib/poem-language";
 import { invalidateCache } from "@/lib/cache";
 import { requireAdmin } from "./shared-actions";
 import { slugify } from "@/lib/utils";
+import { siteConfig } from "@/lib/seo";
+import { createCampaign, sendCampaignAction } from "./campaign-actions";
+
+async function triggerPoemNotification(title: string, slug: string, excerpt: string) {
+  try {
+    const campaign = await createCampaign({
+      subject: `New Poem: "${title}"`,
+      body: `Renu has published a new poem: **${title}**.\n\n${excerpt || "Read the moving new verses on Renu Writes Poem."}\n\n[Read Poem](${siteConfig.url}/poems/${slug})`,
+    });
+    await sendCampaignAction(campaign.id);
+  } catch (error) {
+    console.error("Failed to trigger poem notification campaign:", error);
+  }
+}
 
 function parseTags(formData: FormData): Array<{ name: string; slug: string }> {
   const names = String(formData.get("tags") ?? "")
@@ -56,6 +70,7 @@ export async function createPoem(formData: FormData) {
   const genreId = String(formData.get("genreId") ?? "").trim();
   const font = String(formData.get("font") ?? "").trim() || null;
   const publishNow = formData.get("publishNow") === "on";
+  const notifySubscribers = formData.get("notifySubscribers") === "on";
   const tags = parseTags(formData);
 
   if (!title || !content) {
@@ -84,6 +99,10 @@ export async function createPoem(formData: FormData) {
 
   await invalidateCache("home:featured-data");
 
+  if (publishNow && notifySubscribers) {
+    await triggerPoemNotification(title, slug, content.slice(0, 180));
+  }
+
   revalidatePath("/poems");
   revalidatePath("/");
   revalidatePath("/admin");
@@ -100,6 +119,7 @@ export async function updatePoem(formData: FormData) {
   const genreId = String(formData.get("genreId") ?? "").trim();
   const font = String(formData.get("font") ?? "").trim() || null;
   const publishNow = formData.get("publishNow") === "on";
+  const notifySubscribers = formData.get("notifySubscribers") === "on";
   const tags = parseTags(formData);
 
   if (!id || !title || !content) {
@@ -130,6 +150,10 @@ export async function updatePoem(formData: FormData) {
   });
 
   await invalidateCache(["home:featured-data", `poem:details:${existing.slug}`]);
+
+  if (publishNow && !existing.published && notifySubscribers) {
+    await triggerPoemNotification(title, existing.slug, content.slice(0, 180));
+  }
 
   revalidatePath("/poems");
   revalidatePath(`/poems/${existing.slug}`);

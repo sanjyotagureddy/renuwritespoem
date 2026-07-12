@@ -361,14 +361,45 @@ model Subscriber {
   @@map("subscribers")
 }
 
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+}
+
 model Campaign {
-  id        String   @id @default(cuid())
-  subject   String
-  body      String
-  sentAt    DateTime?
-  createdAt DateTime @default(now())
+  id          String             @id @default(cuid())
+  subject     String
+  body        String             @db.Text
+  status      CampaignStatus     @default(DRAFT)
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  
+  sentCount   Int                @default(0)
+  failedCount Int                @default(0)
+  
+  deliveries  CampaignDelivery[]
 
   @@map("campaigns")
+}
+
+model CampaignDelivery {
+  id         String   @id @default(cuid())
+  campaignId String
+  email      String
+  status     String   // "SUCCESS" | "FAILED"
+  error      String?
+  sentAt     DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([email])
+  @@map("campaign_deliveries")
 }
 
 model Audio {

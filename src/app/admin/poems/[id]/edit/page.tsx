@@ -166,15 +166,22 @@ export default async function EditPoemPage({ params }: EditPoemPageProps) {
             />
           </div>
 
-          <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-white/75">
-            <input
-              type="checkbox"
-              name="publishNow"
-              defaultChecked={poem.published}
-              className="accent-white"
-            />
-            Published
-          </label>
+          <div className="flex flex-col gap-2.5">
+            <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-white/75">
+              <input
+                type="checkbox"
+                name="publishNow"
+                defaultChecked={poem.published}
+                className="accent-white"
+              />
+              Published
+            </label>
+
+            <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-white/75">
+              <input type="checkbox" name="notifySubscribers" className="accent-white" />
+              Notify subscribers via email on publish
+            </label>
+          </div>
 
           <div className="flex items-center gap-3 pt-2">
             <button

@@ -191,6 +191,11 @@ export default async function EditBookPage({ params }: EditBookPageProps) {
             </select>
           </div>
 
+          <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-white/75">
+            <input type="checkbox" name="notifySubscribers" className="accent-white" />
+            Notify subscribers via email on publish (if marked Available)
+          </label>
+
           <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"

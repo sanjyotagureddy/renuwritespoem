@@ -207,18 +207,18 @@ admin, and technical work.
 
 ## Phase 14: Campaign Management
 
-- [ ] Admin campaigns list
-- [ ] Create campaign form with subject and body
-- [ ] Campaign rich text or markdown editor
-- [ ] Campaign preview
-- [ ] Send test email
-- [ ] Send campaign to verified subscribers
-- [ ] Delivery history
-- [ ] Campaign status management: Draft, Scheduled, Sending, Sent, Failed
-- [ ] Unsubscribe links in every campaign email
-- [ ] Suppression check before sending
-- [ ] Basic analytics: sent, failed, opened/clicked if provider supports it
-- [ ] Optional "notify subscribers" action when publishing a poem, book, or audio item
+- [x] Admin campaigns list
+- [x] Create campaign form with subject and body
+- [x] Campaign rich text or markdown editor
+- [x] Campaign preview
+- [x] Send test email
+- [x] Send campaign to verified subscribers
+- [x] Delivery history
+- [x] Campaign status management: Draft, Scheduled, Sending, Sent, Failed
+- [x] Unsubscribe links in every campaign email
+- [x] Suppression check before sending
+- [x] Basic analytics: sent, failed, opened/clicked if provider supports it
+- [x] Optional "notify subscribers" action when publishing a poem, book, or audio item
 
 ## Phase 15: User / Reader Management
 
@@ -256,7 +256,7 @@ admin, and technical work.
 - [x] Admin invite monitoring page
 - [x] Add Users nav item
 - [x] Add Subscribers nav item
-- [ ] Add Campaigns nav item
+- [x] Add Campaigns nav item
 - [x] Consider moving admin navigation to a sidebar as modules grow
 - [ ] Add global admin search
 - [ ] Add admin activity/audit log

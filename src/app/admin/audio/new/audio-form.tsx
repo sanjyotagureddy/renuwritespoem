@@ -96,15 +96,27 @@ export default function NewAudioForm() {
         />
       </div>
 
-      <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-white/75">
-        <input
-          type="checkbox"
-          name="publishNow"
-          disabled={loading}
-          className="accent-white"
-        />
-        Publish immediately
-      </label>
+      <div className="flex flex-col gap-2.5">
+        <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-white/75">
+          <input
+            type="checkbox"
+            name="publishNow"
+            disabled={loading}
+            className="accent-white"
+          />
+          Publish immediately
+        </label>
+
+        <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-white/75">
+          <input
+            type="checkbox"
+            name="notifySubscribers"
+            disabled={loading}
+            className="accent-white"
+          />
+          Notify subscribers via email on publish
+        </label>
+      </div>
 
       <div className="flex items-center gap-3 pt-2">
         <button

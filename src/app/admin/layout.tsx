@@ -41,6 +41,7 @@ const navGroups = [
       { href: "/admin/orders", label: "Orders" },
       { href: "/admin/invites", label: "Invitations" },
       { href: "/admin/subscribers", label: "Subscribers" },
+      { href: "/admin/campaigns", label: "Campaigns" },
     ]
   }
 ];

@@ -8,6 +8,20 @@ import { invalidateCache } from "@/lib/cache";
 import { requireAdmin } from "./shared-actions";
 import { slugify } from "@/lib/utils";
 import { DeleteBookSchema, ToggleBookFeaturedSchema, UpdateBookStatusSchema } from "@/lib/validations";
+import { siteConfig } from "@/lib/seo";
+import { createCampaign, sendCampaignAction } from "./campaign-actions";
+
+async function triggerBookNotification(title: string, slug: string, description: string | null) {
+  try {
+    const campaign = await createCampaign({
+      subject: `New Book Available: "${title}"`,
+      body: `Renu has released a new book: **${title}**.\n\n${description || "Browse the new poetry book collection."}\n\n[Explore Book](${siteConfig.url}/books/${slug})`,
+    });
+    await sendCampaignAction(campaign.id);
+  } catch (error) {
+    console.error("Failed to trigger book notification campaign:", error);
+  }
+}
 
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -97,6 +111,7 @@ export async function createBook(formData: FormData) {
   const shippingCharge =
     parseMoney(String(formData.get("shippingCharge") ?? "").trim(), 40) ?? 40;
   const status = String(formData.get("status") ?? "COMING_SOON");
+  const notifySubscribers = formData.get("notifySubscribers") === "on";
   const coverFile = formData.get("coverImage") as File | null;
 
   if (!title) throw new Error("Title is required.");
@@ -166,6 +181,10 @@ export async function createBook(formData: FormData) {
 
   await invalidateCache("home:featured-data");
 
+  if (status === "AVAILABLE" && notifySubscribers) {
+    await triggerBookNotification(title, slug, description);
+  }
+
   revalidatePath("/books");
   revalidatePath("/");
   revalidatePath("/admin");
@@ -191,6 +210,7 @@ export async function updateBook(formData: FormData) {
   const shippingCharge =
     parseMoney(String(formData.get("shippingCharge") ?? "").trim(), 40) ?? 40;
   const status = String(formData.get("status") ?? "COMING_SOON");
+  const notifySubscribers = formData.get("notifySubscribers") === "on";
   const coverFile = formData.get("coverImage") as File | null;
 
   if (!id || !title) throw new Error("ID and title are required.");
@@ -202,6 +222,7 @@ export async function updateBook(formData: FormData) {
     select: {
       id: true,
       slug: true,
+      status: true,
       coverData: true,
       coverImage: true,
       publishedAt: true,
@@ -271,6 +292,10 @@ export async function updateBook(formData: FormData) {
   });
 
   await invalidateCache(["home:featured-data", `book:details:${existing.slug}`]);
+
+  if (status === "AVAILABLE" && existing.status !== "AVAILABLE" && notifySubscribers) {
+    await triggerBookNotification(title, existing.slug, description);
+  }
 
   revalidatePath("/books");
   revalidatePath(`/books/${existing.slug}`);
