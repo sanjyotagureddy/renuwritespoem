@@ -359,8 +359,8 @@ admin, and technical work.
 - [x] Reduce duplication across like APIs
 - [x] Split large UI components where they have grown too complex
 - [ ] Add tests for orders, invites, auth roles, comments, and unsubscribe tokens
-- [ ] Standardize icon usage
-- [ ] Review manual SVGs and replace with consistent icon components where practical
+- [x] Standardize icon usage
+- [x] Review manual SVGs and replace with consistent icon components where practical
 - [ ] Add CI checks for typecheck, lint, and build
 
 ## Phase 23: Deployment & Production

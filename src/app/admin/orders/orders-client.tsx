@@ -121,15 +121,39 @@ export default function OrdersClient({
             {/* Expanded Detailed Area */}
             {isExpanded && (
               <div className="mt-5 border-t border-white/10 pt-5 animate-fadeIn">
-                {/* Mobile view of items (hidden on desktop summary) */}
-                <div className="block md:hidden mb-4 rounded-xl border border-white/15 bg-black/10 px-4 py-2.5 text-xs text-white/70">
-                  <p className="font-semibold text-white/95">{order.book.title}</p>
-                  <p className="mt-0.5 text-white/40">Quantity: {order.copies} copies</p>
-                </div>
-
                 <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
                   <div className="min-w-0 flex-1 space-y-4">
-                    <div className="grid gap-3 md:grid-cols-[1.1fr_0.9fr]">
+                    {/* Unified Order & Reference Details Box */}
+                    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-[10px] font-semibold tracking-[0.18em] text-white/35 uppercase">
+                            Book Ordered
+                          </p>
+                          <h4 className="mt-1.5 font-bold text-white text-base">
+                            {order.book.title}
+                          </h4>
+                          <p className="mt-1 text-xs text-white/55">
+                            Quantity: <span className="text-white font-semibold">{order.copies} {order.copies === 1 ? "copy" : "copies"}</span>
+                          </p>
+                        </div>
+                        <div className="sm:text-right">
+                          <p className="text-[10px] font-semibold tracking-[0.18em] text-white/35 uppercase">
+                            Order ID Reference
+                          </p>
+                          <p className="mt-1.5 font-mono text-sm font-bold text-emerald-400">
+                            #{displayOrderId}
+                          </p>
+                          {order.orderNumber && (
+                            <p className="mt-0.5 font-mono text-[9px] text-white/30">
+                              DB ID: {order.id}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2">
                       {/* Buyer Details */}
                       <div className="rounded-xl border border-white/10 bg-black/20 p-4">
                         <p className="text-[10px] font-semibold tracking-[0.18em] text-white/35 uppercase">
@@ -156,33 +180,17 @@ export default function OrdersClient({
                         </div>
                       </div>
 
-                      {/* Internal ID Info */}
-                      <div className="rounded-xl border border-amber-200/15 bg-amber-400/10 p-4">
-                        <p className="text-[10px] font-semibold tracking-[0.18em] text-amber-100/50 uppercase">
-                          Order ID Reference
-                        </p>
-                        <p className="mt-2 break-all font-mono text-sm font-semibold text-amber-100">
-                          #{displayOrderId}
-                        </p>
-                        {order.orderNumber && (
-                          <p className="mt-1 break-all font-mono text-[9px] text-amber-100/35">
-                            DB Unique Key: {order.id}
+                      {/* Shipping Address */}
+                      <div className="rounded-xl border border-white/10 bg-white/[0.025] p-4 flex flex-col justify-between">
+                        <div>
+                          <p className="text-[10px] font-semibold tracking-[0.18em] text-white/35 uppercase">
+                            Shipping address
                           </p>
-                        )}
-                        <p className="mt-2 text-[10px] text-amber-100/50 leading-relaxed">
-                          Ask buyers to verify this Order ID for lookups.
-                        </p>
+                          <p className="mt-3 text-xs leading-5 text-white/70">
+                            {order.address}, {order.city}, {order.state} — {order.pincode}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Shipping Address */}
-                    <div className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
-                      <p className="text-[10px] font-semibold tracking-[0.18em] text-white/35 uppercase">
-                        Shipping address
-                      </p>
-                      <p className="mt-2 text-xs leading-5 text-white/70">
-                        {order.address}, {order.city}, {order.state} — {order.pincode}
-                      </p>
                     </div>
 
                     {/* Subtotals breakdown */}
