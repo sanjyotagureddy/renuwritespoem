@@ -2,10 +2,20 @@ import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
 import { SubscriberSchema } from "@/lib/validations";
 import { sendSubscriberVerificationEmail } from "@/lib/email";
+import { rateLimit } from "@/lib/rate-limit";
 import crypto from "crypto";
 
 export async function POST(request: Request) {
   try {
+    // 1. Apply rate limiter to prevent spamming the endpoint (5 attempts per 5 minutes per IP)
+    const limitCheck = await rateLimit("newsletter-subscribe", 5, 300000);
+    if (limitCheck.limited) {
+      return NextResponse.json(
+        { error: "Too many subscription attempts. Please try again in a few minutes." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const parsed = SubscriberSchema.safeParse(body);
 
@@ -19,25 +29,19 @@ export async function POST(request: Request) {
     const { email, name } = parsed.data;
     const prisma = getPrisma();
 
-    // Check if email is unsubscribed (if there's a suppression table, but let's check)
+    // Check if email is unsubscribed
     const isUnsubscribed = await prisma.unsubscribedEmail.findUnique({
       where: { email }
     });
-    if (isUnsubscribed) {
-      // Re-allow subscription by removing from unsubscribe list,
-      // or we can allow subscribing but we must remove them from unsubscribedEmail once verified.
-      // For now, let's keep them and we will delete from unsubscribedEmail once they click verify.
-    }
 
     const existing = await prisma.subscriber.findUnique({
       where: { email }
     });
 
+    // 2. Prevent Email Enumeration: If the user is already verified and active,
+    // return success immediately without sending verification emails or returning errors.
     if (existing && existing.verified && !existing.unsubscribedAt) {
-      return NextResponse.json(
-        { error: "This email is already subscribed." },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: true });
     }
 
     const verifyToken = crypto.randomBytes(32).toString("hex");
