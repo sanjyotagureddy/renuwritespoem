@@ -3,11 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { signUpAction } from "../actions/auth-actions";
+import PasswordFieldGroup from "@/components/auth/password-field-group";
 
 export default function SignUpForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -15,8 +18,6 @@ export default function SignUpForm() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
 
     if (password.length < 8) {
       setError("Password must be at least 8 characters long.");
@@ -101,27 +102,12 @@ export default function SignUpForm() {
             />
           </div>
 
-          <div>
-            <label className="block text-xs uppercase tracking-wider text-white/50 mb-1.5 font-medium">Password</label>
-            <input
-              type="password"
-              name="password"
-              required
-              className="w-full min-h-10 rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-white placeholder:text-white/20 outline-none transition-colors focus:border-white/35"
-              placeholder="Minimum 8 characters"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs uppercase tracking-wider text-white/50 mb-1.5 font-medium">Confirm Password</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              required
-              className="w-full min-h-10 rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-white placeholder:text-white/20 outline-none transition-colors focus:border-white/35"
-              placeholder="Verify password"
-            />
-          </div>
+          <PasswordFieldGroup
+            passwordValue={password}
+            setPasswordValue={setPassword}
+            confirmPasswordValue={confirmPassword}
+            setConfirmPasswordValue={setConfirmPassword}
+          />
 
           <button
             type="submit"
