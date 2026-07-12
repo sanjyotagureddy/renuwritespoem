@@ -62,12 +62,21 @@ export default async function AdminPoemsPage({ searchParams }: PageProps) {
             Manage publishing, featured slots, languages, and poem visibility.
           </p>
         </div>
-        <Link
-          href="/admin/poems/new"
-          className="rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-xs tracking-[0.18em] text-white uppercase transition-colors hover:bg-white/20"
-        >
-          + New Poem
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/poems"
+            target="_blank"
+            className="rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-xs tracking-[0.18em] text-white/65 uppercase transition-colors hover:bg-white/10 hover:text-white"
+          >
+            View public page ↗
+          </Link>
+          <Link
+            href="/admin/poems/new"
+            className="rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-xs tracking-[0.18em] text-white uppercase transition-colors hover:bg-white/20"
+          >
+            + New Poem
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -173,15 +182,13 @@ export default async function AdminPoemsPage({ searchParams }: PageProps) {
                 </Link>
 
                 {/* View */}
-                {poem.published && (
-                  <Link
-                    href={`/poems/${poem.slug}`}
-                    className="rounded-lg px-3 py-1.5 text-xs text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-                    target="_blank"
-                  >
-                    View ↗
-                  </Link>
-                )}
+                <Link
+                  href={`/poems/${poem.slug}`}
+                  className="rounded-lg px-3 py-1.5 text-xs text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                  target="_blank"
+                >
+                  View ↗
+                </Link>
 
                 {/* Delete */}
                 <DeletePoemForm poemId={poem.id} />

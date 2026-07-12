@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,8 +25,13 @@ const baseNavLinks = [
 ];
 
 export default function Header() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const { data: session, status } = useSession();
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const userDisplayName =
     session?.user?.name?.trim().split(" ")[0] ??

@@ -37,7 +37,7 @@ export default function PreferencesForm({
 
     startTransition(async () => {
       try {
-        const res = await updateSubscriberPreferences({
+        await updateSubscriberPreferences({
           email,
           token,
           name: name.trim() || null,
@@ -66,7 +66,7 @@ export default function PreferencesForm({
 
     startTransition(async () => {
       try {
-        const res = await updateSubscriberPreferences({
+        await updateSubscriberPreferences({
           email,
           token,
           name: null,

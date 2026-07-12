@@ -257,7 +257,7 @@ admin, and technical work.
 - [x] Add Users nav item
 - [x] Add Subscribers nav item
 - [ ] Add Campaigns nav item
-- [ ] Consider moving admin navigation to a sidebar as modules grow
+- [x] Consider moving admin navigation to a sidebar as modules grow
 - [ ] Add global admin search
 - [ ] Add admin activity/audit log
 

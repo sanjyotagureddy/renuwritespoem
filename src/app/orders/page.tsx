@@ -2,7 +2,6 @@
 
 import React, { useState, useTransition } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { lookupOrder } from "./order-lookup-action";
 
 type OrderDetails = {

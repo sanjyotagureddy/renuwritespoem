@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import NewsletterSignup from "./ui/newsletter-signup";
 
 const footerLinks = [
@@ -39,6 +42,10 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
   return (
     <footer className="bg-black/80 backdrop-blur-md border-t border-white/10">
       <div className="max-w-7xl mx-auto px-6 py-12">

@@ -14,6 +14,7 @@ type Track = {
   audioUrl: string;
   coverUrl: string | null;
   views: number;
+  published?: boolean;
 };
 
 export default function AudioClient({ initialAudio }: { initialAudio: Track[] }) {
@@ -108,8 +109,13 @@ export default function AudioClient({ initialAudio }: { initialAudio: Track[] })
               {/* Text */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className={`text-lg font-semibold truncate transition-colors duration-300 ${isActive ? "text-violet-400" : "text-white group-hover:text-violet-200"}`}>
-                    {track.title}
+                  <h3 className={`text-lg font-semibold truncate transition-colors duration-300 flex items-center gap-2 ${isActive ? "text-violet-400" : "text-white group-hover:text-violet-200"}`}>
+                    <span>{track.title}</span>
+                    {track.published === false && (
+                      <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[9px] text-amber-300 font-normal uppercase tracking-wider select-none shrink-0">
+                        Draft
+                      </span>
+                    )}
                   </h3>
                   {isActive && isPlaying && (
                     <span className="flex items-end gap-0.5 h-3 shrink-0">

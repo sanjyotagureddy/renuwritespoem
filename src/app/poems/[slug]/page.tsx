@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
+import { getServerAuthSession } from "@/lib/auth";
 import {
   poemLanguageFontClass,
   poemLanguageLabel,
@@ -100,7 +101,14 @@ export default async function PoemDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const poem = await getPoemBySlug(slug);
 
-  if (!poem || !poem.published) {
+  if (!poem) {
+    notFound();
+  }
+
+  const session = await getServerAuthSession();
+  const isAdmin = session?.user?.role === "ADMIN";
+
+  if (!poem.published && !isAdmin) {
     notFound();
   }
 
@@ -251,6 +259,12 @@ export default async function PoemDetailPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
+      {!poem.published && (
+        <div className="mb-8 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-xs text-amber-300 font-semibold flex items-center gap-2">
+          <span>⚠️</span>
+          <span>Admin Preview: This poem is currently a Draft and is not visible to the public.</span>
+        </div>
+      )}
       {poem.font && (
         <link
           rel="stylesheet"

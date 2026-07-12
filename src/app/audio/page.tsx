@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getPrisma } from "@/lib/db";
+import { getServerAuthSession } from "@/lib/auth";
 import AudioClient from "@/components/audio/audio-client";
 
 export const metadata: Metadata = {
@@ -12,9 +13,11 @@ export const metadata: Metadata = {
 
 export default async function AudioPage() {
   const prisma = getPrisma();
+  const session = await getServerAuthSession();
+  const isAdmin = session?.user?.role === "ADMIN";
   
   const tracks = await prisma.audio.findMany({
-    where: { published: true },
+    where: isAdmin ? {} : { published: true },
     orderBy: { publishedAt: "desc" },
     select: {
       id: true,
@@ -24,6 +27,7 @@ export default async function AudioPage() {
       audioUrl: true,
       coverUrl: true,
       views: true,
+      published: true,
     },
   });
 

@@ -35,12 +35,21 @@ export default async function AdminAudioPage() {
             Manage audio releases, cover arts, and publication visibility.
           </p>
         </div>
-        <Link
-          href="/admin/audio/new"
-          className="rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-xs tracking-[0.18em] text-white uppercase transition-colors hover:bg-white/20"
-        >
-          + New Audio
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/audio"
+            target="_blank"
+            className="rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-xs tracking-[0.18em] text-white/65 uppercase transition-colors hover:bg-white/10 hover:text-white"
+          >
+            View public page ↗
+          </Link>
+          <Link
+            href="/admin/audio/new"
+            className="rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-xs tracking-[0.18em] text-white uppercase transition-colors hover:bg-white/20"
+          >
+            + New Audio
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 max-w-xl">
@@ -135,14 +144,13 @@ export default async function AdminAudioPage() {
                 </form>
 
                 {/* View */}
-                {track.published && (
-                  <Link
-                    href={`/audio`}
-                    className="rounded-lg px-3 py-1.5 text-xs text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    Listen ↗
-                  </Link>
-                )}
+                <Link
+                  href={`/audio`}
+                  className="rounded-lg px-3 py-1.5 text-xs text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                  target="_blank"
+                >
+                  Listen ↗
+                </Link>
 
                 {/* Edit */}
                 <Link
