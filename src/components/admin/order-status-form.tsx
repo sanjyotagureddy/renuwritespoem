@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const statusColors: Record<string, string> = {
   PENDING: "border-amber-400/30 text-amber-400/80 bg-amber-500/10",
@@ -27,7 +28,13 @@ const labelClasses =
   "text-[11px] font-medium tracking-wide text-white/45 uppercase";
 
 type OrderStatusFormProps = {
-  action: (formData: FormData) => void | Promise<void>;
+  action: (formData: FormData) => Promise<{
+    success: boolean;
+    statusChanged: boolean;
+    noteChanged: boolean;
+    emailSent: boolean;
+    emailError: string | null;
+  } | undefined | void>;
   order: {
     id: string;
     status: string;
@@ -43,14 +50,86 @@ export default function OrderStatusForm({
   order,
 }: OrderStatusFormProps) {
   const [status, setStatus] = useState(order.status);
+  const [isPending, setIsPending] = useState(false);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
   const requiresTracking = status === "SHIPPED";
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsPending(true);
+    setNotification(null);
+
+    const formData = new FormData(event.currentTarget);
+    try {
+      const res = await action(formData);
+
+      if (res && res.success) {
+        if (res.emailSent) {
+          setNotification({
+            type: "success",
+            message: "Order status updated and confirmation email sent to buyer successfully!",
+          });
+        } else if (res.emailError) {
+          setNotification({
+            type: "error",
+            message: `Order status updated in database, but sending email failed: ${res.emailError}`,
+          });
+        } else {
+          setNotification({
+            type: "success",
+            message: "Order updated successfully (no notification email needed for this update).",
+          });
+        }
+      } else {
+        setNotification({
+          type: "success",
+          message: "Order status updated successfully!",
+        });
+      }
+    } catch (error) {
+      setNotification({
+        type: "error",
+        message: error instanceof Error ? error.message : "Failed to update order status.",
+      });
+    } finally {
+      setIsPending(false);
+    }
+  }
 
   return (
     <form
-      action={action}
+      onSubmit={handleSubmit}
       className="w-full rounded-xl border border-amber-200/15 bg-gradient-to-br from-amber-500/10 via-white/[0.04] to-rose-500/10 p-3 shadow-[0_14px_34px_rgba(0,0,0,0.16)] sm:w-[380px]"
     >
       <input type="hidden" name="id" value={order.id} />
+
+      {notification && (
+        <div
+          className={`mb-3 rounded-lg border p-3 text-[11px] font-[family-name:var(--font-inter)] leading-relaxed flex items-start justify-between gap-3 animate-fadeIn ${
+            notification.type === "success"
+              ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+              : "border-rose-500/20 bg-rose-500/10 text-rose-300"
+          }`}
+        >
+          <div className="flex-1">
+            <span className="font-semibold uppercase tracking-wider text-[9px] block mb-0.5">
+              {notification.type === "success" ? "Success" : "Update Issue"}
+            </span>
+            {notification.message}
+          </div>
+          <button
+            type="button"
+            onClick={() => setNotification(null)}
+            className="text-white/40 hover:text-white transition-colors text-xs font-semibold focus:outline-none shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <div className="mb-3 rounded-lg border border-white/10 bg-black/25 p-2.5">
         <div className="flex items-start justify-between gap-3">
@@ -159,9 +238,17 @@ export default function OrderStatusForm({
 
       <button
         type="submit"
-        className="mt-3 w-full rounded-lg border border-amber-200/30 bg-amber-200 px-3 py-2.5 text-xs font-semibold text-stone-950 transition-colors hover:bg-amber-100"
+        disabled={isPending}
+        className="mt-3 w-full rounded-lg border border-amber-200/30 bg-amber-200 px-3 py-2.5 text-xs font-semibold text-stone-950 transition-colors hover:bg-amber-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
       >
-        Save update & send email
+        {isPending ? (
+          <>
+            <Loader2 className="h-3 w-3 animate-spin text-stone-950" />
+            Saving...
+          </>
+        ) : (
+          "Save update & send email"
+        )}
       </button>
     </form>
   );

@@ -70,7 +70,13 @@ export default function OrdersClient({
   updateOrderStatusAction,
 }: {
   initialOrders: OrderType[];
-  updateOrderStatusAction: (formData: FormData) => void | Promise<void>;
+  updateOrderStatusAction: (formData: FormData) => Promise<{
+    success: boolean;
+    statusChanged: boolean;
+    noteChanged: boolean;
+    emailSent: boolean;
+    emailError: string | null;
+  } | undefined | void>;
 }) {
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
   const [searchTerm, setSearchTerm] = useState("");

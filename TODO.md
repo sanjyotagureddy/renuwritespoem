@@ -40,8 +40,8 @@ admin, and technical work.
 - [x] Add poem views tracking
 - [x] Add invite and attribution models
 - [x] Add unsubscribe suppression model
-- [ ] Set up reusable data access functions for repeated query/mutation patterns
-- [ ] Implement PostgreSQL full-text search for poems
+- [x] Set up reusable data access functions for repeated query/mutation patterns
+- [x] Implement PostgreSQL full-text search for poems
 - [ ] Add audit fields/logs for important admin actions
 - [ ] Add stronger subscriber/campaign delivery models if campaign sending is built
 

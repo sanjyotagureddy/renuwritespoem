@@ -77,7 +77,12 @@ export async function updateOrderStatus(formData: FormData) {
     },
   });
 
-  if (existing.status !== updated.status && updated.status !== "PENDING") {
+  const statusChanged = existing.status !== updated.status;
+  const noteChanged = (existing.adminNote ?? "") !== (updated.adminNote ?? "");
+  let emailSent = false;
+  let emailError: string | null = null;
+
+  if ((statusChanged || noteChanged) && updated.status !== "PENDING") {
     try {
       await sendOrderStatusUpdate({
         buyerEmail: updated.email,
@@ -90,10 +95,20 @@ export async function updateOrderStatus(formData: FormData) {
         trackingUrl: updated.trackingUrl,
         note: updated.adminNote,
       });
+      emailSent = true;
     } catch (error) {
       console.error("Order status email failed:", error);
+      emailError = error instanceof Error ? error.message : String(error);
     }
   }
 
   revalidatePath("/admin/orders");
+
+  return {
+    success: true,
+    statusChanged,
+    noteChanged,
+    emailSent,
+    emailError,
+  };
 }

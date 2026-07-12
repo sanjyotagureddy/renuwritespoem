@@ -9,6 +9,8 @@ import {
   type PoemLanguage,
 } from "@/lib/poem-language";
 import PageSizeSelect from "@/components/poems/page-size-select";
+import SearchBar from "@/components/poems/search-bar";
+import { getPoems } from "@/lib/poems-data";
 
 type PoemsPageProps = {
   searchParams: Promise<{
@@ -18,6 +20,7 @@ type PoemsPageProps = {
     size?: string | string[];
     sort?: string | string[];
     tag?: string | string[];
+    q?: string | string[];
   }>;
 };
 
@@ -52,6 +55,9 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     : params.tag;
   const selectedTagSlug = tagValue?.trim() || "";
 
+  const qValue = Array.isArray(params.q) ? params.q[0] : params.q;
+  const searchQuery = qValue?.trim() || "";
+
   const sortValue = Array.isArray(params.sort) ? params.sort[0] : params.sort;
   const selectedSort: PoemSort = SORT_OPTIONS.includes(sortValue as PoemSort)
     ? (sortValue as PoemSort)
@@ -70,40 +76,22 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     ? parsedSize
     : DEFAULT_PAGE_SIZE;
 
-  const whereClause = {
-    published: true,
-    ...(selectedLanguage === "ALL" ? {} : { language: selectedLanguage }),
-    ...(selectedGenreSlug ? { genre: { slug: selectedGenreSlug } } : {}),
-    ...(selectedTagSlug ? { tags: { some: { tag: { slug: selectedTagSlug } } } } : {}),
-  };
-
-  const [poems, totalCount, selectedGenre, selectedTag, allGenres, allTags] = await Promise.all([
-    prisma.poem.findMany({
-      where: whereClause,
-      orderBy:
-        selectedSort === "views"
-          ? [
-              { views: "desc" },
-              { publishedAt: "desc" },
-              { createdAt: "desc" },
-            ]
-          : selectedSort === "popular"
-          ? [
-              { likes: { _count: "desc" } },
-              { comments: { _count: "desc" } },
-              { publishedAt: "desc" },
-              { createdAt: "desc" },
-            ]
-          : [{ publishedAt: "desc" }, { createdAt: "desc" }],
-      skip: (currentPage - 1) * perPage,
-      take: perPage,
-      include: {
-        genre: { select: { name: true, slug: true } },
-        tags: { include: { tag: { select: { name: true, slug: true } } } },
-        _count: { select: { likes: true, comments: true } },
-      },
+  const [
+    { poems, totalCount },
+    selectedGenre,
+    selectedTag,
+    allGenres,
+    allTags,
+  ] = await Promise.all([
+    getPoems({
+      language: selectedLanguage,
+      genreSlug: selectedGenreSlug,
+      tagSlug: selectedTagSlug,
+      sort: selectedSort,
+      searchQuery: searchQuery,
+      page: currentPage,
+      perPage: perPage,
     }),
-    prisma.poem.count({ where: whereClause }),
     selectedGenreSlug
       ? prisma.genre.findUnique({
           where: { slug: selectedGenreSlug },
@@ -135,6 +123,7 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     if (selectedGenreSlug) params.set("genre", selectedGenreSlug);
     if (selectedTagSlug) params.set("tag", selectedTagSlug);
     if (selectedSort !== "popular") params.set("sort", selectedSort);
+    if (searchQuery) params.set("q", searchQuery);
     if (page > 1) params.set("page", String(page));
     const s = size ?? perPage;
     if (s !== DEFAULT_PAGE_SIZE) params.set("size", String(s));
@@ -147,17 +136,20 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
     genre = selectedGenreSlug,
     tag = selectedTagSlug,
     sort = selectedSort,
+    q = searchQuery,
   }: {
     language?: PoemLanguage | "ALL";
     genre?: string;
     tag?: string;
     sort?: PoemSort;
+    q?: string;
   }) {
     const params = new URLSearchParams();
     if (language !== "ALL") params.set("language", language);
     if (genre) params.set("genre", genre);
     if (tag) params.set("tag", tag);
     if (sort !== "popular") params.set("sort", sort);
+    if (q) params.set("q", q);
     if (perPage !== DEFAULT_PAGE_SIZE) params.set("size", String(perPage));
     const qs = params.toString();
     return `/poems${qs ? `?${qs}` : ""}`;
@@ -179,11 +171,14 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
           Explore verses written in English, Hindi, and Marathi. Each poem carries its own mood,
           language, and rhythm.
         </p>
+        <div className="mt-6">
+          <SearchBar />
+        </div>
 
         {/* Sort & Stats row at the top */}
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-4">
           <div className="flex flex-wrap items-center gap-2">
-            {(selectedLanguage !== "ALL" || selectedGenreSlug || selectedTagSlug) ? (
+            {(selectedLanguage !== "ALL" || selectedGenreSlug || selectedTagSlug || searchQuery) ? (
               <>
                 <span className="text-xs text-white/40 mr-1">Active:</span>
                 {selectedLanguage !== "ALL" && (
@@ -208,6 +203,14 @@ export default async function PoemsPage({ searchParams }: PoemsPageProps) {
                     className="rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1 text-xs text-amber-100/80 hover:border-amber-200/45 hover:text-amber-100"
                   >
                     Tag: #{selectedTag.name} ×
+                  </Link>
+                )}
+                {searchQuery && (
+                  <Link
+                    href={buildFilterUrl({ q: "" })}
+                    className="rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1 text-xs text-amber-100/80 hover:border-amber-200/45 hover:text-amber-100"
+                  >
+                    Search: &ldquo;{searchQuery}&rdquo; ×
                   </Link>
                 )}
                 <Link
