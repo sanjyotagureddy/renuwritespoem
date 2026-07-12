@@ -38,6 +38,33 @@ const statusColors: Record<string, string> = {
   REJECTED: "border-rose-400/30 text-rose-400/80 bg-rose-500/10",
 };
 
+const filterButtonStyles: Record<string, { active: string; inactive: string }> = {
+  ALL: {
+    active: "border-white/30 text-white bg-white/10 shadow-white/5",
+    inactive: "border-white/10 text-white/50 bg-white/[0.02] hover:border-white/20 hover:text-white/80",
+  },
+  PENDING: {
+    active: "border-amber-400/50 text-amber-400 bg-amber-500/20 shadow-amber-500/10",
+    inactive: "border-amber-400/15 text-amber-400/50 bg-amber-500/5 hover:border-amber-400/30 hover:text-amber-400/80",
+  },
+  CONFIRMED: {
+    active: "border-blue-400/50 text-blue-400 bg-blue-500/20 shadow-blue-500/10",
+    inactive: "border-blue-400/15 text-blue-400/50 bg-blue-500/5 hover:border-blue-400/30 hover:text-blue-400/80",
+  },
+  SHIPPED: {
+    active: "border-purple-400/50 text-purple-400 bg-purple-500/20 shadow-purple-500/10",
+    inactive: "border-purple-400/15 text-purple-400/50 bg-purple-500/5 hover:border-purple-400/30 hover:text-purple-400/80",
+  },
+  DELIVERED: {
+    active: "border-emerald-400/50 text-emerald-400 bg-emerald-500/20 shadow-emerald-500/10",
+    inactive: "border-emerald-400/15 text-emerald-400/50 bg-emerald-500/5 hover:border-emerald-400/30 hover:text-emerald-400/80",
+  },
+  REJECTED: {
+    active: "border-rose-400/50 text-rose-400 bg-rose-500/20 shadow-rose-500/10",
+    inactive: "border-rose-400/15 text-rose-400/50 bg-rose-500/5 hover:border-rose-400/30 hover:text-rose-400/80",
+  },
+};
+
 export default function OrdersClient({
   initialOrders,
   updateOrderStatusAction,
@@ -83,9 +110,9 @@ export default function OrdersClient({
   return (
     <div className="space-y-4">
       {/* Search & Filters Bar */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white/[0.02] border border-white/10 rounded-2xl p-4">
+      <div className="flex flex-col gap-4 bg-white/[0.02] border border-white/10 rounded-2xl p-4">
         {/* Search Input */}
-        <div className="relative flex-1">
+        <div className="relative w-full">
           <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-white/40">
             <Search className="h-4 w-4" />
           </span>
@@ -108,19 +135,21 @@ export default function OrdersClient({
 
         {/* Status Filters */}
         <div className="flex flex-wrap gap-1.5 font-[family-name:var(--font-inter)]">
-          {["ALL", "PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "REJECTED"].map((status) => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`rounded-xl px-3 py-1.5 text-[10px] md:text-xs font-semibold tracking-wider transition-all uppercase ${
-                statusFilter === status
-                  ? "bg-white text-black font-bold shadow-md shadow-white/5"
-                  : "bg-white/[0.04] border border-white/10 text-white/60 hover:bg-white/[0.08] hover:text-white"
-              }`}
-            >
-              {status === "ALL" ? "All" : status}
-            </button>
-          ))}
+          {["ALL", "PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "REJECTED"].map((status) => {
+            const styles = filterButtonStyles[status];
+            const isActive = statusFilter === status;
+            return (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`rounded-xl border px-3 py-1.5 text-[10px] md:text-xs font-semibold tracking-wider transition-all uppercase shadow-sm ${
+                  isActive ? `${styles.active} font-bold scale-[1.02]` : styles.inactive
+                }`}
+              >
+                {status === "ALL" ? "All Statuses" : status}
+              </button>
+            );
+          })}
         </div>
       </div>
 
