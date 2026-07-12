@@ -3,7 +3,6 @@ import { siteConfig } from "@/lib/seo";
 import { getCache, setCache } from "@/lib/cache";
 import SlidingBanner from "@/components/home/sliding-banner";
 import TestimonialsSection from "@/components/home/testimonials-section";
-import NewsletterSignup from "@/components/ui/newsletter-signup";
 
 import { Poem, Audio } from "@prisma/client";
 
@@ -226,12 +225,6 @@ export default async function Home() {
         featuredPoems={featuredPoems}
       />
       <TestimonialsSection testimonials={testimonials} />
-      <section className="relative py-16 md:py-24 overflow-hidden border-t border-white/5 bg-gradient-to-b from-transparent to-black/20">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(16,185,129,0.03),transparent_70%)] pointer-events-none" />
-        <div className="max-w-xl mx-auto px-6 relative z-10 text-center">
-          <NewsletterSignup />
-        </div>
-      </section>
     </>
   );
 }

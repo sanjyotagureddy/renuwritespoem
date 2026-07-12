@@ -88,7 +88,7 @@ export default function AboutPage() {
             href="https://www.instagram.com/renuwrites_poem/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 hover:text-white transition-all text-sm font-[family-name:var(--font-inter)]"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 hover:bg-gradient-to-tr hover:from-[#f9ce34] hover:via-[#ee2a7b] hover:to-[#6228d7] hover:border-transparent hover:text-white transition-all text-sm font-[family-name:var(--font-inter)]"
           >
             <InstagramIcon className="w-4 h-4" />
             Instagram
@@ -97,7 +97,7 @@ export default function AboutPage() {
             href="https://pillayrenu.blogspot.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 hover:text-white transition-all text-sm font-[family-name:var(--font-inter)]"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 hover:bg-[#f57d00] hover:border-transparent hover:text-white transition-all text-sm font-[family-name:var(--font-inter)]"
           >
             <BlogIcon className="w-4 h-4" />
             Blog

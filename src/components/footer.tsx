@@ -26,11 +26,13 @@ const socialLinks = [
     href: "https://www.instagram.com/renuwrites_poem/",
     label: "Instagram",
     icon: <InstagramIcon className="w-5 h-5" />,
+    hoverClass: "hover:bg-gradient-to-tr hover:from-[#f9ce34] hover:via-[#ee2a7b] hover:to-[#6228d7] hover:text-white hover:border-transparent hover:shadow-lg hover:shadow-pink-500/20",
   },
   {
     href: "https://pillayrenu.blogspot.com/",
     label: "Blog",
     icon: <BlogIcon className="w-5 h-5" />,
+    hoverClass: "hover:bg-[#f57d00] hover:text-white hover:border-transparent hover:shadow-lg hover:shadow-orange-500/20",
   },
 ];
 
@@ -69,7 +71,7 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={link.label}
-                    className="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/60 hover:bg-white/20 hover:text-white transition-all text-xs"
+                    className={`w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/60 transition-all text-xs ${link.hoverClass}`}
                   >
                     {link.icon}
                   </a>
