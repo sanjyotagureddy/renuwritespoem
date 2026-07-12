@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const limitCheck = await rateLimit("attribution-log", 30, 60000); // 30 per minute
+    if (limitCheck.limited) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const { source, path } = await request.json();
 
     if (!source || typeof source !== "string") {

@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const limitCheck = await rateLimit("audio-views", 60, 60000); // 60 per minute
+    if (limitCheck.limited) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const { slug: id } = await params;
     if (!id) {
       return NextResponse.json({ error: "Missing audio ID" }, { status: 400 });
