@@ -1,6 +1,17 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+
 export default function SocialFloating() {
+  const pathname = usePathname();
+
+  // Do not show the floating social links on administrative back-office routes
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   return (
-    <div className="fixed bottom-16 left-4 z-50 hidden flex-col gap-3 sm:flex">
+    <div className="fixed bottom-20 right-6 z-50 hidden flex-col gap-3 sm:flex">
       <a
         href="https://www.instagram.com/renuwrites_poem/"
         target="_blank"
