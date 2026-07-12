@@ -3,15 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { getPrisma } from "@/lib/db";
 import { requireAdmin } from "./shared-actions";
+import { UpdateUserRoleSchema, UpdateUserModerationSchema } from "@/lib/validations";
 
 export async function updateUserRole(formData: FormData) {
   const session = await requireAdmin();
-  const userId = String(formData.get("userId") ?? "").trim();
-  const role = String(formData.get("role") ?? "").trim();
+  const parsed = UpdateUserRoleSchema.safeParse(formData);
 
-  if (!userId || (role !== "ADMIN" && role !== "READER")) {
+  if (!parsed.success) {
     return;
   }
+
+  const { userId, role } = parsed.data;
 
   if (userId === session.user.id && role !== "ADMIN") {
     return;
@@ -27,11 +29,15 @@ export async function updateUserRole(formData: FormData) {
 
 export async function updateUserModeration(formData: FormData) {
   const session = await requireAdmin();
-  const userId = String(formData.get("userId") ?? "").trim();
-  const action = String(formData.get("action") ?? "").trim();
-  const moderationNote = String(formData.get("moderationNote") ?? "").trim();
+  const parsed = UpdateUserModerationSchema.safeParse(formData);
 
-  if (!userId || userId === session.user.id) {
+  if (!parsed.success) {
+    return;
+  }
+
+  const { userId, action, moderationNote } = parsed.data;
+
+  if (userId === session.user.id) {
     return;
   }
 

@@ -3,8 +3,7 @@ import { getServerAuthSession } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
 import { checkCommentTone } from "@/lib/contact-guard";
 import { sendInvitationEmail } from "@/lib/email";
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { InviteSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
   try {
@@ -17,32 +16,16 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const senderName = String(body.senderName ?? "").trim();
-    const inviteeName = String(body.inviteeName ?? "Friend").trim();
-    const recipientEmail = String(body.recipientEmail ?? "").trim().toLowerCase();
-    const personalNote = body.personalNote ? String(body.personalNote).trim() : undefined;
-    const poemId = body.poemId ? String(body.poemId).trim() : undefined;
+    const parsed = InviteSchema.safeParse(body);
 
-    if (!senderName || senderName.length < 2) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Please enter your name (minimum 2 characters)." },
+        { error: parsed.error.errors[0].message },
         { status: 400 }
       );
     }
 
-    if (!inviteeName || inviteeName.length < 2) {
-      return NextResponse.json(
-        { error: "Please enter your friend's name (minimum 2 characters)." },
-        { status: 400 }
-      );
-    }
-
-    if (!recipientEmail || !EMAIL_PATTERN.test(recipientEmail)) {
-      return NextResponse.json(
-        { error: "Please enter a valid recipient email address." },
-        { status: 400 }
-      );
-    }
+    const { senderName, inviteeName, recipientEmail, personalNote, poemId } = parsed.data;
 
     if (recipientEmail === session.user.email?.toLowerCase()) {
       return NextResponse.json(
@@ -52,12 +35,6 @@ export async function POST(request: Request) {
     }
 
     if (personalNote) {
-      if (personalNote.length > 100) {
-        return NextResponse.json(
-          { error: "Personal note cannot exceed 100 characters." },
-          { status: 400 }
-        );
-      }
       const toneCheck = checkCommentTone(personalNote);
       if (toneCheck.isAbusive) {
         return NextResponse.json(

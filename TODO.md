@@ -354,7 +354,7 @@ admin, and technical work.
 
 ## Phase 22: Code Quality & Maintainability
 
-- [ ] Add Zod schemas for API and server action validation
+- [x] Add Zod schemas for API and server action validation
 - [ ] Reduce duplication across poem/book/audio comment APIs
 - [ ] Reduce duplication across like APIs
 - [ ] Split large UI components where they have grown too complex

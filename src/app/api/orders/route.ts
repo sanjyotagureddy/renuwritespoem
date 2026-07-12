@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { getPrisma } from "@/lib/db";
 import { sendOrderConfirmation } from "@/lib/email";
+import { OrderSchema } from "@/lib/validations";
 
 const MAX_SCREENSHOT_SIZE = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -54,91 +55,30 @@ async function createUniqueOrderNumber(
 
 export async function POST(request: Request) {
   const formData = await request.formData();
+  const parsed = OrderSchema.safeParse(formData);
 
-  const bookId = String(formData.get("bookId") ?? "").trim();
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const address = String(formData.get("address") ?? "").trim();
-  const city = String(formData.get("city") ?? "").trim();
-  const state = String(formData.get("state") ?? "").trim();
-  const pincode = String(formData.get("pincode") ?? "").trim();
-  const copies = Math.max(
-    1,
-    parseInt(String(formData.get("copies") ?? "1"), 10) || 1,
-  );
-  const screenshot = formData.get("paymentScreenshot") as File | null;
-  const idempotencyKey = String(formData.get("idempotencyKey") ?? "").trim();
-
-  // Validate required fields
-  if (
-    !bookId ||
-    !name ||
-    !email ||
-    !phone ||
-    !address ||
-    !city ||
-    !state ||
-    !pincode
-  ) {
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "All fields are required." },
+      { error: parsed.error.errors[0].message },
       { status: 400 },
     );
   }
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json(
-      { error: "Invalid email address." },
-      { status: 400 },
-    );
-  }
-
-  const tooLong = Object.entries({
+  const {
+    bookId,
     name,
     email,
     phone,
     address,
     city,
     state,
-  }).find(
-    ([key, value]) =>
-      value.length > MAX_LENGTHS[key as keyof typeof MAX_LENGTHS],
-  );
-  if (tooLong)
-    return NextResponse.json(
-      { error: `${tooLong[0]} is too long.` },
-      { status: 400 },
-    );
+    pincode,
+    copies,
+    idempotencyKey,
+  } = parsed.data;
 
   const normalizedPhone = phone.replace(/[\s()-]/g, "");
-  if (!/^(?:\+91)?[6-9]\d{9}$/.test(normalizedPhone)) {
-    return NextResponse.json(
-      { error: "Enter a valid Indian mobile number." },
-      { status: 400 },
-    );
-  }
-
-  if (!/^[0-9a-f-]{36}$/i.test(idempotencyKey)) {
-    return NextResponse.json(
-      { error: "Invalid order request. Please reopen the purchase form." },
-      { status: 400 },
-    );
-  }
-
-  if (!/^\d{6}$/.test(pincode)) {
-    return NextResponse.json(
-      { error: "Pincode must be 6 digits." },
-      { status: 400 },
-    );
-  }
-
-  if (copies > 50) {
-    return NextResponse.json(
-      { error: "Maximum 50 copies per order." },
-      { status: 400 },
-    );
-  }
+  const screenshot = formData.get("paymentScreenshot") as File | null;
 
   if (!screenshot || screenshot.size === 0) {
     return NextResponse.json(

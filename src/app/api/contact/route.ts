@@ -3,9 +3,7 @@ import { validateContactMessageTone } from "@/lib/contact-guard";
 import { sendContactMessage } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
 import { getPrisma } from "@/lib/db";
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_PATTERN = /^[+\d][\d\s().-]{6,19}$/;
+import { ContactSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
   try {
@@ -18,45 +16,20 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const name = String(body.name ?? "").trim();
-    const email = String(body.email ?? "").trim();
-    const phone = String(body.phone ?? "").trim();
-    const subject = String(body.subject ?? "").trim();
-    const message = String(body.message ?? "").trim();
-    const website = String(body.website ?? "").trim();
+    const parsed = ContactSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.errors[0].message },
+        { status: 400 }
+      );
+    }
+
+    const { name, email, phone, subject, message, website } = parsed.data;
 
     // Honeypot fields are invisible to people but commonly filled by bots.
     if (website) return NextResponse.json({ sent: true });
 
-    if (!name || !email || !phone || !subject || !message) {
-      return NextResponse.json(
-        { error: "All fields are required." },
-        { status: 400 },
-      );
-    }
-    if (!EMAIL_PATTERN.test(email)) {
-      return NextResponse.json(
-        { error: "Enter a valid email address." },
-        { status: 400 },
-      );
-    }
-    if (!PHONE_PATTERN.test(phone)) {
-      return NextResponse.json(
-        { error: "Enter a valid phone number." },
-        { status: 400 },
-      );
-    }
-    if (
-      name.length > 100 ||
-      phone.length > 20 ||
-      subject.length > 150 ||
-      message.length > 5000
-    ) {
-      return NextResponse.json(
-        { error: "One or more fields are too long." },
-        { status: 400 },
-      );
-    }
     const toneError = validateContactMessageTone({ subject, message });
     if (toneError) {
       return NextResponse.json({ error: toneError }, { status: 400 });

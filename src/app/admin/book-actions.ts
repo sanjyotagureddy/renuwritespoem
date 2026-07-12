@@ -7,6 +7,7 @@ import { getPrisma } from "@/lib/db";
 import { invalidateCache } from "@/lib/cache";
 import { requireAdmin } from "./shared-actions";
 import { slugify } from "@/lib/utils";
+import { DeleteBookSchema, ToggleBookFeaturedSchema, UpdateBookStatusSchema } from "@/lib/validations";
 
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -281,8 +282,9 @@ export async function updateBook(formData: FormData) {
 export async function deleteBook(formData: FormData) {
   await requireAdmin();
 
-  const id = String(formData.get("id") ?? "").trim();
-  if (!id) throw new Error("Book ID is required.");
+  const parsed = DeleteBookSchema.safeParse(formData);
+  if (!parsed.success) throw new Error("Book ID is required.");
+  const { id } = parsed.data;
 
   const prisma = getPrisma();
   const existing = await prisma.book.findUnique({
@@ -310,8 +312,9 @@ export async function deleteBook(formData: FormData) {
 export async function toggleBookFeatured(formData: FormData) {
   await requireAdmin();
 
-  const id = String(formData.get("id") ?? "").trim();
-  if (!id) throw new Error("Book ID is required.");
+  const parsed = ToggleBookFeaturedSchema.safeParse(formData);
+  if (!parsed.success) throw new Error("Invalid request");
+  const { id } = parsed.data;
 
   const prisma = getPrisma();
   const book = await prisma.book.findUnique({ where: { id } });
@@ -343,12 +346,9 @@ export async function toggleBookFeatured(formData: FormData) {
 export async function updateBookStatus(formData: FormData) {
   await requireAdmin();
 
-  const id = String(formData.get("id") ?? "").trim();
-  const status = String(formData.get("status") ?? "").trim();
-
-  if (!id || !status) throw new Error("Book ID and status are required.");
-
-  assertValidBookStatus(status);
+  const parsed = UpdateBookStatusSchema.safeParse(formData);
+  if (!parsed.success) throw new Error("Invalid request");
+  const { id, status } = parsed.data;
 
   const prisma = getPrisma();
   const book = await prisma.book.findUnique({
