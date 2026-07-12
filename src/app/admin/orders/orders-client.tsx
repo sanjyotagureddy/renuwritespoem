@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import OrderStatusForm from "@/components/admin/order-status-form";
 import { formatDateTime as formatDate } from "@/lib/utils";
 
@@ -16,8 +15,8 @@ type OrderType = {
   state: string;
   pincode: string;
   copies: number;
-  shippingAmount: any;
-  totalAmount: any;
+  shippingAmount: unknown;
+  totalAmount: unknown;
   status: string;
   trackingProvider: string | null;
   trackingNumber: string | null;
@@ -43,7 +42,7 @@ export default function OrdersClient({
   updateOrderStatusAction,
 }: {
   initialOrders: OrderType[];
-  updateOrderStatusAction: any;
+  updateOrderStatusAction: (formData: FormData) => void | Promise<void>;
 }) {
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
 

@@ -29,11 +29,6 @@ export async function POST(request: Request) {
     const { email, name } = parsed.data;
     const prisma = getPrisma();
 
-    // Check if email is unsubscribed
-    const isUnsubscribed = await prisma.unsubscribedEmail.findUnique({
-      where: { email }
-    });
-
     const existing = await prisma.subscriber.findUnique({
       where: { email }
     });
