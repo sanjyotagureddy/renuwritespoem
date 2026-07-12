@@ -8,17 +8,35 @@ Create a beautiful, accessible, and SEO-optimized platform where a poet can publ
 
 ## Technology Stack
 
-| Layer          | Technology              |
-| -------------- | ----------------------- |
-| Framework      | Next.js 15 (App Router) |
-| Language       | TypeScript              |
-| Styling        | Tailwind CSS            |
-| Components     | shadcn/ui               |
-| Authentication | Auth.js (Google OAuth)  |
-| Database       | PostgreSQL (Neon)       |
-| ORM            | Prisma                  |
-| Email          | Gmail SMTP / Nodemailer |
-| Deployment     | Vercel                  |
+| Layer          | Technology                          |
+| -------------- | ----------------------------------- |
+| Framework      | Next.js 15 (App Router)             |
+| Language       | TypeScript                          |
+| Styling        | Tailwind CSS                        |
+| Components     | shadcn/ui                           |
+| Authentication | Auth.js (Google OAuth & Credentials)|
+| Database       | PostgreSQL (Supabase)               |
+| ORM            | Prisma                              |
+| Email          | Gmail SMTP / Nodemailer             |
+| Deployment     | Vercel                              |
+
+## Features & Capabilities
+
+### Public Reader Features
+- **Poetry Sanctuary**: Rich visual layout supporting English, Hindi, and Marathi fonts, genres, tags, reading times, and PostgreSQL full-text search.
+- **Audio Recitations**: Custom client-side player for listening to poem readings voiced by the author.
+- **Book Bookstore**: Interactive book catalog featuring discounts, direct order placement, payment screenshot uploads, and courier tracking details.
+- **Reader Engagement**: Interactive likes, comments, nested threads, and personal dashboard sections for liked content and order tracking.
+- **Growth & Referral system**: Invite-a-friend system allowing users to invite readers with attribution click logs.
+- **Newsletter Subscription**: Direct subscription forms with email verification and unsubscribe preferences.
+
+### Admin Dashboard Modules
+- **Overview Analytics**: Dynamic dashboard showing user activity, subscriber charts, popular content views, and order volumes.
+- **Content CRUD Management**: Full lifecycle management (drafting, editing, publishing) for Poems, Books, Genres, and Audio tracks.
+- **Comment Moderation Hub**: A single, clean review panel to approve, reject, pin, or delete comments across all media.
+- **Subscribers & Campaign broadcasting**: Lists newsletter signups, handles manual actions, exports to CSV, and drafts/broadcasts rich newsletter campaigns.
+- **Orders Panel**: Verifies payment screenshots, sets shipping status (Pending, Confirmed, Shipped, Delivered), and manages courier tracking URLs.
+- **Inbox Inbox**: Central contact log with AI-assisted email response helpers.
 
 ## Architecture Overview
 

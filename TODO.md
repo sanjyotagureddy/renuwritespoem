@@ -17,7 +17,7 @@ admin, and technical work.
 - [x] Seed database with sample data
 - [x] Set up environment variables
 - [x] Configure Vercel-oriented build/deployment scripts
-- [ ] Update README docs to reflect current features and admin modules
+- [x] Update README docs to reflect current features and admin modules
 - [ ] Clean up or document legacy migrations if they are still needed
 
 ## Phase 2: Authentication & Access Control
@@ -366,7 +366,7 @@ admin, and technical work.
 - [x] Run production build locally and fix any issues
 - [x] Run TypeScript check
 - [x] Run lint check
-- [ ] Add automated tests for key flows
+- [x] Add automated tests for key flows
 - [ ] Audit accessibility: keyboard navigation, focus states, ARIA, contrast
 - [ ] Test mobile responsiveness across public and admin pages
 - [ ] Lighthouse performance audit
@@ -380,7 +380,7 @@ admin, and technical work.
 - [x] Reduce duplication across poem/book/audio comment APIs
 - [x] Reduce duplication across like APIs
 - [x] Split large UI components where they have grown too complex
-- [ ] Add tests for orders, invites, auth roles, comments, and unsubscribe tokens
+- [x] Add tests for orders, invites, auth roles, comments, and unsubscribe tokens
 - [x] Standardize icon usage
 - [x] Review manual SVGs and replace with consistent icon components where practical
 - [ ] Add CI checks for typecheck, lint, and build
