@@ -20,9 +20,9 @@ type BookPurchaseLayoutProps = {
     featured: boolean;
     status: string;
     publishedAt: string | null;
-    price: number;
     discountedPrice: number | null;
     shippingCharge: number;
+    views: number;
   };
 };
 
@@ -82,6 +82,9 @@ export default function BookPurchaseLayout({ book }: BookPurchaseLayoutProps) {
                     {formatDate(book.publishedAt)}
                   </span>
                 )}
+                <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] tracking-wider text-white/50 uppercase whitespace-nowrap">
+                  {(book.views || 0).toLocaleString()} {(book.views || 0) === 1 ? 'view' : 'views'}
+                </span>
               </div>
 
               <h1 className="mb-4 text-3xl text-white md:text-4xl">

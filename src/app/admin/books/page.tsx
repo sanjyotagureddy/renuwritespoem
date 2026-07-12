@@ -4,31 +4,66 @@ import { toggleBookFeatured, updateBookStatus } from "../book-actions";
 import DeleteBookForm from "./delete-book-form";
 import { statusLabel, statusColor, formatDate } from "@/lib/utils";
 
-export default async function AdminBooksPage() {
+const PAGE_SIZE = 10;
+
+type PageProps = {
+  searchParams: Promise<{ page?: string }>;
+};
+
+export default async function AdminBooksPage({ searchParams }: PageProps) {
+  const params = await searchParams;
   const prisma = getPrisma();
 
-  const books = await prisma.book.findMany({
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      status: true,
-      featured: true,
-      createdAt: true,
-      publishedAt: true,
-      price: true,
-      coverImage: true,
-    },
-  });
+  const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
+  const skip = (page - 1) * PAGE_SIZE;
+  const [
+    books,
+    totalCount,
+    featuredCount,
+    availableCount,
+    comingSoonCount,
+    archivedCount,
+    needsSetupCount
+  ] = await Promise.all([
+    prisma.book.findMany({
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: PAGE_SIZE,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        status: true,
+        featured: true,
+        createdAt: true,
+        publishedAt: true,
+        price: true,
+        coverImage: true,
+        views: true,
+      },
+    }),
+    prisma.book.count(),
+    prisma.book.count({ where: { featured: true } }),
+    prisma.book.count({ where: { status: "AVAILABLE" } }),
+    prisma.book.count({ where: { status: "COMING_SOON" } }),
+    prisma.book.count({ where: { status: "ARCHIVED" } }),
+    prisma.book.count({
+      where: {
+        OR: [
+          { price: null },
+          { price: { lte: 0 } },
+          { coverImage: null },
+        ]
+      }
+    }),
+  ]);
 
-  const featuredCount = books.filter((b) => b.featured).length;
-  const availableCount = books.filter((b) => b.status === "AVAILABLE").length;
-  const comingSoonCount = books.filter((b) => b.status === "COMING_SOON").length;
-  const archivedCount = books.filter((b) => b.status === "ARCHIVED").length;
-  const needsSetupCount = books.filter(
-    (b) => !b.price || Number(b.price) <= 0 || !b.coverImage,
-  ).length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const hasNext = page < totalPages;
+
+  function buildUrl(p: number) {
+    return p > 1 ? `/admin/books?page=${p}` : "/admin/books";
+  }
 
   return (
     <div className="space-y-6">
@@ -58,7 +93,7 @@ export default async function AdminBooksPage() {
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
         {[
-          ["Total", books.length],
+          ["Total", totalCount],
           ["Available", availableCount],
           ["Coming Soon", comingSoonCount],
           ["Archived", archivedCount],
@@ -107,6 +142,7 @@ export default async function AdminBooksPage() {
                     {book.publishedAt
                       ? ` • Published ${formatDate(book.publishedAt)}`
                       : ""}
+                    {` • ${book.views.toLocaleString()} ${book.views === 1 ? 'view' : 'views'}`}
                   </p>
                   {(!book.price || Number(book.price) <= 0 || !book.coverImage) && (
                     <p className="mt-1 text-xs text-amber-300/70">
@@ -189,6 +225,39 @@ export default async function AdminBooksPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-white/10 pt-6">
+          <span className="text-xs text-white/50">
+            Page <strong className="font-semibold text-white/80">{page}</strong>{" "}
+            of{" "}
+            <strong className="font-semibold text-white/80">{totalPages}</strong>{" "}
+            · {totalCount} books
+          </span>
+          <div className="flex gap-2">
+            <Link
+              href={buildUrl(page - 1)}
+              className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${
+                page === 1
+                  ? "pointer-events-none cursor-not-allowed border-white/5 bg-white/[0.01] text-white/20"
+                  : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              Previous
+            </Link>
+            <Link
+              href={buildUrl(page + 1)}
+              className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${
+                !hasNext
+                  ? "pointer-events-none cursor-not-allowed border-white/5 bg-white/[0.01] text-white/20"
+                  : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              Next
+            </Link>
+          </div>
         </div>
       )}
     </div>

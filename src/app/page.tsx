@@ -27,6 +27,7 @@ type HomepageCacheData = {
     id: string;
     body: string;
     userName: string;
+    userImage?: string | null;
     targetTitle: string;
     targetLink: string;
     createdAt: string;
@@ -34,7 +35,7 @@ type HomepageCacheData = {
 };
 
 async function getHomepageData(): Promise<HomepageCacheData> {
-  const cacheKey = "home:featured-data:v4";
+  const cacheKey = "home:featured-data:v5";
   const cached = await getCache<HomepageCacheData>(cacheKey);
   if (cached) {
     const parseOptionalDate = (d: string | Date | null) => d ? new Date(d) : null;
@@ -105,7 +106,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
         orderBy: { createdAt: "desc" },
         take: 10,
         include: {
-          user: { select: { name: true } },
+          user: { select: { name: true, image: true } },
           poem: { select: { title: true, slug: true } }
         }
       }),
@@ -114,7 +115,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
         orderBy: { createdAt: "desc" },
         take: 10,
         include: {
-          user: { select: { name: true } },
+          user: { select: { name: true, image: true } },
           book: { select: { title: true, slug: true } }
         }
       }),
@@ -123,7 +124,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
         orderBy: { createdAt: "desc" },
         take: 10,
         include: {
-          user: { select: { name: true } },
+          user: { select: { name: true, image: true } },
           audio: { select: { title: true, slug: true } }
         }
       })
@@ -134,6 +135,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
       id: c.id,
       body: c.body,
       userName: c.user?.name ?? "Anonymous Reader",
+      userImage: c.user?.image,
       targetTitle: c.poem.title,
       targetLink: `/poems/${c.poem.slug}`,
       createdAt: c.createdAt.toISOString(),
@@ -143,6 +145,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
       id: c.id,
       body: c.body,
       userName: c.user?.name ?? "Anonymous Reader",
+      userImage: c.user?.image,
       targetTitle: c.book.title,
       targetLink: `/books/${c.book.slug}`,
       createdAt: c.createdAt.toISOString(),
@@ -152,6 +155,7 @@ async function getHomepageData(): Promise<HomepageCacheData> {
       id: c.id,
       body: c.body,
       userName: c.user?.name ?? "Anonymous Reader",
+      userImage: c.user?.image,
       targetTitle: c.audio.title,
       targetLink: `/audio/${c.audio.slug}`,
       createdAt: c.createdAt.toISOString(),

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Role } from "@prisma/client";
 import { getPrisma } from "@/lib/db";
-import { formatDate } from "@/lib/utils";
+import { formatDate, generateAvatarUrl } from "@/lib/utils";
 import { updateUserRole } from "../user-actions";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: "Manage reader accounts and admin roles.",
 };
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 15;
 
 type PageProps = {
   searchParams: Promise<{
@@ -59,11 +59,11 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
     ...(selectedRole === "ALL" ? {} : { role: selectedRole as Role }),
     ...(q
       ? {
-          OR: [
-            { name: { contains: q, mode: "insensitive" as const } },
-            { email: { contains: q, mode: "insensitive" as const } },
-          ],
-        }
+        OR: [
+          { name: { contains: q, mode: "insensitive" as const } },
+          { email: { contains: q, mode: "insensitive" as const } },
+        ],
+      }
       : {}),
   };
 
@@ -218,19 +218,17 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
             <Link
               key={tab.key}
               href={buildUrl({ q, role: tab.key })}
-              className={`flex items-center gap-2 rounded-t-lg px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
-                isActive
+              className={`flex items-center gap-2 rounded-t-lg px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${isActive
                   ? "border-b-2 border-amber-400 bg-white/5 text-white"
                   : "text-white/50 hover:bg-white/5 hover:text-white"
-              }`}
+                }`}
             >
               {tab.label}
               <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                  isActive
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${isActive
                     ? "bg-amber-500/20 text-amber-300"
                     : "bg-white/10 text-white/40"
-                }`}
+                  }`}
               >
                 {tab.count}
               </span>
@@ -288,9 +286,11 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                               className="h-10 w-10 rounded-full border border-white/10 object-cover"
                             />
                           ) : (
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm text-white/60">
-                              {(user.name ?? user.email).charAt(0).toUpperCase()}
-                            </div>
+                            <img
+                              src={generateAvatarUrl(user.id || user.email)}
+                              alt=""
+                              className="h-10 w-10 shrink-0 rounded-full border border-white/10 bg-white/5 object-cover"
+                            />
                           )}
                           <div className="min-w-0">
                             <Link
@@ -323,13 +323,12 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                       <td className="px-5 py-4">
                         <div className="flex flex-col gap-1">
                           <span
-                            className={`w-fit rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-wider uppercase ${
-                              user.disabledAt
+                            className={`w-fit rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-wider uppercase ${user.disabledAt
                                 ? "border-rose-400/30 bg-rose-500/10 text-rose-300"
                                 : user.flaggedAt
                                   ? "border-amber-400/30 bg-amber-500/10 text-amber-300"
                                   : "border-emerald-400/30 bg-emerald-500/10 text-emerald-300"
-                            }`}
+                              }`}
                           >
                             {user.disabledAt
                               ? "Disabled"
@@ -413,21 +412,19 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
         <div className="flex gap-2">
           <Link
             href={buildUrl({ q, role: selectedRole, page: page - 1 })}
-            className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${
-              page === 1
+            className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${page === 1
                 ? "pointer-events-none cursor-not-allowed border-white/5 bg-white/[0.01] text-white/20"
                 : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-            }`}
+              }`}
           >
             Previous
           </Link>
           <Link
             href={buildUrl({ q, role: selectedRole, page: page + 1 })}
-            className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${
-              !hasNext
+            className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${!hasNext
                 ? "pointer-events-none cursor-not-allowed border-white/5 bg-white/[0.01] text-white/20"
                 : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-            }`}
+              }`}
           >
             Next
           </Link>

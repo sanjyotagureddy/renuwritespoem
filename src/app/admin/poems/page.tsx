@@ -5,26 +5,53 @@ import { togglePublish, toggleFeatured } from "../poem-actions";
 import DeletePoemForm from "./delete-poem-form";
 import { formatDate } from "@/lib/utils";
 
-export default async function AdminPoemsPage() {
+const PAGE_SIZE = 10;
+
+type PageProps = {
+  searchParams: Promise<{ page?: string }>;
+};
+
+export default async function AdminPoemsPage({ searchParams }: PageProps) {
+  const params = await searchParams;
   const prisma = getPrisma();
 
-  const poems = await prisma.poem.findMany({
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      language: true,
-      published: true,
-      featured: true,
-      createdAt: true,
-      publishedAt: true,
-    },
-  });
+  const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
+  const skip = (page - 1) * PAGE_SIZE;
 
-  const featuredCount = poems.filter((p) => p.featured).length;
-  const publishedCount = poems.filter((p) => p.published).length;
-  const draftCount = poems.filter((p) => !p.published).length;
+  const [
+    poems,
+    totalCount,
+    featuredCount,
+    publishedCount,
+    draftCount
+  ] = await Promise.all([
+    prisma.poem.findMany({
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: PAGE_SIZE,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        language: true,
+        published: true,
+        featured: true,
+        createdAt: true,
+        publishedAt: true,
+      },
+    }),
+    prisma.poem.count(),
+    prisma.poem.count({ where: { featured: true } }),
+    prisma.poem.count({ where: { published: true } }),
+    prisma.poem.count({ where: { published: false } }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const hasNext = page < totalPages;
+
+  function buildUrl(p: number) {
+    return p > 1 ? `/admin/poems?page=${p}` : "/admin/poems";
+  }
 
   return (
     <div className="space-y-6">
@@ -45,7 +72,7 @@ export default async function AdminPoemsPage() {
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
-          ["Total", poems.length],
+          ["Total", totalCount],
           ["Published", publishedCount],
           ["Drafts", draftCount],
           ["Featured", `${featuredCount}/3`],
@@ -161,6 +188,39 @@ export default async function AdminPoemsPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-white/10 pt-6">
+          <span className="text-xs text-white/50">
+            Page <strong className="font-semibold text-white/80">{page}</strong>{" "}
+            of{" "}
+            <strong className="font-semibold text-white/80">{totalPages}</strong>{" "}
+            · {totalCount} poems
+          </span>
+          <div className="flex gap-2">
+            <Link
+              href={buildUrl(page - 1)}
+              className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${
+                page === 1
+                  ? "pointer-events-none cursor-not-allowed border-white/5 bg-white/[0.01] text-white/20"
+                  : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              Previous
+            </Link>
+            <Link
+              href={buildUrl(page + 1)}
+              className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${
+                !hasNext
+                  ? "pointer-events-none cursor-not-allowed border-white/5 bg-white/[0.01] text-white/20"
+                  : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              Next
+            </Link>
+          </div>
         </div>
       )}
     </div>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Role } from "@prisma/client";
 import { getPrisma } from "@/lib/db";
-import { formatDate, formatDateTime } from "@/lib/utils";
+import { formatDate, formatDateTime, generateAvatarUrl } from "@/lib/utils";
 import { updateUserModeration, updateUserRole } from "../../user-actions";
 
 type PageProps = {
@@ -41,6 +41,19 @@ function statusBadgeClass(user: {
     return "border-amber-400/30 bg-amber-500/10 text-amber-300";
   }
   return "border-emerald-400/30 bg-emerald-500/10 text-emerald-300";
+}
+
+function commentStatusBadge(status: string) {
+  switch (status) {
+    case "APPROVED":
+      return "border-emerald-400/20 bg-emerald-500/10 text-emerald-300";
+    case "PENDING":
+      return "border-amber-400/20 bg-amber-500/10 text-amber-300";
+    case "REJECTED":
+      return "border-rose-400/20 bg-rose-500/10 text-rose-300";
+    default:
+      return "border-white/10 bg-white/5 text-white/50";
+  }
 }
 
 export default async function AdminUserDetailPage({ params }: PageProps) {
@@ -252,9 +265,11 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
                 className="h-16 w-16 rounded-full border border-white/10 object-cover"
               />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5 text-xl text-white/60">
-                {(user.name ?? user.email).charAt(0).toUpperCase()}
-              </div>
+              <img
+                src={generateAvatarUrl(user.id || user.email)}
+                alt=""
+                className="h-16 w-16 shrink-0 rounded-full border border-white/10 bg-white/5 object-cover"
+              />
             )}
             <div className="min-w-0 flex-1">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -442,7 +457,7 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
                   <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-white/50">
                     {comment.type}
                   </span>
-                  <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-white/50">
+                  <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase ${commentStatusBadge(comment.status)}`}>
                     {comment.status}
                   </span>
                   {comment.pinned && (
@@ -475,15 +490,17 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
                 key={like.id}
                 href={like.targetHref}
                 target="_blank"
-                className="block rounded-xl border border-white/10 bg-black/15 p-3 hover:bg-white/5"
+                className="block rounded-xl border border-white/10 bg-black/15 p-3 hover:bg-white/5 transition-colors"
               >
-                <p className="text-xs text-white/40">{like.type}</p>
-                <p className="mt-1 truncate text-sm text-white/75">
+                <p className="truncate text-sm font-medium text-white/80">
                   {like.targetTitle}
                 </p>
-                <p className="mt-1 text-xs text-white/35">
-                  {formatDate(like.createdAt)}
-                </p>
+                <div className="mt-1 flex items-center justify-between text-xs text-white/35">
+                  <span>{formatDate(like.createdAt)}</span>
+                  <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase bg-white/5 text-white/50">
+                    {like.type}
+                  </span>
+                </div>
               </Link>
             ))
           )}

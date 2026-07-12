@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { generateAvatarUrl } from "@/lib/utils";
 
 type LikeUser = { name: string; image: string | null };
 
@@ -122,9 +123,11 @@ export default function LikeButton({
                     className="rounded-full"
                   />
                 ) : (
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-xs text-white/60">
-                    {user.name[0]?.toUpperCase()}
-                  </div>
+                  <img
+                    src={generateAvatarUrl(user.name)}
+                    alt={user.name}
+                    className="h-7 w-7 shrink-0 rounded-full border border-white/10 bg-white/5 object-cover"
+                  />
                 )}
                 <span className="truncate text-sm text-white/80">
                   {user.name}

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "My Likes",
 };
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 type PageProps = {
   searchParams: Promise<{ page?: string }>;
@@ -27,51 +27,68 @@ export default async function AccountLikesPage({ searchParams }: PageProps) {
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   const skip = (page - 1) * PAGE_SIZE;
 
-  const [poemLikes, bookLikes, audioLikes] = await Promise.all([
-    prisma.like.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      include: { poem: { select: { title: true, slug: true } } },
-    }),
-    prisma.bookLike.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      include: { book: { select: { title: true, slug: true } } },
-    }),
-    prisma.audioLike.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      include: { audio: { select: { title: true, slug: true } } },
-    }),
+  type RawLike = {
+    id: string;
+    type: string;
+    targetTitle: string;
+    targetSlug: string;
+    createdAt: Date;
+  };
+
+  const [rawLikes, poemCount, bookCount, audioCount] = await Promise.all([
+    prisma.$queryRaw<RawLike[]>`
+      SELECT 
+        l.id::text,
+        'Poem' as type,
+        p.title as "targetTitle",
+        p.slug as "targetSlug",
+        l."createdAt" as "createdAt"
+      FROM likes l
+      JOIN poems p ON l."poemId" = p.id
+      WHERE l."userId" = ${userId}
+      
+      UNION ALL
+      
+      SELECT 
+        bl.id::text,
+        'Book' as type,
+        b.title as "targetTitle",
+        b.slug as "targetSlug",
+        bl."createdAt" as "createdAt"
+      FROM book_likes bl
+      JOIN books b ON bl."bookId" = b.id
+      WHERE bl."userId" = ${userId}
+      
+      UNION ALL
+      
+      SELECT 
+        al.id::text,
+        'Audio' as type,
+        a.title as "targetTitle",
+        a.slug as "targetSlug",
+        al."createdAt" as "createdAt"
+      FROM audio_likes al
+      JOIN audio a ON al."audioId" = a.id
+      WHERE al."userId" = ${userId}
+      
+      ORDER BY "createdAt" DESC
+      LIMIT ${PAGE_SIZE} OFFSET ${skip}
+    `,
+    prisma.like.count({ where: { userId } }),
+    prisma.bookLike.count({ where: { userId } }),
+    prisma.audioLike.count({ where: { userId } }),
   ]);
 
-  const allLikes = [
-    ...poemLikes.map((l) => ({
-      id: `poem-${l.poemId}`,
-      type: "Poem" as const,
-      title: l.poem.title,
-      href: `/poems/${l.poem.slug}`,
-      createdAt: l.createdAt,
-    })),
-    ...bookLikes.map((l) => ({
-      id: `book-${l.bookId}`,
-      type: "Book" as const,
-      title: l.book.title,
-      href: `/books/${l.book.slug}`,
-      createdAt: l.createdAt,
-    })),
-    ...audioLikes.map((l) => ({
-      id: `audio-${l.audioId}`,
-      type: "Audio" as const,
-      title: l.audio.title,
-      href: "/audio",
-      createdAt: l.createdAt,
-    })),
-  ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  const paginated = rawLikes.map((l) => ({
+    id: `${l.type.toLowerCase()}-${l.id}`,
+    type: l.type as "Poem" | "Book" | "Audio",
+    title: l.targetTitle,
+    href: l.type === "Poem" ? `/poems/${l.targetSlug}` : l.type === "Book" ? `/books/${l.targetSlug}` : "/audio",
+    createdAt: new Date(l.createdAt),
+  }));
 
-  const totalCount = allLikes.length;
+  const totalCount = poemCount + bookCount + audioCount;
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-  const paginated = allLikes.slice(skip, skip + PAGE_SIZE);
   const hasNext = page < totalPages;
 
   function buildUrl(p: number) {

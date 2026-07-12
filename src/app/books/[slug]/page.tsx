@@ -11,6 +11,7 @@ import InviteModal from "@/components/ui/invite-modal";
 import { siteConfig } from "@/lib/seo";
 import { getCache, setCache } from "@/lib/cache";
 import BookDescription from "@/components/books/book-description";
+import BookViewTracker from "@/components/books/book-view-tracker";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -179,8 +180,10 @@ export default async function BookDetailPage({ params }: PageProps) {
               ? Number(book.discountedPrice)
               : null,
             shippingCharge: Number(book.shippingCharge),
+            views: book.views || 0,
           }}
         />
+        <BookViewTracker bookId={book.id} />
       </div>
     );
   }
@@ -240,6 +243,9 @@ export default async function BookDetailPage({ params }: PageProps) {
                       {formatDate(book.publishedAt)}
                     </span>
                   )}
+                  <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] tracking-wider text-white/50 uppercase whitespace-nowrap">
+                    {(book.views || 0).toLocaleString()} {(book.views || 0) === 1 ? 'view' : 'views'}
+                  </span>
                 </div>
 
                 <h1 className="mb-4 text-3xl text-white md:text-4xl">
@@ -305,6 +311,7 @@ export default async function BookDetailPage({ params }: PageProps) {
           </aside>
         )}
       </div>
+      <BookViewTracker bookId={book.id} />
     </div>
   );
 }

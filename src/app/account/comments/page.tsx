@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "My Comments",
 };
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 type PageProps = {
   searchParams: Promise<{ page?: string }>;
@@ -29,60 +29,83 @@ export default async function AccountCommentsPage({
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   const skip = (page - 1) * PAGE_SIZE;
 
-  const [poemComments, bookComments, audioComments] = await Promise.all([
-    prisma.comment.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      include: { poem: { select: { title: true, slug: true } } },
-    }),
-    prisma.bookComment.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      include: { book: { select: { title: true, slug: true } } },
-    }),
-    prisma.audioComment.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      include: { audio: { select: { title: true, slug: true } } },
-    }),
+  type RawComment = {
+    id: string;
+    type: string;
+    targetTitle: string;
+    targetSlug: string;
+    body: string;
+    status: string;
+    pinned: boolean;
+    createdAt: Date;
+  };
+
+  const [rawComments, poemCount, bookCount, audioCount] = await Promise.all([
+    prisma.$queryRaw<RawComment[]>`
+      SELECT 
+        c.id::text,
+        'Poem' as type,
+        p.title as "targetTitle",
+        p.slug as "targetSlug",
+        c.body,
+        c.status::text as status,
+        c.pinned,
+        c."createdAt" as "createdAt"
+      FROM comments c
+      JOIN poems p ON c."poemId" = p.id
+      WHERE c."userId" = ${userId}
+      
+      UNION ALL
+      
+      SELECT 
+        bc.id::text,
+        'Book' as type,
+        b.title as "targetTitle",
+        b.slug as "targetSlug",
+        bc.body,
+        bc.status::text as status,
+        bc.pinned,
+        bc."createdAt" as "createdAt"
+      FROM book_comments bc
+      JOIN books b ON bc."bookId" = b.id
+      WHERE bc."userId" = ${userId}
+      
+      UNION ALL
+      
+      SELECT 
+        ac.id::text,
+        'Audio' as type,
+        a.title as "targetTitle",
+        a.slug as "targetSlug",
+        ac.body,
+        ac.status::text as status,
+        ac.pinned,
+        ac."createdAt" as "createdAt"
+      FROM audio_comments ac
+      JOIN audio a ON ac."audioId" = a.id
+      WHERE ac."userId" = ${userId}
+      
+      ORDER BY "createdAt" DESC
+      LIMIT ${PAGE_SIZE} OFFSET ${skip}
+    `,
+    prisma.comment.count({ where: { userId } }),
+    prisma.bookComment.count({ where: { userId } }),
+    prisma.audioComment.count({ where: { userId } }),
   ]);
 
-  const allComments = [
-    ...poemComments.map((c) => ({
-      id: c.id,
-      type: "Poem" as const,
-      targetTitle: c.poem.title,
-      targetHref: `/poems/${c.poem.slug}`,
-      body: c.body,
-      status: c.status,
-      pinned: c.pinned,
-      createdAt: c.createdAt,
-    })),
-    ...bookComments.map((c) => ({
-      id: c.id,
-      type: "Book" as const,
-      targetTitle: c.book.title,
-      targetHref: `/books/${c.book.slug}`,
-      body: c.body,
-      status: c.status,
-      pinned: c.pinned,
-      createdAt: c.createdAt,
-    })),
-    ...audioComments.map((c) => ({
-      id: c.id,
-      type: "Audio" as const,
-      targetTitle: c.audio.title,
-      targetHref: "/audio",
-      body: c.body,
-      status: c.status,
-      pinned: c.pinned,
-      createdAt: c.createdAt,
-    })),
-  ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  const paginated = rawComments.map((c) => ({
+    id: c.id,
+    type: c.type as "Poem" | "Book" | "Audio",
+    targetTitle: c.targetTitle,
+    targetHref: c.type === "Poem" ? `/poems/${c.targetSlug}` : c.type === "Book" ? `/books/${c.targetSlug}` : "/audio",
+    body: c.body,
+    status: c.status,
+    pinned: c.pinned,
+    createdAt: new Date(c.createdAt),
+  }));
 
-  const totalCount = allComments.length;
+  const totalCount = poemCount + bookCount + audioCount;
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-  const paginated = allComments.slice(skip, skip + PAGE_SIZE);
   const hasNext = page < totalPages;
 
   function buildUrl(p: number) {
@@ -174,21 +197,19 @@ export default async function AccountCommentsPage({
           <div className="flex gap-2">
             <Link
               href={buildUrl(page - 1)}
-              className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${
-                page === 1
-                  ? "pointer-events-none border-white/5 bg-white/[0.01] text-white/20"
-                  : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-              }`}
+              className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${page === 1
+                ? "pointer-events-none border-white/5 bg-white/[0.01] text-white/20"
+                : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                }`}
             >
               Previous
             </Link>
             <Link
               href={buildUrl(page + 1)}
-              className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${
-                !hasNext
-                  ? "pointer-events-none border-white/5 bg-white/[0.01] text-white/20"
-                  : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-              }`}
+              className={`inline-flex h-9 items-center justify-center rounded-lg border px-4 text-xs font-semibold uppercase tracking-wider transition-all ${!hasNext
+                ? "pointer-events-none border-white/5 bg-white/[0.01] text-white/20"
+                : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                }`}
             >
               Next
             </Link>

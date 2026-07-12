@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Quote, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
+import { generateAvatarUrl } from "@/lib/utils";
 
 export type TestimonialItem = {
   id: string;
   body: string;
   userName: string;
+  userImage?: string | null;
   targetTitle: string;
   targetLink: string;
 };
@@ -52,7 +54,6 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
   if (testimonials.length === 0) return null;
 
   const current = testimonials[currentIndex];
-  const initial = current.userName.trim().charAt(0).toUpperCase() || "R";
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
@@ -128,18 +129,17 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
                   <Quote className="h-16 w-16 rotate-180" />
                 </div>
 
-                <div className="space-y-6 max-w-2xl">
-                  <p className="text-lg sm:text-xl text-white/90 leading-relaxed italic font-light font-serif">
-                    &ldquo;{current.body}&rdquo;
-                  </p>
-                  
-                  <div className="flex items-center gap-3.5 pt-4 border-t border-white/5">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-300 text-base font-bold shadow-md">
-                      {initial}
-                    </div>
+                <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 items-start w-full">
+                  {/* User Details on Left */}
+                  <div className="flex flex-row sm:flex-col items-center sm:items-start gap-4 shrink-0 sm:w-48 sm:border-r sm:border-b-0 sm:border-white/10 sm:pr-8 sm:pb-0 border-b border-white/10 pb-6 w-full relative z-10">
+                    <img 
+                      src={current.userImage || generateAvatarUrl(current.userName)} 
+                      alt={current.userName} 
+                      className="h-16 w-16 rounded-full border border-white/10 bg-white/5 object-cover" 
+                    />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-white truncate">{current.userName}</p>
-                      <p className="text-xs text-white/45 truncate mt-0.5">
+                      <p className="text-xs text-white/45 mt-1 sm:mt-2 line-clamp-2">
                         On{" "}
                         <Link
                           href={current.targetLink}
@@ -149,6 +149,13 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
                         </Link>
                       </p>
                     </div>
+                  </div>
+
+                  {/* Content on Right */}
+                  <div className="flex-1 relative z-10">
+                    <p className="text-lg sm:text-xl text-white/90 leading-relaxed italic font-light font-serif sm:pt-2">
+                      &ldquo;{current.body}&rdquo;
+                    </p>
                   </div>
                 </div>
               </motion.div>

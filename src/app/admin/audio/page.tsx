@@ -19,6 +19,7 @@ export default async function AdminAudioPage() {
       published: true,
       createdAt: true,
       publishedAt: true,
+      views: true,
     },
   });
 
@@ -101,6 +102,7 @@ export default async function AdminAudioPage() {
                   <p className="text-xs text-white/40 mt-0.5">
                     Created {formatDate(track.createdAt)}
                     {track.publishedAt ? ` • Published ${formatDate(track.publishedAt)}` : ""}
+                    {` • ${track.views.toLocaleString()} ${track.views === 1 ? 'play' : 'plays'}`}
                   </p>
                 </div>
               </div>

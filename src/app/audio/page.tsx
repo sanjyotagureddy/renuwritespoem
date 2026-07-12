@@ -23,6 +23,7 @@ export default async function AudioPage() {
       description: true,
       audioUrl: true,
       coverUrl: true,
+      views: true,
     },
   });
 

@@ -68,3 +68,8 @@ export function getReadingTime(content: string): string {
   const minutes = Math.ceil(words / 120);
   return `${minutes} min read`;
 }
+
+export function generateAvatarUrl(seed: string): string {
+  // Uses DiceBear's "lorelei" style for cute, modern character avatars
+  return `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf,ffd5dc`;
+}

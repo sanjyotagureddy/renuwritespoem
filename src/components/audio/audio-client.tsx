@@ -13,6 +13,7 @@ type Track = {
   description: string | null;
   audioUrl: string;
   coverUrl: string | null;
+  views: number;
 };
 
 export default function AudioClient({ initialAudio }: { initialAudio: Track[] }) {
@@ -26,6 +27,13 @@ export default function AudioClient({ initialAudio }: { initialAudio: Track[] })
     } else {
       setActiveTrack(track);
       setIsPlaying(true);
+      
+      const viewedKey = `viewed_audio:${track.id}`;
+      if (!sessionStorage.getItem(viewedKey)) {
+        sessionStorage.setItem(viewedKey, "true");
+        fetch(`/api/audio/${track.id}/view`, { method: "POST" })
+          .catch((err) => console.error("Failed to track view:", err));
+      }
     }
   }
 
@@ -115,7 +123,10 @@ export default function AudioClient({ initialAudio }: { initialAudio: Track[] })
                   {track.description || "No description provided."}
                 </p>
                 <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2 border-t border-white/5 pt-3" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] tracking-wider text-white/50 uppercase whitespace-nowrap">
+                      {track.views.toLocaleString()} {track.views === 1 ? 'play' : 'plays'}
+                    </span>
                     <LikeButton slug={track.slug} type="audio" />
                     <button
                       type="button"

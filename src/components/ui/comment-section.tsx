@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { toggleCommentPin, updateCommentStatus } from "@/app/admin/comment-actions";
+import { generateAvatarUrl } from "@/lib/utils";
 
 type CommentData = {
   id: string;
@@ -280,9 +281,11 @@ export default function CommentSection({
                       />
                     </div>
                   ) : (
-                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-semibold text-white/60">
-                      {comment.user.name[0]?.toUpperCase()}
-                    </div>
+                    <img
+                      src={generateAvatarUrl(comment.userId || comment.user.name)}
+                      alt={comment.user.name}
+                      className="mt-0.5 h-6 w-6 shrink-0 rounded-full border border-white/10 bg-white/5 object-cover"
+                    />
                   )}
                   <div className="min-w-0 flex-1">
                     <div className={`inline-block max-w-full px-3 py-1.5 rounded-2xl border transition-colors ${

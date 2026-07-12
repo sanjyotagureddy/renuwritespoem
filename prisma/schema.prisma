@@ -184,6 +184,7 @@ model Book {
   publishedAt  DateTime?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+  views        Int        @default(0)
 
   likes    BookLike[]
   comments BookComment[]
@@ -376,6 +377,7 @@ model Audio {
   publishedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  views       Int       @default(0)
 
   comments    AudioComment[]
   likes       AudioLike[]

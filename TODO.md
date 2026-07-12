@@ -108,6 +108,7 @@ admin, and technical work.
 - [x] Book status display: Coming Soon, Available, Archived
 - [x] Featured book display
 - [x] Book like and comment support
+- [x] Book views display
 - [x] Book sharing and invite support
 - [x] Purchase flow for available books
 - [x] Payment screenshot upload
@@ -130,6 +131,7 @@ admin, and technical work.
 - [x] Audio likes
 - [x] Audio comments
 - [x] Audio comment likes
+- [x] Audio plays/views tracking
 - [x] Audio Open Graph image route
 - [ ] Dedicated audio detail pages if sharing individual tracks matters
 - [ ] Audio search/filtering
@@ -233,8 +235,8 @@ admin, and technical work.
 - [x] Disable or flag abusive users
 - [x] View user moderation history
 - [ ] Reader profile/account page
-- [ ] Reader liked/saved poems page
-- [ ] Reader comment history
+- [x] Reader liked/saved content pagination
+- [x] Reader comment history pagination
 - [ ] Reader invite history
 - [ ] Reader order history
 - [ ] Reader newsletter preferences
@@ -261,7 +263,7 @@ admin, and technical work.
 
 ## Phase 17: Admin Content Management
 
-- [x] Poems list with publish/draft status badges
+- [x] Poems list with server-side pagination and publish/draft status badges
 - [x] Create/edit/delete poems
 - [x] Publish/unpublish poem toggle
 - [x] Featured poem toggle with max 3 featured
@@ -271,7 +273,7 @@ admin, and technical work.
 - [x] Font field support
 - [x] Genres admin page
 - [x] Create/edit/delete genres
-- [x] Books list
+- [x] Books list with server-side pagination
 - [x] Create/edit/delete books
 - [x] Book status management
 - [x] Featured book toggle
@@ -347,6 +349,7 @@ admin, and technical work.
 - [ ] Test mobile responsiveness across public and admin pages
 - [ ] Lighthouse performance audit
 - [ ] Review large client components and carousel motion performance
+- [x] Handle undefined cached values gracefully during schema changes
 - [ ] Improve cache invalidation after content edits
 
 ## Phase 22: Code Quality & Maintainability
