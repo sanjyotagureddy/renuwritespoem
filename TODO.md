@@ -296,7 +296,7 @@ admin, and technical work.
 - [x] Update order status
 - [x] Tracking provider/number/url fields
 - [x] Admin notes
-- [ ] Order filters and search
+- [x] Order filters and search
 - [ ] Export orders CSV
 - [ ] Print packing slip / shipping label helper
 - [ ] Buyer-facing order status page

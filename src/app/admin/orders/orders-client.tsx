@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import OrderStatusForm from "@/components/admin/order-status-form";
 import { formatDateTime as formatDate } from "@/lib/utils";
+import { Search, X } from "lucide-react";
 
 type OrderType = {
   id: string;
@@ -45,6 +46,8 @@ export default function OrdersClient({
   updateOrderStatusAction: (formData: FormData) => void | Promise<void>;
 }) {
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
   function toggleExpand(id: string) {
     setExpandedIds((prev) => ({
@@ -53,21 +56,97 @@ export default function OrdersClient({
     }));
   }
 
-  return (
-    <div className="space-y-3">
-      {initialOrders.map((order) => {
-        const isExpanded = expandedIds[order.id];
-        const displayOrderId = order.orderNumber ?? order.id;
+  const filteredOrders = initialOrders.filter((order) => {
+    // 1. Filter by Status
+    if (statusFilter !== "ALL" && order.status !== statusFilter) {
+      return false;
+    }
 
-        return (
-          <div
-            key={order.id}
-            className={`rounded-2xl border transition-all duration-300 ${
-              isExpanded
-                ? "border-white/20 bg-white/[0.04] p-5"
-                : "border-white/10 bg-white/[0.02] hover:bg-white/[0.03] hover:border-white/15 px-5 py-4"
-            }`}
-          >
+    // 2. Filter by Search Term
+    if (!searchTerm.trim()) {
+      return true;
+    }
+    const query = searchTerm.toLowerCase();
+    const displayOrderId = order.orderNumber ?? order.id;
+
+    return (
+      order.name.toLowerCase().includes(query) ||
+      order.email.toLowerCase().includes(query) ||
+      order.phone.toLowerCase().includes(query) ||
+      displayOrderId.toLowerCase().includes(query) ||
+      order.id.toLowerCase().includes(query) ||
+      order.book.title.toLowerCase().includes(query) ||
+      (order.trackingNumber && order.trackingNumber.toLowerCase().includes(query))
+    );
+  });
+
+  return (
+    <div className="space-y-4">
+      {/* Search & Filters Bar */}
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white/[0.02] border border-white/10 rounded-2xl p-4">
+        {/* Search Input */}
+        <div className="relative flex-1">
+          <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-white/40">
+            <Search className="h-4 w-4" />
+          </span>
+          <input
+            type="text"
+            placeholder="Search name, email, phone, book, or order number..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-white/[0.04] border border-white/10 rounded-xl py-2 pl-9 pr-9 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all font-[family-name:var(--font-inter)]"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute inset-y-0 right-3 flex items-center text-white/40 hover:text-white transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Status Filters */}
+        <div className="flex flex-wrap gap-1.5 font-[family-name:var(--font-inter)]">
+          {["ALL", "PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "REJECTED"].map((status) => (
+            <button
+              key={status}
+              onClick={() => setStatusFilter(status)}
+              className={`rounded-xl px-3 py-1.5 text-[10px] md:text-xs font-semibold tracking-wider transition-all uppercase ${
+                statusFilter === status
+                  ? "bg-white text-black font-bold shadow-md shadow-white/5"
+                  : "bg-white/[0.04] border border-white/10 text-white/60 hover:bg-white/[0.08] hover:text-white"
+              }`}
+            >
+              {status === "ALL" ? "All" : status}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {filteredOrders.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-10 text-center font-[family-name:var(--font-inter)]">
+          <p className="mb-2 font-semibold text-white/55">
+            No orders found.
+          </p>
+          <p className="text-xs text-white/35">
+            Try adjusting your search query or filter selection.
+          </p>
+        </div>
+      ) : (
+        filteredOrders.map((order) => {
+          const isExpanded = expandedIds[order.id];
+          const displayOrderId = order.orderNumber ?? order.id;
+
+          return (
+            <div
+              key={order.id}
+              className={`rounded-2xl border transition-all duration-300 ${
+                isExpanded
+                  ? "border-white/20 bg-white/[0.04] p-5"
+                  : "border-white/10 bg-white/[0.02] hover:bg-white/[0.03] hover:border-white/15 px-5 py-4"
+              }`}
+            >
             {/* Header / Summary Bar (Always Visible) */}
             <div
               onClick={() => toggleExpand(order.id)}
@@ -121,8 +200,8 @@ export default function OrdersClient({
             {/* Expanded Detailed Area */}
             {isExpanded && (
               <div className="mt-5 border-t border-white/10 pt-5 animate-fadeIn">
-                <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
-                  <div className="min-w-0 flex-1 space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-6 items-start">
+                  <div className="space-y-4">
                     {/* Unified Order & Reference Details Box */}
                     <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -153,35 +232,48 @@ export default function OrdersClient({
                       </div>
                     </div>
 
-                    <div className="grid gap-3 md:grid-cols-2">
+                    <div className="grid gap-3 md:grid-cols-2 items-stretch">
                       {/* Buyer Details */}
-                      <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-                        <p className="text-[10px] font-semibold tracking-[0.18em] text-white/35 uppercase">
-                          Buyer details
-                        </p>
-                        <div className="mt-3 space-y-2 font-[family-name:var(--font-inter)] text-sm">
-                          <p className="font-semibold text-white/90">
-                            {order.name}
+                      <div className="rounded-xl border border-white/10 bg-black/20 p-4 flex flex-col justify-between h-full">
+                        <div>
+                          <p className="text-[10px] font-semibold tracking-[0.18em] text-white/35 uppercase">
+                            Buyer details
                           </p>
-                          <div className="flex flex-col gap-1 text-white/55 text-xs">
+                          <div className="mt-3 space-y-2 font-[family-name:var(--font-inter)] text-sm">
+                            <p className="font-semibold text-white/90">
+                              {order.name}
+                            </p>
+                            <div className="flex flex-col gap-1 text-white/55 text-xs">
+                              <a
+                                href={`mailto:${order.email}`}
+                                className="transition-colors hover:text-white"
+                              >
+                                ✉ {order.email}
+                              </a>
+                              <a
+                                href={`tel:${order.phone}`}
+                                className="transition-colors hover:text-white"
+                              >
+                                📞 {order.phone}
+                              </a>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 pt-3 border-t border-white/5">
                             <a
-                              href={`mailto:${order.email}`}
-                              className="transition-colors hover:text-white"
+                              href={`/api/orders/${order.id}/screenshot`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 py-2 text-center text-xs font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-all w-full justify-center"
                             >
-                              ✉ {order.email}
-                            </a>
-                            <a
-                              href={`tel:${order.phone}`}
-                              className="transition-colors hover:text-white"
-                            >
-                              📞 {order.phone}
+                              View Payment Screenshot ↗
                             </a>
                           </div>
                         </div>
                       </div>
 
                       {/* Shipping Address */}
-                      <div className="rounded-xl border border-white/10 bg-white/[0.025] p-4 flex flex-col justify-between">
+                      <div className="rounded-xl border border-white/10 bg-white/[0.025] p-4 flex flex-col justify-between h-full">
                         <div>
                           <p className="text-[10px] font-semibold tracking-[0.18em] text-white/35 uppercase">
                             Shipping address
@@ -227,39 +319,28 @@ export default function OrdersClient({
                   </div>
 
                   {/* Actions / Update Form */}
-                  <div className="flex shrink-0 flex-col items-stretch gap-3 lg:w-72">
-                    <a
-                      href={`/api/orders/${order.id}/screenshot`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-xl border border-white/10 bg-white/5 py-2.5 text-center text-xs font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-all"
-                    >
-                      View Payment Screenshot ↗
-                    </a>
-
-                    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-                      <p className="text-[10px] font-semibold tracking-[0.18em] text-white/35 uppercase mb-3">
-                        Update Order Status
-                      </p>
-                      <OrderStatusForm
-                        action={updateOrderStatusAction}
-                        order={{
-                          id: order.id,
-                          status: order.status,
-                          trackingProvider: order.trackingProvider,
-                          trackingNumber: order.trackingNumber,
-                          trackingUrl: order.trackingUrl,
-                          adminNote: order.adminNote,
-                        }}
-                      />
-                    </div>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+                    <p className="text-[10px] font-semibold tracking-[0.18em] text-white/35 uppercase mb-3">
+                      Update Order Status
+                    </p>
+                    <OrderStatusForm
+                      action={updateOrderStatusAction}
+                      order={{
+                        id: order.id,
+                        status: order.status,
+                        trackingProvider: order.trackingProvider,
+                        trackingNumber: order.trackingNumber,
+                        trackingUrl: order.trackingUrl,
+                        adminNote: order.adminNote,
+                      }}
+                    />
                   </div>
                 </div>
               </div>
             )}
           </div>
         );
-      })}
+      }))}
     </div>
   );
 }
