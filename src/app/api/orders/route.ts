@@ -6,14 +6,6 @@ import { OrderSchema } from "@/lib/validations";
 
 const MAX_SCREENSHOT_SIZE = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-const MAX_LENGTHS = {
-  name: 100,
-  email: 254,
-  phone: 15,
-  address: 500,
-  city: 100,
-  state: 100,
-} as const;
 
 function hasValidImageSignature(buffer: Buffer, mime: string): boolean {
   if (mime === "image/jpeg") return buffer[0] === 0xff && buffer[1] === 0xd8;

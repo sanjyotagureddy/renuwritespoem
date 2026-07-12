@@ -1,144 +1,17 @@
-import { NextResponse } from "next/server";
-import { getServerAuthSession } from "@/lib/auth";
-import { getPrisma } from "@/lib/db";
-import { checkCommentTone } from "@/lib/contact-guard";
-import { rateLimit } from "@/lib/rate-limit";
-
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ slug: string }> },
-) {
-  const limitCheck = await rateLimit("book-comments", 5, 60000); // 5 per min
-  if (limitCheck.limited) {
-    return NextResponse.json(
-      { error: "Too many comments posted. Please try again in a minute." },
-      { status: 429 },
-    );
-  }
-  const session = await getServerAuthSession();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Sign in to comment." }, { status: 401 });
-  }
-
-  const { slug } = await params;
-  const prisma = getPrisma();
-
-  const book = await prisma.book.findUnique({ where: { slug }, select: { id: true } });
-  if (!book) {
-    return NextResponse.json({ error: "Book not found." }, { status: 404 });
-  }
-
-  const body = await request.json();
-  const text = String(body.text ?? "").trim();
-
-  if (!text || text.length > 1000) {
-    return NextResponse.json(
-      { error: "Comment must be between 1 and 1000 characters." },
-      { status: 400 },
-    );
-  }
-
-  const toneCheck = checkCommentTone(text);
-  const status = toneCheck.isAbusive ? "PENDING" : "APPROVED";
-
-  const comment = await prisma.bookComment.create({
-    data: {
-      body: text,
-      bookId: book.id,
-      userId: session.user.id,
-      status,
-    },
-    include: {
-      user: { select: { name: true, image: true, email: true } },
-    },
-  });
-
-  return NextResponse.json({
-    id: comment.id,
-    body: comment.body,
-    createdAt: comment.createdAt,
-    edited: false,
-    userId: session.user.id,
-    likeCount: 0,
-    liked: false,
-    user: {
-      name: comment.user.name ?? comment.user.email?.split("@")[0] ?? "Anonymous",
-      image: comment.user.image,
-    },
-    status: comment.status,
-    pinned: false,
-  });
-}
+import { handleGetComments, handlePostComment } from "@/lib/comments-api-helper";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  const session = await getServerAuthSession();
   const { slug } = await params;
-  const prisma = getPrisma();
+  return handleGetComments(request, slug, "book");
+}
 
-  const book = await prisma.book.findUnique({ where: { slug }, select: { id: true } });
-  if (!book) {
-    return NextResponse.json({ error: "Book not found." }, { status: 404 });
-  }
-
-  const userId = session?.user?.id;
-
-  const url = new URL(request.url);
-  let limit = parseInt(url.searchParams.get("limit") ?? "4", 10);
-  if (isNaN(limit) || limit < 1) {
-    limit = 4;
-  } else if (limit > 50) {
-    limit = 50;
-  }
-
-  let offset = parseInt(url.searchParams.get("offset") ?? "0", 10);
-  if (isNaN(offset) || offset < 0) {
-    offset = 0;
-  }
-
-  const [comments, totalCount] = await Promise.all([
-    prisma.bookComment.findMany({
-      where: { bookId: book.id, status: "APPROVED" },
-      orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
-      skip: offset,
-      take: limit + 1,
-      include: {
-        user: { select: { name: true, image: true, email: true } },
-        _count: { select: { likes: true } },
-        ...(userId
-          ? { likes: { where: { userId }, select: { userId: true } } }
-          : {}),
-      },
-    }),
-    prisma.bookComment.count({
-      where: { bookId: book.id, status: "APPROVED" },
-    }),
-  ]);
-
-  const hasMore = comments.length > limit;
-  const paginatedComments = hasMore ? comments.slice(0, limit) : comments;
-
-  return NextResponse.json({
-    comments: paginatedComments.map((c) => {
-      const likesArr = "likes" in c && Array.isArray(c.likes) ? c.likes : [];
-      return {
-        id: c.id,
-        body: c.body,
-        createdAt: c.createdAt,
-        edited: c.edited,
-        userId: c.userId,
-        likeCount: c._count.likes,
-        liked: likesArr.length > 0,
-        user: {
-          name: c.user.name ?? c.user.email?.split("@")[0] ?? "Anonymous",
-          image: c.user.image,
-        },
-        pinned: c.pinned,
-      };
-    }),
-    hasMore,
-    totalCount,
-  });
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  const { slug } = await params;
+  return handlePostComment(request, slug, "book");
 }

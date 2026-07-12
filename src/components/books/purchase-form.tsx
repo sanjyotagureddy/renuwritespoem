@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import Image from "next/image";
+import SuccessScreen from "./purchase-form/success-screen";
+import PaymentQR from "./purchase-form/payment-qr";
 
 type PurchaseFormProps = {
   bookId: string;
@@ -131,36 +132,12 @@ export default function PurchaseForm({
 
   if (success) {
     return (
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm"
-        onClick={closePanel}
-        role="presentation"
-      >
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={titleId}
-          className="w-[min(96vw,72rem)] rounded-[2rem] border border-emerald-400/20 bg-[#0f1118] p-6 text-center shadow-2xl"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <p id={titleId} className="mb-2 text-lg text-emerald-400">
-            Order Placed!
-          </p>
-          <p className="mb-1 text-sm text-white/60">Order ID: {orderId}</p>
-          <p className="text-xs text-white/50">
-            You will receive a confirmation email shortly. We will verify your
-            payment and update you.
-          </p>
-          <button
-            ref={closeButtonRef}
-            type="button"
-            onClick={closePanel}
-            className="mt-4 text-xs text-white/40 underline underline-offset-4 hover:text-white/60"
-          >
-            Close
-          </button>
-        </div>
-      </div>
+      <SuccessScreen
+        titleId={titleId}
+        orderId={orderId}
+        onClose={closePanel}
+        closeButtonRef={closeButtonRef}
+      />
     );
   }
 
@@ -377,27 +354,7 @@ export default function PurchaseForm({
             </div>
 
             {/* Right: UPI QR Code */}
-            <div className="flex flex-col items-center justify-start rounded-2xl border border-white/10 bg-white/2 p-5 lg:sticky lg:top-0">
-              <p className="mb-3 text-xs tracking-wider text-white/50 uppercase">
-                Pay via UPI
-              </p>
-              <div className="relative mb-3 aspect-3/4 w-full max-w-[320px] rounded-2xl bg-white p-4">
-                <Image
-                  src="/upi-qr.png"
-                  alt="UPI QR Code"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 320px"
-                  className="object-contain p-2"
-                />
-              </div>
-              <p className="mb-1 text-lg font-medium text-white">
-                ₹{total.toLocaleString("en-IN")}
-              </p>
-              <p className="text-center text-[10px] text-white/30">
-                Includes ₹{shippingCharge} shipping. Scan to pay, then upload
-                the screenshot.
-              </p>
-            </div>
+            <PaymentQR total={total} shippingCharge={shippingCharge} />
           </div>
 
           {error && (
