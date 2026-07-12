@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NewsletterSignup from "./ui/newsletter-signup";
 
 const footerLinks = [
   { href: "/poems", label: "Poems" },
@@ -41,22 +42,44 @@ export default function Footer() {
   return (
     <footer className="bg-black/80 backdrop-blur-md border-t border-white/10">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Brand */}
-          <div>
-            <Link
-              href="/"
-              className="font-[family-name:var(--font-playfair)] text-xl font-bold text-white"
-            >
-              Renu Writes Poem
-            </Link>
-            <p className="mt-3 font-[family-name:var(--font-inter)] text-sm text-white/50 leading-relaxed">
-              A space for poetry, stories, and the quiet beauty of words.
-            </p>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+          {/* Brand & Social */}
+          <div className="md:col-span-3 flex flex-col justify-between gap-6">
+            <div>
+              <Link
+                href="/"
+                className="font-[family-name:var(--font-playfair)] text-xl font-bold text-white"
+              >
+                Renu Writes Poem
+              </Link>
+              <p className="mt-3 font-[family-name:var(--font-inter)] text-sm text-white/50 leading-relaxed">
+                A space for poetry, stories, and the quiet beauty of words.
+              </p>
+            </div>
+            
+            <div className="flex flex-col gap-2">
+              <h3 className="font-[family-name:var(--font-inter)] text-[10px] uppercase tracking-widest text-white/30">
+                Connect
+              </h3>
+              <div className="flex gap-3">
+                {socialLinks.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={link.label}
+                    className="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/60 hover:bg-white/20 hover:text-white transition-all text-xs"
+                  >
+                    {link.icon}
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="md:col-span-2">
             <h3 className="font-[family-name:var(--font-inter)] text-xs uppercase tracking-widest text-white/40 mb-4">
               Explore
             </h3>
@@ -75,7 +98,7 @@ export default function Footer() {
           </div>
 
           {/* Legal */}
-          <div>
+          <div className="md:col-span-2">
             <h3 className="font-[family-name:var(--font-inter)] text-xs uppercase tracking-widest text-white/40 mb-4">
               Legal
             </h3>
@@ -93,25 +116,9 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Social */}
-          <div>
-            <h3 className="font-[family-name:var(--font-inter)] text-xs uppercase tracking-widest text-white/40 mb-4">
-              Connect
-            </h3>
-            <div className="flex gap-3">
-              {socialLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={link.label}
-                  className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/60 hover:bg-white/20 hover:text-white transition-all"
-                >
-                  {link.icon}
-                </a>
-              ))}
-            </div>
+          {/* Newsletter Form */}
+          <div className="md:col-span-5">
+            <NewsletterSignup />
           </div>
         </div>
 

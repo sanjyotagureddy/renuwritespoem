@@ -157,7 +157,7 @@ export default async function CommentsPage({ searchParams }: PageProps) {
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Comments Moderation</h1>
         <p className="text-sm text-white/50">
-          Review comments before publishing them to the platform.
+          Manage user comments. Safe comments are automatically approved, while comments flagged for tone are held for manual review.
         </p>
       </div>
 

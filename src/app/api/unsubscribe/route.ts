@@ -61,11 +61,21 @@ export async function GET(request: Request) {
     }
 
     const prisma = getPrisma();
-    await prisma.unsubscribedEmail.upsert({
-      where: { email },
-      create: { email },
-      update: {},
-    });
+    await prisma.$transaction([
+      prisma.unsubscribedEmail.upsert({
+        where: { email },
+        create: { email },
+        update: {},
+      }),
+      prisma.subscriber.updateMany({
+        where: { email },
+        data: {
+          verified: false,
+          unsubscribedAt: new Date(),
+          verifyToken: null
+        }
+      })
+    ]);
 
     return new NextResponse(
       `<html>

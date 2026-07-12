@@ -587,3 +587,43 @@ export async function sendInvitationEmail(
     return false;
   }
 }
+
+export async function sendSubscriberVerificationEmail(
+  recipientEmail: string,
+  token: string,
+  name?: string | null
+): Promise<boolean> {
+  const mailer = getMailer();
+  if (!mailer || !FROM_EMAIL) return false;
+
+  const verifyUrl = `${siteConfig.url}/subscribe/verify?email=${encodeURIComponent(recipientEmail)}&token=${token}`;
+  const greeting = name ? `Hi ${escapeHtml(name)},` : "Hello,";
+
+  const emailBody = emailShell({
+    eyebrow: "Newsletter Subscription",
+    title: "Verify your email address",
+    subtitle: "Thank you for subscribing to Renu Writes Poem. Please verify your email to complete the setup.",
+    children: `
+      <p style="margin:0 0 14px;">${greeting}</p>
+      <p style="margin:0 0 20px;">We received a request to subscribe this email address to Renu Writes Poem's newsletter for updates on new poems, books, and audio play recitations.</p>
+      ${buttonLink("Verify Email Address", verifyUrl)}
+      <p style="margin:20px 0 0; font-size:12px; color:#9ca3af;">If the button above does not work, copy and paste this URL into your browser:<br />
+      <a href="${verifyUrl}" style="color:#9a3412;">${verifyUrl}</a></p>
+      <p style="margin:20px 0 0; font-size:11px; color:#9ca3af;">If you did not request this subscription, you can safely ignore this email.</p>
+    `,
+  });
+
+  try {
+    await mailer.sendMail({
+      from: `"Renu Writes Poem" <${FROM_EMAIL}>`,
+      to: recipientEmail,
+      subject: "Verify your newsletter subscription — Renu Writes Poem",
+      html: emailBody,
+    });
+    return true;
+  } catch (err) {
+    console.error("Failed to send subscriber verification email:", err);
+    return false;
+  }
+}
+

@@ -119,8 +119,8 @@ admin, and technical work.
 - [x] Order status and tracking fields
 - [x] Book JSON-LD structured data
 - [x] Book Open Graph image route
-- [ ] Add buyer-facing order lookup/status page
-- [ ] Add order cancellation/refund notes if needed
+- [x] Add buyer-facing order lookup/status page
+- [x] Add order cancellation/refund notes if needed
 - [ ] Add inventory or stock count if physical copies are limited
 
 ## Phase 9: Audio
@@ -145,9 +145,9 @@ admin, and technical work.
 - [x] Contact message admin inbox
 - [x] Admin reply-note/replied tracking
 - [x] AI-assisted reply generation endpoint
-- [ ] Newsletter subscription/preferences page
-- [ ] Privacy policy page
-- [ ] Terms/refund/shipping policy pages for book purchases
+- [x] Newsletter subscription/preferences page
+- [x] Privacy policy page
+- [x] Terms/refund/shipping policy pages for book purchases
 
 ## Phase 11: SEO & Metadata
 
@@ -179,8 +179,8 @@ admin, and technical work.
 - [x] Status filters for pending, approved, rejected, all
 - [x] Approve/reject/delete/pin moderation actions
 - [x] Basic tone check before publishing comments
-- [ ] Decide final comment policy: all pending by default vs auto-approve clean comments
-- [ ] Align admin copy with actual comment approval behavior
+- [x] Decide final comment policy: all pending by default vs auto-approve clean comments
+- [x] Align admin copy with actual comment approval behavior
 - [ ] Add stronger spam controls and abuse reporting
 - [ ] Add user-level moderation history
 
@@ -191,19 +191,19 @@ admin, and technical work.
 - [x] Unsubscribed email suppression model exists
 - [x] Unsubscribe endpoint exists for invite suppression
 - [x] Analytics counts new subscribers
-- [ ] Public subscriber signup form
-- [ ] Subscriber signup API route
-- [ ] Email verification flow
-- [ ] Subscription confirmation email
+- [x] Public subscriber signup form
+- [x] Subscriber signup API route
+- [x] Email verification flow
+- [x] Subscription confirmation email
 - [ ] Subscriber preferences page
-- [ ] Proper newsletter unsubscribe flow for subscribers
-- [ ] Resubscribe flow
-- [ ] Duplicate email handling and normalized email storage
-- [ ] Admin subscribers list
-- [ ] Subscriber search and filters: verified, unverified, unsubscribed
-- [ ] Subscriber export CSV
-- [ ] Manual add/remove subscriber actions
-- [ ] Subscriber source tracking
+- [x] Proper newsletter unsubscribe flow for subscribers
+- [x] Resubscribe flow
+- [x] Duplicate email handling and normalized email storage
+- [x] Admin subscribers list
+- [x] Subscriber search and filters: verified, unverified, unsubscribed
+- [x] Subscriber export CSV
+- [x] Manual add/remove subscriber actions
+- [x] Subscriber source tracking
 
 ## Phase 14: Campaign Management
 
@@ -255,7 +255,7 @@ admin, and technical work.
 - [x] Admin analytics page
 - [x] Admin invite monitoring page
 - [x] Add Users nav item
-- [ ] Add Subscribers nav item
+- [x] Add Subscribers nav item
 - [ ] Add Campaigns nav item
 - [ ] Consider moving admin navigation to a sidebar as modules grow
 - [ ] Add global admin search
@@ -328,7 +328,7 @@ admin, and technical work.
 - [x] Clicks/signups by source table
 - [x] Weekly invite/subscriber snapshot
 - [x] Top shared poems
-- [ ] Track invite clicks and accepted signups end-to-end
+- [x] Track invite clicks and accepted signups end-to-end
 - [ ] Add conversion funnel: visit -> signup -> subscribe -> order
 - [ ] Add per-content analytics detail pages
 - [ ] Add UTM/source builder for sharing links
@@ -341,9 +341,9 @@ admin, and technical work.
 - [x] Add Vercel Analytics and Speed Insights
 - [x] Respect prefers-reduced-motion in global CSS
 - [x] Add basic rate limiting helper
-- [ ] Run production build locally and fix any issues
-- [ ] Run TypeScript check
-- [ ] Run lint check
+- [x] Run production build locally and fix any issues
+- [x] Run TypeScript check
+- [x] Run lint check
 - [ ] Add automated tests for key flows
 - [ ] Audit accessibility: keyboard navigation, focus states, ARIA, contrast
 - [ ] Test mobile responsiveness across public and admin pages
@@ -355,9 +355,9 @@ admin, and technical work.
 ## Phase 22: Code Quality & Maintainability
 
 - [x] Add Zod schemas for API and server action validation
-- [ ] Reduce duplication across poem/book/audio comment APIs
-- [ ] Reduce duplication across like APIs
-- [ ] Split large UI components where they have grown too complex
+- [x] Reduce duplication across poem/book/audio comment APIs
+- [x] Reduce duplication across like APIs
+- [x] Split large UI components where they have grown too complex
 - [ ] Add tests for orders, invites, auth roles, comments, and unsubscribe tokens
 - [ ] Standardize icon usage
 - [ ] Review manual SVGs and replace with consistent icon components where practical
@@ -380,15 +380,15 @@ admin, and technical work.
 
 ## Phase 24: Legal, Trust & Launch
 
-- [ ] Privacy policy
-- [ ] Terms of use
-- [ ] Shipping/refund policy for books
-- [ ] Contact/support policy
-- [ ] Newsletter consent copy
+- [x] Privacy policy
+- [x] Terms of use
+- [x] Shipping/refund policy for books
+- [x] Contact/support policy
+- [x] Newsletter consent copy
 - [ ] Final content review
 - [ ] Final UI/UX review
 - [ ] Cross-browser testing
-- [ ] Final SEO audit
+- [x] Final SEO audit
 - [ ] Launch checklist
 - [ ] Launch
 

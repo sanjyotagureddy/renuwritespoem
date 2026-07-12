@@ -31,6 +31,12 @@ export const UnsubscribeSchema = z.object({
   token: z.string().min(1, "Token is required"),
 });
 
+// Subscriber Validation
+export const SubscriberSchema = z.object({
+  email: emailSchema.transform(val => val.toLowerCase()),
+  name: z.string().max(100).optional().nullable(),
+});
+
 // Order Route Validation
 export const OrderSchema = zfd.formData({
   bookId: zfd.text(idSchema),
