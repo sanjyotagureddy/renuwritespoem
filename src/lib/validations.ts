@@ -167,3 +167,31 @@ export const UpdateGenreSchema = zfd.formData({
 export const DeleteGenreSchema = zfd.formData({
   id: zfd.text(idSchema),
 });
+
+// Credentials Auth & Account Lifecycle Validation
+export const SignUpSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(100, "Name is too long"),
+  email: emailSchema.transform(val => val.toLowerCase()),
+  password: z.string().min(8, "Password must be at least 8 characters").max(100, "Password is too long"),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+export const LoginSchema = z.object({
+  email: emailSchema.transform(val => val.toLowerCase()),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const ForgotPasswordSchema = z.object({
+  email: emailSchema.transform(val => val.toLowerCase()),
+});
+
+export const ResetPasswordSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters").max(100, "Password is too long"),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});

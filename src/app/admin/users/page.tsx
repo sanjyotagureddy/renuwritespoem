@@ -3,7 +3,27 @@ import Link from "next/link";
 import { Role } from "@prisma/client";
 import { getPrisma } from "@/lib/db";
 import { formatDate, generateAvatarUrl } from "@/lib/utils";
-import { updateUserRole } from "../user-actions";
+import { updateUserRole, adminResendVerification, adminSendPasswordReset } from "../user-actions";
+
+async function handleResendVerification(formData: FormData) {
+  "use server";
+  const userId = formData.get("userId") as string;
+  try {
+    await adminResendVerification(userId);
+  } catch (err) {
+    console.error("Admin resend verification failed:", err);
+  }
+}
+
+async function handleSendPasswordReset(formData: FormData) {
+  "use server";
+  const userId = formData.get("userId") as string;
+  try {
+    await adminSendPasswordReset(userId);
+  } catch (err) {
+    console.error("Admin send password reset failed:", err);
+  }
+}
 
 export const dynamic = "force-dynamic";
 
@@ -305,9 +325,19 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                             >
                               {user.email}
                             </a>
-                            {user.emailVerified && (
-                              <p className="mt-0.5 text-[10px] text-emerald-300/70">
-                                Email verified
+                            {user.emailVerified ? (
+                              <p className="mt-0.5 text-[10px] text-emerald-300/70 flex items-center gap-1">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                                Verified
+                              </p>
+                            ) : user.signUpSource === "credentials" ? (
+                              <p className="mt-0.5 text-[10px] text-amber-400/70 flex items-center gap-1">
+                                <span className="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+                                Pending verification
+                              </p>
+                            ) : (
+                              <p className="mt-0.5 text-[10px] text-white/30">
+                                Unverified
                               </p>
                             )}
                           </div>
@@ -366,32 +396,58 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                         {formatDate(user.createdAt)}
                       </td>
                       <td className="px-5 py-4">
-                        <form
-                          action={updateUserRole}
-                          className="flex justify-end gap-2"
-                        >
-                          <input type="hidden" name="userId" value={user.id} />
-                          <select
-                            name="role"
-                            defaultValue={user.role}
-                            className="h-9 rounded-lg border border-white/10 bg-neutral-950 px-2 text-xs text-white outline-none focus:border-white/35"
+                        <div className="flex flex-col gap-2 items-end">
+                          <form
+                            action={updateUserRole}
+                            className="flex justify-end gap-2"
                           >
-                            <option value="READER">Reader</option>
-                            <option value="ADMIN">Admin</option>
-                          </select>
-                          <button
-                            type="submit"
-                            className="h-9 rounded-lg border border-white/15 bg-white/10 px-3 text-xs font-semibold text-white/75 transition-colors hover:bg-white/15 hover:text-white"
-                          >
-                            Save
-                          </button>
-                          <Link
-                            href={`/admin/users/${user.id}`}
-                            className="inline-flex h-9 items-center rounded-lg px-3 text-xs font-semibold text-white/45 transition-colors hover:bg-white/5 hover:text-white"
-                          >
-                            View
-                          </Link>
-                        </form>
+                            <input type="hidden" name="userId" value={user.id} />
+                            <select
+                              name="role"
+                              defaultValue={user.role}
+                              className="h-9 rounded-lg border border-white/10 bg-neutral-950 px-2 text-xs text-white outline-none focus:border-white/35"
+                            >
+                              <option value="READER">Reader</option>
+                              <option value="ADMIN">Admin</option>
+                            </select>
+                            <button
+                              type="submit"
+                              className="h-9 rounded-lg border border-white/15 bg-white/10 px-3 text-xs font-semibold text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+                            >
+                              Save
+                            </button>
+                            <Link
+                              href={`/admin/users/${user.id}`}
+                              className="inline-flex h-9 items-center rounded-lg px-3 text-xs font-semibold text-white/45 transition-colors hover:bg-white/5 hover:text-white"
+                            >
+                              View
+                            </Link>
+                          </form>
+                          {user.signUpSource === "credentials" && (
+                            <div className="flex gap-2">
+                              {!user.emailVerified && (
+                                <form action={handleResendVerification}>
+                                  <input type="hidden" name="userId" value={user.id} />
+                                  <button
+                                    type="submit"
+                                    className="h-7 rounded-lg border border-sky-400/20 bg-sky-500/10 px-2.5 text-[10px] font-semibold text-sky-300 transition-colors hover:bg-sky-500/20"
+                                  >
+                                    Resend Verify
+                                  </button>
+                                </form>
+                              )}
+                              <form action={handleSendPasswordReset}>
+                                <input type="hidden" name="userId" value={user.id} />
+                                <button
+                                  type="submit"
+                                  className="h-7 rounded-lg border border-amber-400/20 bg-amber-500/10 px-2.5 text-[10px] font-semibold text-amber-300 transition-colors hover:bg-amber-400/20"
+                                >
+                                  Reset Password
+                                </button>
+                              </form>
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

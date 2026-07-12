@@ -26,6 +26,7 @@ model User {
   flaggedAt DateTime?
   disabledAt DateTime?
   moderationNote String?
+  passwordHash   String?
 
   accounts         Account[]
   sessions         Session[]
@@ -525,5 +526,27 @@ model AttributionLog {
   @@index([source])
   @@index([createdAt])
   @@map("attribution_logs")
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("password_reset_tokens")
 }
 

@@ -32,6 +32,28 @@ admin, and technical work.
 - [x] Add admin UI for user and role management
 - [ ] Fail safely in production if auth secrets are missing
 - [ ] Revisit development auto-admin behavior before launch
+- [x] Implement manual credentials-based authentication & account lifecycle:
+  - [x] Add optional `passwordHash` field to `User` model in Prisma schema (passwords must be stored encrypted/hashed)
+  - [x] Add `PasswordResetToken` model (or fields) for account recovery
+  - [x] Run database migration to update schema
+  - [x] Configure `CredentialsProvider` in Auth.js options (`src/lib/auth.ts`)
+  - [x] Set up password encryption/hashing configuration (e.g., salt rounds or pepper/secret key) in environment variables
+  - [x] Implement secure password encryption/hashing (using `bcryptjs` or `argon2`) for database storage and verification
+  - [x] Create manual registration (Sign Up) flow:
+    - [x] Design/build SignUp page UI with validation (Name, Email, Password, Confirm Password)
+    - [x] Implement server action/API for registration validation & user creation
+    - [x] Generate and send verification email with token on registration
+    - [x] Create verification page/route to process token and mark user as verified
+  - [x] Create password reset / recovery flow:
+    - [x] Design/build "Forgot Password" page to request reset link
+    - [x] Implement server action/API to generate recovery token and send email
+    - [x] Design/build "Reset Password" page to validate token and set new password securely
+  - [x] Update `/login` page:
+    - [x] Integrate credentials login form alongside Google Sign-In button
+    - [x] Implement error handling for invalid credentials, unverified accounts, or disabled users
+  - [x] Integrate verification/credentials state in Admin UI:
+    - [x] Display email verification status (verified vs pending credentials) in Users table
+    - [x] Add admin option to manually trigger/resend verification email or send password reset link
 
 ## Phase 3: Database & Data Layer
 

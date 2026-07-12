@@ -1,9 +1,11 @@
 "use server";
 
+import crypto from "crypto";
 import { revalidatePath } from "next/cache";
 import { getPrisma } from "@/lib/db";
 import { requireAdmin } from "./shared-actions";
 import { UpdateUserRoleSchema, UpdateUserModerationSchema } from "@/lib/validations";
+import { sendAccountVerificationEmail, sendPasswordResetEmail } from "@/lib/email";
 
 export async function updateUserRole(formData: FormData) {
   const session = await requireAdmin();
@@ -74,4 +76,62 @@ export async function updateUserModeration(formData: FormData) {
 
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${userId}`);
+}
+
+export async function adminResendVerification(userId: string) {
+  await requireAdmin();
+  const prisma = getPrisma();
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, name: true, signUpSource: true }
+  });
+
+  if (!user || user.signUpSource !== "credentials") {
+    throw new Error("Invalid user for credentials verification resend");
+  }
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+  await prisma.$transaction([
+    prisma.emailVerificationToken.deleteMany({ where: { email: user.email } }),
+    prisma.emailVerificationToken.create({
+      data: {
+        email: user.email,
+        token,
+        expires
+      }
+    })
+  ]);
+
+  await sendAccountVerificationEmail(user.email, token, user.name);
+}
+
+export async function adminSendPasswordReset(userId: string) {
+  await requireAdmin();
+  const prisma = getPrisma();
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, name: true, signUpSource: true }
+  });
+
+  if (!user || user.signUpSource !== "credentials") {
+    throw new Error("Invalid user for password reset");
+  }
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+  await prisma.$transaction([
+    prisma.passwordResetToken.deleteMany({ where: { email: user.email } }),
+    prisma.passwordResetToken.create({
+      data: {
+        email: user.email,
+        token,
+        expires
+      }
+    })
+  ]);
+
+  await sendPasswordResetEmail(user.email, token, user.name);
 }

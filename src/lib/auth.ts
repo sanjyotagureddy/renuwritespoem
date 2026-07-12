@@ -1,6 +1,8 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { type NextAuthOptions, getServerSession } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
 import { getPrisma } from "@/lib/db";
 
 function getAdminEmails(): Set<string> {
@@ -24,26 +26,91 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.AUTH_GOOGLE_ID ?? process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.AUTH_GOOGLE_SECRET ?? process.env.GOOGLE_CLIENT_SECRET ?? "",
     }),
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Email and password are required");
+        }
+
+        const email = credentials.email.toLowerCase().trim();
+        const user = await getPrisma().user.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            passwordHash: true,
+            emailVerified: true,
+            disabledAt: true,
+            role: true
+          }
+        });
+
+        if (!user) {
+          throw new Error("No user found with this email");
+        }
+
+        if (user.disabledAt) {
+          throw new Error("This account has been disabled");
+        }
+
+        if (!user.passwordHash) {
+          throw new Error("This account signs in with Google. Please use Google Sign-in.");
+        }
+
+        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!isValid) {
+          throw new Error("Incorrect password");
+        }
+
+        if (!user.emailVerified) {
+          throw new Error("UNVERIFIED_EMAIL");
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        };
+      }
+    })
   ],
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       if (!user.email) {
         return false;
       }
 
-      const isAdmin = getAdminEmails().has(user.email.toLowerCase());
+      const email = user.email.toLowerCase();
+      const isAdmin = getAdminEmails().has(email);
       const dbUser = await getPrisma().user.findUnique({
-        where: { email: user.email },
-        select: { disabledAt: true },
+        where: { email },
+        select: { disabledAt: true, emailVerified: true },
       });
 
       if (dbUser?.disabledAt) {
         return false;
       }
 
+      // Auto-verify Google OAuth users
+      if (account?.provider === "google") {
+        if (dbUser && !dbUser.emailVerified) {
+          await getPrisma().user.update({
+            where: { email },
+            data: { emailVerified: new Date() },
+          });
+        }
+      }
+
       if (isAdmin) {
         await getPrisma().user.updateMany({
-          where: { email: user.email },
+          where: { email },
           data: { role: "ADMIN" },
         });
       }
