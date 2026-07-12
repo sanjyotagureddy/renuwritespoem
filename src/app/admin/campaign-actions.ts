@@ -158,32 +158,34 @@ export async function sendCampaignAction(campaignId: string) {
   let sent = 0;
   let failed = 0;
 
-  if (activeBccEmails.length > 0) {
+  const BATCH_SIZE = 90;
+  for (let i = 0; i < activeBccEmails.length; i += BATCH_SIZE) {
+    const batch = activeBccEmails.slice(i, i + BATCH_SIZE);
     const emailSuccess = await sendCampaignEmailBcc({
-      bccEmails: activeBccEmails,
+      bccEmails: batch,
       subject: campaign.subject,
       bodyHtml,
     });
 
     if (emailSuccess) {
       await prisma.campaignDelivery.createMany({
-        data: activeBccEmails.map((email) => ({
+        data: batch.map((email) => ({
           campaignId,
           email,
           status: "SUCCESS",
         })),
       });
-      sent += activeBccEmails.length;
+      sent += batch.length;
     } else {
       await prisma.campaignDelivery.createMany({
-        data: activeBccEmails.map((email) => ({
+        data: batch.map((email) => ({
           campaignId,
           email,
           status: "FAILED",
-          error: "BCC dispatch connection error or SMTP rejection",
+          error: "BCC batch dispatch connection error or SMTP rejection",
         })),
       });
-      failed += activeBccEmails.length;
+      failed += batch.length;
     }
   }
 

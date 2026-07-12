@@ -73,3 +73,25 @@ export function generateAvatarUrl(seed: string): string {
   // Uses DiceBear's "lorelei" style for cute, modern character avatars
   return `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf,ffd5dc`;
 }
+
+export const POETIC_PHRASES = [
+  "शब्द ही अनुभव, शब्द ही श्वास...",
+  "Every verse is an open door.",
+  "कविता म्हणजे भावनांचा आरसा...",
+  "Rhythm of the heart, silent and deep.",
+  "काही शब्द न बोलताही खूप काही बोलून जातात...",
+  "In the silence between lines, truth speaks.",
+  "कागदावर उतरलेले मन, म्हणजे कविता...",
+  "A poem is a whisper of the soul.",
+  "शब्दांच्या पलीकडले भाव, समजून घेताना...",
+  "Where words fail, poetry speaks.",
+  "अव्यक्त भावनांची सुंदर गुंफण...",
+  "Verses that heal, rhythm that guides.",
+  "काव्याच्या प्रवासात, स्वतःला शोधताना...",
+  "A quiet melody of thoughts.",
+  "शब्दांचे घर सुंदर आणि जिवंत असावे..."
+];
+
+export function getRandomPoeticPhrase(): string {
+  return POETIC_PHRASES[Math.floor(Math.random() * POETIC_PHRASES.length)];
+}

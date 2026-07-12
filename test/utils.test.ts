@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatDate, formatDateTime, slugify, getReadingTime, generateAvatarUrl, statusLabel, statusColor } from "../src/lib/utils";
+import { formatDate, formatDateTime, slugify, getReadingTime, generateAvatarUrl, statusLabel, statusColor, getRandomPoeticPhrase, POETIC_PHRASES } from "../src/lib/utils";
 
 describe("utils library helpers", () => {
   describe("formatDate & formatDateTime", () => {
@@ -51,6 +51,13 @@ describe("utils library helpers", () => {
       expect(statusColor("AVAILABLE")).toContain("emerald");
       expect(statusColor("COMING_SOON")).toContain("amber");
       expect(statusColor("OTHER")).toContain("white");
+    });
+  });
+
+  describe("getRandomPoeticPhrase", () => {
+    it("should return a random valid phrase from the collection", () => {
+      const phrase = getRandomPoeticPhrase();
+      expect(POETIC_PHRASES).toContain(phrase);
     });
   });
 });
