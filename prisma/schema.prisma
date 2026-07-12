@@ -345,13 +345,18 @@ model BookOrder {
 // ─── Newsletter ──────────────────────────────────────────────
 
 model Subscriber {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  verified      Boolean   @default(false)
-  verifyToken   String?   @unique
-  subscribedAt  DateTime  @default(now())
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  verified       Boolean   @default(false)
+  verifyToken    String?   @unique
+  subscribedAt   DateTime  @default(now())
   unsubscribedAt DateTime?
+
+  // Preference fields
+  prefPoems      Boolean   @default(true)
+  prefBooks      Boolean   @default(true)
+  prefAudio      Boolean   @default(true)
 
   @@map("subscribers")
 }

@@ -195,7 +195,7 @@ admin, and technical work.
 - [x] Subscriber signup API route
 - [x] Email verification flow
 - [x] Subscription confirmation email
-- [ ] Subscriber preferences page
+- [x] Subscriber preferences page
 - [x] Proper newsletter unsubscribe flow for subscribers
 - [x] Resubscribe flow
 - [x] Duplicate email handling and normalized email storage
