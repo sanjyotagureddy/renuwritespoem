@@ -32,6 +32,13 @@ const GALLERY_CATEGORIES = [
 export default function AuthorGallery({ images }: AuthorGalleryProps) {
   const [selectedTab, setSelectedTab] = useState<string>("All");
 
+  // Filter images based on selected tab
+  const filteredImages = useMemo(() => {
+    if (!images || images.length === 0) return [];
+    if (selectedTab === "All") return images;
+    return images.filter((img) => img.category === selectedTab);
+  }, [images, selectedTab]);
+
   if (!images || images.length === 0) {
     return (
       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-8 text-center font-[family-name:var(--font-inter)]">
@@ -39,12 +46,6 @@ export default function AuthorGallery({ images }: AuthorGalleryProps) {
       </div>
     );
   }
-
-  // Filter images based on selected tab
-  const filteredImages = useMemo(() => {
-    if (selectedTab === "All") return images;
-    return images.filter((img) => img.category === selectedTab);
-  }, [images, selectedTab]);
 
   // Helper to resolve the correct image source (handling base64 fallback)
   const getImgSrc = (img: AuthorGalleryImage) => {
