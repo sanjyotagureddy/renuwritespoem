@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SignOutButton from "@/components/auth/sign-out-button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type NavItem = {
   href: string;
@@ -27,6 +28,44 @@ export default function AdminNav({
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Keep track of which groups are expanded (limit to max 2)
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
+
+  // Automatically expand the group that contains the active link on mount/route changes
+  useEffect(() => {
+    const activeGroup = navGroups.find((group) =>
+      group.items.some((item) => isLinkActive(item.href))
+    );
+    if (activeGroup) {
+      setExpandedGroups((prev) => {
+        if (prev.includes(activeGroup.title)) return prev;
+        const next = [...prev, activeGroup.title];
+        if (next.length > 2) {
+          return next.slice(next.length - 2);
+        }
+        return next;
+      });
+    } else if (expandedGroups.length === 0 && navGroups[0]) {
+      // Default to the first group if nothing matches
+      setExpandedGroups([navGroups[0].title]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  const toggleGroup = (title: string) => {
+    setExpandedGroups((prev) => {
+      if (prev.includes(title)) {
+        return prev.filter((t) => t !== title);
+      } else {
+        const next = [...prev, title];
+        if (next.length > 2) {
+          return next.slice(next.length - 2);
+        }
+        return next;
+      }
+    });
+  };
 
   function isLinkActive(href: string) {
     if (href === "/admin") {
@@ -60,39 +99,64 @@ export default function AdminNav({
         </div>
 
         {/* Groups */}
-        <div className="space-y-5">
-          {navGroups.map((group) => (
-            <div key={group.title} className="space-y-2">
-              <h3 className="text-[10px] uppercase tracking-wider text-white/30 font-bold">
-                {group.title}
-              </h3>
-              <ul className="space-y-1">
-                {group.items.map((item) => {
-                  const active = isLinkActive(item.href);
-                  return (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        onClick={() => setMobileOpen(false)}
-                        className={`flex items-center justify-between rounded-xl px-3 py-2 text-xs transition-all ${
-                          active
-                            ? "bg-white/10 text-white font-semibold shadow-sm"
-                            : "text-white/60 hover:text-white hover:bg-white/5"
-                        }`}
-                      >
-                        <span>{item.label}</span>
-                        {item.label === "Messages" && unrepliedCount > 0 && (
-                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-violet-500 px-1.5 text-[9px] font-bold text-white">
-                            {unrepliedCount > 99 ? "99+" : unrepliedCount}
-                          </span>
-                        )}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+        <div className="space-y-4">
+          {navGroups.map((group) => {
+            const isExpanded = expandedGroups.includes(group.title);
+            return (
+              <div key={group.title} className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.title)}
+                  className="w-full flex items-center justify-between text-[10px] uppercase tracking-wider text-white/30 font-bold hover:text-white/60 transition-colors py-1.5 cursor-pointer text-left focus:outline-none"
+                  aria-expanded={isExpanded}
+                >
+                  <span>{group.title}</span>
+                  {isExpanded ? (
+                    <ChevronDown className="h-3 w-3 text-white/30 shrink-0" />
+                  ) : (
+                    <ChevronRight className="h-3 w-3 text-white/30 shrink-0" />
+                  )}
+                </button>
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <ul className="space-y-1 pb-1">
+                        {group.items.map((item) => {
+                          const active = isLinkActive(item.href);
+                          return (
+                            <li key={item.href}>
+                              <Link
+                                href={item.href}
+                                onClick={() => setMobileOpen(false)}
+                                className={`flex items-center justify-between rounded-xl px-3 py-2 text-xs transition-all ${
+                                  active
+                                    ? "bg-white/10 text-white font-semibold shadow-sm"
+                                    : "text-white/60 hover:text-white hover:bg-white/5"
+                                }`}
+                              >
+                                <span>{item.label}</span>
+                                {item.label === "Messages" && unrepliedCount > 0 && (
+                                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-violet-500 px-1.5 text-[9px] font-bold text-white">
+                                    {unrepliedCount > 99 ? "99+" : unrepliedCount}
+                                  </span>
+                                )}
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
         </div>
       </div>
 

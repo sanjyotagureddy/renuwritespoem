@@ -161,7 +161,7 @@ admin, and technical work.
 
 ## Phase 10: Static Pages & Contact
 
-- [x] About author page
+- [/] About author page (Upgrading to Premium Dynamic Story page)
 - [x] Contact page
 - [x] Contact form
 - [x] Contact message admin inbox
@@ -280,6 +280,7 @@ admin, and technical work.
 - [x] Add Subscribers nav item
 - [x] Add Campaigns nav item
 - [x] Consider moving admin navigation to a sidebar as modules grow
+- [x] Make admin sidebar navigation sections collapsible (accordion behavior, allowing max 1-2 open groups simultaneously)
 - [ ] Add global admin search
 - [ ] Add admin activity/audit log
 
@@ -413,6 +414,23 @@ admin, and technical work.
 - [x] Final SEO audit
 - [ ] Launch checklist
 - [ ] Launch
+
+## Phase 25: Premium Story-Driven Author Page & Admin Controls
+
+- [ ] Design and implement dynamic story layout on the public `/about` page:
+  - [ ] Add "Why I Write" section focusing on the author's message and core drive
+  - [ ] Add "My Writing Journey" vertical timeline or narrative layout
+  - [ ] Add "My Inspiration" section highlighting elements of love, nature, life, and spirituality
+  - [ ] Add "Awards & Publications" credentials gallery
+  - [ ] Add "Interviews & Press" links/media embeds
+  - [ ] Add "Behind the Scenes" / "Writing Desk" personal section
+  - [ ] Add a collated Gallery of 6-8 images:
+    - [ ] Create a masonry-style auto-collating layout (auto-grouping portrait and landscape images into a unified stack rather than single lines)
+- [ ] Implement Admin Dashboard controls to manage the Author Page:
+  - [ ] Create content forms to edit story sections (Why I Write, Journey, Inspiration text blocks)
+  - [ ] Build a multi-image upload and arrangement utility for the Gallery, Behind the Scenes, and Writing Desk blocks
+  - [ ] Provide options to toggle/hide optional sections on demand
+  - [ ] Set up tests for custom gallery collation logic
 
 ## Highest Priority Next
 
