@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
@@ -64,6 +63,9 @@ export default async function AccountLayout({
           <p className="mt-1 text-xs text-white/30 font-[family-name:var(--font-inter)]">
             Joined {formatDate(user.createdAt)}
           </p>
+          <span className="mt-3 inline-flex rounded-full border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-100/80">
+            {user.role === "ADMIN" ? "Administrator" : "Reader"}
+          </span>
         </div>
       </div>
 

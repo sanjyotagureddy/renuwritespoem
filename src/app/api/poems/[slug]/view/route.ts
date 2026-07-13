@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
+import { getServerAuthSession } from "@/lib/auth";
 
 export async function POST(
   request: Request,
@@ -28,6 +29,15 @@ export async function POST(
         },
       },
     });
+
+    const session = await getServerAuthSession();
+    if (session?.user?.id) {
+      await prisma.readerPoemView.upsert({
+        where: { userId_poemId: { userId: session.user.id, poemId: id } },
+        create: { userId: session.user.id, poemId: id },
+        update: { viewedAt: new Date() },
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

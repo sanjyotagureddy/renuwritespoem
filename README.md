@@ -120,6 +120,10 @@ ADMIN_EMAIL=orders-and-contact@example.com
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
+For local development, set `DATABASE_URL` and `DIRECT_URL` in `.env.local` to
+the Docker URL from `.env.example`. These local-only values override any
+Supabase integration variables.
+
 Email is sent through Gmail SMTP using an app password, not your normal Gmail
 login password. If you change the sending account later, update the Gmail email
 and app password in Vercel, then redeploy.
@@ -137,9 +141,10 @@ The application deploys to **Vercel** via Git push to `main`.
 
 - Preview deployments on pull requests
 - Production deployment on merge to `main`
-- Database hosted on Neon (serverless PostgreSQL)
+- Database hosted on Supabase PostgreSQL
 - Environment variables managed in Vercel dashboard
-- `npm run build` runs pending Prisma migrations before Next.js builds
+- Production builds run pending Prisma migrations before Next.js builds;
+  preview deployments do not change the database schema
 
 Required production environment variables include:
 

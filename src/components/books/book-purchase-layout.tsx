@@ -8,6 +8,7 @@ import PurchaseForm from "./purchase-form";
 import BookDescription from "./book-description";
 import ShareButton from "@/components/ui/share-button";
 import InviteModal from "@/components/ui/invite-modal";
+import SaveButton from "@/components/ui/save-button";
 import { siteConfig } from "@/lib/seo";
 
 type BookPurchaseLayoutProps = {
@@ -153,6 +154,7 @@ export default function BookPurchaseLayout({ book }: BookPurchaseLayoutProps) {
         <aside className="lg:sticky lg:top-24">
           <div className="space-y-6 rounded-2xl border border-white/15 bg-white/3 p-5">
             <BookLikeButton slug={book.slug} />
+            <SaveButton slug={book.slug} type="book" />
             <ShareButton
               shareUrl={`${siteConfig.url}/books/${book.slug}`}
               title={book.title}

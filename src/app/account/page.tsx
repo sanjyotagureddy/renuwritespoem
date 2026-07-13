@@ -27,8 +27,14 @@ export default async function AccountOverviewPage() {
     inviteCount,
     orderCount,
     recentPoemLikes,
+    recentBookLikes,
+    recentAudioLikes,
     recentComments,
+    recentBookComments,
+    recentAudioComments,
     recentInvites,
+    recentPoemViews,
+    recentBookViews,
   ] = await Promise.all([
     prisma.like.count({ where: { userId } }),
     prisma.bookLike.count({ where: { userId } }),
@@ -44,21 +50,110 @@ export default async function AccountOverviewPage() {
       take: 5,
       include: { poem: { select: { title: true, slug: true } } },
     }),
+    prisma.bookLike.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { book: { select: { title: true, slug: true } } },
+    }),
+    prisma.audioLike.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { audio: { select: { title: true, slug: true } } },
+    }),
     prisma.comment.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
       take: 5,
       include: { poem: { select: { title: true, slug: true } } },
     }),
+    prisma.bookComment.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { book: { select: { title: true, slug: true } } },
+    }),
+    prisma.audioComment.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { audio: { select: { title: true, slug: true } } },
+    }),
     prisma.invite.findMany({
       where: { inviterUserId: userId },
       orderBy: { sentAt: "desc" },
       take: 5,
     }),
+    prisma.readerPoemView.findMany({
+      where: { userId }, orderBy: { viewedAt: "desc" }, take: 5,
+      include: { poem: { select: { title: true, slug: true } } },
+    }),
+    prisma.readerBookView.findMany({
+      where: { userId }, orderBy: { viewedAt: "desc" }, take: 5,
+      include: { book: { select: { title: true, slug: true } } },
+    }),
   ]);
 
   const totalLikes = poemLikeCount + bookLikeCount + audioLikeCount;
   const totalComments = poemCommentCount + bookCommentCount + audioCommentCount;
+  const recentLikes = [
+    ...recentPoemLikes.map((like) => ({
+      id: `poem-${like.poemId}`,
+      href: `/poems/${like.poem.slug}`,
+      title: like.poem.title,
+      type: "Poem",
+      createdAt: like.createdAt,
+    })),
+    ...recentBookLikes.map((like) => ({
+      id: `book-${like.bookId}`,
+      href: `/books/${like.book.slug}`,
+      title: like.book.title,
+      type: "Book",
+      createdAt: like.createdAt,
+    })),
+    ...recentAudioLikes.map((like) => ({
+      id: `audio-${like.audioId}`,
+      href: `/audio/${like.audio.slug}`,
+      title: like.audio.title,
+      type: "Audio",
+      createdAt: like.createdAt,
+    })),
+  ]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 5);
+  const recentActivityComments = [
+    ...recentComments.map((comment) => ({
+      id: `poem-${comment.id}`,
+      body: comment.body,
+      href: `/poems/${comment.poem.slug}`,
+      title: comment.poem.title,
+      type: "Poem",
+      createdAt: comment.createdAt,
+    })),
+    ...recentBookComments.map((comment) => ({
+      id: `book-${comment.id}`,
+      body: comment.body,
+      href: `/books/${comment.book.slug}`,
+      title: comment.book.title,
+      type: "Book",
+      createdAt: comment.createdAt,
+    })),
+    ...recentAudioComments.map((comment) => ({
+      id: `audio-${comment.id}`,
+      body: comment.body,
+      href: `/audio/${comment.audio.slug}`,
+      title: comment.audio.title,
+      type: "Audio",
+      createdAt: comment.createdAt,
+    })),
+  ]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 5);
+  const recentViews = [
+    ...recentPoemViews.map((view) => ({ id: `poem-${view.poemId}`, href: `/poems/${view.poem.slug}`, title: view.poem.title, type: "Poem", viewedAt: view.viewedAt })),
+    ...recentBookViews.map((view) => ({ id: `book-${view.bookId}`, href: `/books/${view.book.slug}`, title: view.book.title, type: "Book", viewedAt: view.viewedAt })),
+  ].sort((a, b) => b.viewedAt.getTime() - a.viewedAt.getTime()).slice(0, 5);
 
   const stats = [
     { label: "Likes", value: totalLikes, href: "/account/likes" },
@@ -88,23 +183,21 @@ export default async function AccountOverviewPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Likes */}
         <ActivityPanel title="Recent Likes" href="/account/likes">
-          {recentPoemLikes.length === 0 ? (
+          {recentLikes.length === 0 ? (
             <EmptyText>No likes yet.</EmptyText>
           ) : (
-            recentPoemLikes.map((like) => (
+            recentLikes.map((like) => (
               <Link
-                key={like.poemId}
-                href={`/poems/${like.poem.slug}`}
+                key={like.id}
+                href={like.href}
                 className="block rounded-xl border border-white/8 bg-black/15 p-3 transition-colors hover:bg-white/5"
               >
-                <p className="truncate text-sm text-white/75">
-                  {like.poem.title}
-                </p>
+                <p className="truncate text-sm text-white/75">{like.title}</p>
                 <p className="mt-1 text-xs text-white/35">
-                  {formatDate(like.createdAt)}
+                  {like.type} · {formatDate(like.createdAt)}
                 </p>
               </Link>
             ))
@@ -113,10 +206,10 @@ export default async function AccountOverviewPage() {
 
         {/* Recent Comments */}
         <ActivityPanel title="Recent Comments" href="/account/comments">
-          {recentComments.length === 0 ? (
+          {recentActivityComments.length === 0 ? (
             <EmptyText>No comments yet.</EmptyText>
           ) : (
-            recentComments.map((comment) => (
+            recentActivityComments.map((comment) => (
               <div
                 key={comment.id}
                 className="rounded-xl border border-white/8 bg-black/15 p-3"
@@ -125,10 +218,10 @@ export default async function AccountOverviewPage() {
                   {comment.body}
                 </p>
                 <Link
-                  href={`/poems/${comment.poem.slug}`}
+                  href={comment.href}
                   className="mt-1.5 block truncate text-xs text-white/40 hover:text-white"
                 >
-                  {comment.poem.title}
+                  {comment.type} · {comment.title}
                 </Link>
               </div>
             ))
@@ -155,6 +248,19 @@ export default async function AccountOverviewPage() {
                   {formatDate(invite.sentAt)}
                 </p>
               </div>
+            ))
+          )}
+        </ActivityPanel>
+
+        <ActivityPanel title="Recently Viewed" href="/account/library">
+          {recentViews.length === 0 ? (
+            <EmptyText>Content you view while signed in will appear here.</EmptyText>
+          ) : (
+            recentViews.map((view) => (
+              <Link key={view.id} href={view.href} className="block rounded-xl border border-white/8 bg-black/15 p-3 transition-colors hover:bg-white/5">
+                <p className="truncate text-sm text-white/75">{view.title}</p>
+                <p className="mt-1 text-xs text-white/35">{view.type} · {formatDate(view.viewedAt)}</p>
+              </Link>
             ))
           )}
         </ActivityPanel>

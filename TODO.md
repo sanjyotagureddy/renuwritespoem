@@ -465,3 +465,29 @@ admin, and technical work.
   - Render an interactive delivery table:
     - Filter and search deliveries by email address.
     - Show status tags for each recipient: `Sent`, `Failed`, `Opened` (with badge counting views), and `Clicked Links` list.
+
+## Phase 27: Reader Account & Library (Lean MVP)
+
+Keep this phase focused on the everyday reader experience. Build on the existing likes,
+saved content, comments, and orders rather than adding recommendations, achievements,
+playlists, referrals, or account-export workflows yet.
+
+- [x] Expand the authenticated reader dashboard at `/account`
+- [x] Show basic profile information: name, email, member-since date, and account role
+- [x] Show a compact activity summary: liked items, comments posted, and books purchased
+- [x] Add a Library page/section with tabs for saved poems, saved books, and liked content
+- [x] Let readers remove saved items from their library
+- [x] Add a simple recently viewed list for poems and books
+- [ ] Add a privacy setting to turn viewing-history tracking on or off, plus clear history
+- [ ] Add a reader-facing order-history list with links to existing order details/status
+- [ ] Add a reader comment-history list with links back to the original content
+
+### Later (only after the MVP is in use)
+
+- [ ] Reading position, progress, streaks, and monthly reading summaries
+- [ ] Audio playback history, queues, and playlists
+- [ ] Custom reading lists and pinned favorites
+- [ ] Notification center and newsletter preference controls
+- [ ] Personal recommendations and favorite genre/language preferences
+- [ ] Achievements, referrals, data export, and account deletion
+- [ ] Reader engagement analytics for admins

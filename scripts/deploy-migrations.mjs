@@ -3,8 +3,20 @@ import { spawnSync } from "node:child_process";
 import pg from "pg";
 import { config as loadEnv } from "dotenv";
 
-loadEnv({ path: ".env.local" });
-loadEnv();
+const isVercel = process.env.VERCEL === "1";
+const isVercelProduction = isVercel && process.env.VERCEL_ENV === "production";
+
+// Local builds may use .env.local (Docker). Vercel must use its configured
+// environment variables, and only production deployments change the schema.
+if (!isVercel) {
+  loadEnv({ path: ".env.local" });
+  loadEnv();
+}
+
+if (isVercel && !isVercelProduction) {
+  console.log("Skipping database migrations for this non-production Vercel deployment.");
+  process.exit(0);
+}
 
 const { Client } = pg;
 const databaseUrl =

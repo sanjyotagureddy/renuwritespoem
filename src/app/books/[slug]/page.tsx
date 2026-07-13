@@ -12,6 +12,7 @@ import { siteConfig } from "@/lib/seo";
 import { getCache, setCache } from "@/lib/cache";
 import BookDescription from "@/components/books/book-description";
 import BookViewTracker from "@/components/books/book-view-tracker";
+import SaveButton from "@/components/ui/save-button";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -294,6 +295,7 @@ export default async function BookDetailPage({ params }: PageProps) {
           <aside className="lg:sticky lg:top-24">
             <div className="space-y-6 rounded-2xl border border-white/15 bg-white/3 p-5">
               <BookLikeButton slug={book.slug} />
+              <SaveButton slug={book.slug} type="book" />
               <ShareButton
                 shareUrl={`${siteConfig.url}/books/${book.slug}`}
                 title={book.title}

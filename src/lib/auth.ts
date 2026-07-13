@@ -128,33 +128,37 @@ export const authOptions: NextAuthOptions = {
         token.userId = user.id;
       }
 
-      // Ensure userId is always set from the database if missing
-      if (!token.userId && token.email) {
-        const dbUser = await getPrisma().user.findUnique({
-          where: { email: token.email },
-          select: { id: true },
+      const email = (user?.email ?? token.email)?.toLowerCase();
+      let dbUser = token.userId
+        ? await getPrisma().user.findUnique({
+            where: { id: token.userId as string },
+            select: { id: true, role: true, disabledAt: true },
+          })
+        : null;
+
+      // A local database reset can leave an old browser JWT behind. Recover by
+      // email only when a current database user exists; never grant an admin
+      // role from an environment email to a deleted account.
+      if (!dbUser && email) {
+        dbUser = await getPrisma().user.findUnique({
+          where: { email },
+          select: { id: true, role: true, disabledAt: true },
         });
         if (dbUser) token.userId = dbUser.id;
       }
 
-      const email = (user?.email ?? token.email)?.toLowerCase();
-      const isEnvAdmin = email ? getAdminEmails().has(email) : false;
-
-      if (isEnvAdmin) {
-        token.role = "ADMIN";
-        token.disabled = false;
-      } else if (token.userId) {
-        const dbUser = await getPrisma().user.findUnique({
-          where: { id: token.userId as string },
-          select: { role: true, disabledAt: true },
-        });
-        const disabled = Boolean(dbUser?.disabledAt);
-        token.disabled = disabled;
-        token.role = dbUser && !disabled ? dbUser.role : "READER";
-      } else {
+      if (!dbUser) {
+        token.userId = undefined;
         token.role = "READER";
-        token.disabled = false;
+        token.disabled = true;
+        return token;
       }
+
+      const disabled = Boolean(dbUser.disabledAt);
+      token.disabled = disabled;
+      token.role = !disabled && email && getAdminEmails().has(email)
+        ? "ADMIN"
+        : dbUser.role;
 
       return token;
     },

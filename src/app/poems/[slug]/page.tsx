@@ -16,6 +16,7 @@ import PoemReader from "@/components/poems/poem-reader";
 import ShareButton from "@/components/ui/share-button";
 import InviteModal from "@/components/ui/invite-modal";
 import ViewTracker from "@/components/poems/view-tracker";
+import SaveButton from "@/components/ui/save-button";
 import { siteConfig } from "@/lib/seo";
 import { getCache, setCache } from "@/lib/cache";
 
@@ -386,6 +387,7 @@ export default async function PoemDetailPage({ params }: PageProps) {
         <aside className="lg:sticky lg:top-[96px]">
           <div className="space-y-6 rounded-2xl border border-white/15 bg-white/[0.03] p-5">
             <LikeButton slug={poem.slug} />
+            <SaveButton slug={poem.slug} type="poem" />
             <ListenButton content={poem.content} title={poem.title} language={language} />
             <ShareButton
               shareUrl={`${siteConfig.url}/poems/${poem.slug}`}

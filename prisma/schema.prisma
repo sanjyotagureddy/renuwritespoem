@@ -40,6 +40,10 @@ model User {
   audioComments     AudioComment[]
   audioCommentLikes AudioCommentLike[]
   invites           Invite[]
+  savedPoems        SavedPoem[]
+  savedBooks        SavedBook[]
+  poemViews         ReaderPoemView[]
+  bookViews         ReaderBookView[]
   signUpSource      String?
 
   @@map("users")
@@ -142,6 +146,8 @@ model Poem {
   comments Comment[]
   likes    Like[]
   invites  Invite[]
+  saves    SavedPoem[]
+  readerViews ReaderPoemView[]
 
   @@index([genreId])
   @@index([language])
@@ -158,6 +164,32 @@ model PoemTag {
 
   @@id([poemId, tagId])
   @@map("poem_tags")
+}
+
+model SavedPoem {
+  userId    String
+  poemId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  poem Poem @relation(fields: [poemId], references: [id], onDelete: Cascade)
+
+  @@id([userId, poemId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("saved_poems")
+}
+
+model ReaderPoemView {
+  userId   String
+  poemId   String
+  viewedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  poem Poem @relation(fields: [poemId], references: [id], onDelete: Cascade)
+
+  @@id([userId, poemId])
+  @@index([userId, viewedAt(sort: Desc)])
+  @@map("reader_poem_views")
 }
 
 // ─── Books ───────────────────────────────────────────────────
@@ -190,6 +222,8 @@ model Book {
   likes    BookLike[]
   comments BookComment[]
   orders   BookOrder[]
+  saves    SavedBook[]
+  readerViews ReaderBookView[]
 
   @@map("books")
 }
@@ -205,6 +239,32 @@ model BookLike {
   @@id([bookId, userId])
   @@index([userId])
   @@map("book_likes")
+}
+
+model SavedBook {
+  userId    String
+  bookId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@id([userId, bookId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("saved_books")
+}
+
+model ReaderBookView {
+  userId   String
+  bookId   String
+  viewedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@id([userId, bookId])
+  @@index([userId, viewedAt(sort: Desc)])
+  @@map("reader_book_views")
 }
 
 model BookComment {
