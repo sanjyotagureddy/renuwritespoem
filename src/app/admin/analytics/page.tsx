@@ -1,11 +1,30 @@
 import { getPrisma } from "@/lib/db";
 import AnalyticsTabs from "@/components/admin/analytics-tabs";
+import TimeRangeFilter from "@/components/admin/time-range-filter";
 
 export const dynamic = "force-dynamic";
 
-export default async function AnalyticsDashboard() {
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+
+export default async function AnalyticsDashboard(props: {
+  searchParams: SearchParams;
+}) {
   const prisma = getPrisma();
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const searchParams = await props.searchParams;
+  const range = (searchParams.range as string) || "7d";
+
+  // Calculate start date threshold
+  let startDate = new Date();
+  if (range === "7d") {
+    startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  } else if (range === "30d") {
+    startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  } else if (range === "90d") {
+    startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+  }
+
+  // Construct dynamic date filters (no date filter if range is "all")
+  const dateFilter = range === "all" ? {} : { gte: startDate };
 
   const [
     clicksBySource,
@@ -21,7 +40,6 @@ export default async function AnalyticsDashboard() {
     recentOrdersRaw,
     topAudioRaw,
     topPoemsRaw,
-    // Extensions
     recentUsers,
     recentSubscribers,
     recentComments,
@@ -38,9 +56,9 @@ export default async function AnalyticsDashboard() {
       where: { signUpSource: { not: null } },
       _count: { id: true },
     }),
-    prisma.invite.count({ where: { sentAt: { gte: sevenDaysAgo } } }),
-    prisma.invite.count({ where: { signedUpAt: { gte: sevenDaysAgo } } }),
-    prisma.subscriber.count({ where: { subscribedAt: { gte: sevenDaysAgo } } }),
+    prisma.invite.count({ where: { sentAt: dateFilter } }),
+    prisma.invite.count({ where: { signedUpAt: dateFilter } }),
+    prisma.subscriber.count({ where: { subscribedAt: dateFilter } }),
     prisma.poem.findMany({
       orderBy: { invites: { _count: "desc" } },
       take: 5,
@@ -54,15 +72,22 @@ export default async function AnalyticsDashboard() {
     prisma.bookOrder.findMany({
       where: {
         status: { in: ["CONFIRMED", "SHIPPED", "DELIVERED"] },
+        createdAt: dateFilter,
       },
       select: { totalAmount: true, copies: true },
     }),
     prisma.bookOrder.count({
-      where: { status: { in: ["PENDING", "CONFIRMED"] } },
+      where: {
+        status: { in: ["PENDING", "CONFIRMED"] },
+        createdAt: dateFilter,
+      },
     }),
     prisma.bookOrder.groupBy({
       by: ["bookId"],
-      where: { status: { in: ["CONFIRMED", "SHIPPED", "DELIVERED"] } },
+      where: {
+        status: { in: ["CONFIRMED", "SHIPPED", "DELIVERED"] },
+        createdAt: dateFilter,
+      },
       _sum: { copies: true },
     }),
     prisma.book.findMany({
@@ -88,7 +113,6 @@ export default async function AnalyticsDashboard() {
         _count: { select: { likes: true, comments: true } },
       },
     }),
-    // Extensions
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       take: 10,
@@ -131,7 +155,7 @@ export default async function AnalyticsDashboard() {
     }),
     prisma.campaign.findMany({
       orderBy: { sentAt: "desc" },
-      where: { status: "SENT" },
+      where: { status: "SENT", sentAt: dateFilter },
       include: {
         deliveries: {
           select: {
@@ -297,13 +321,18 @@ export default async function AnalyticsDashboard() {
 
   return (
     <div className="space-y-8 font-[family-name:var(--font-inter)] text-white">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold font-[family-name:var(--font-playfair)]">
-          Analytics Dashboard
-        </h1>
-        <p className="text-xs text-white/40">
-          Track growth metrics, newsletter campaigns, bookstore sales, and reader interactions.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold font-[family-name:var(--font-playfair)]">
+            Analytics Dashboard
+          </h1>
+          <p className="text-xs text-white/40">
+            Track growth metrics, newsletter campaigns, bookstore sales, and reader interactions.
+          </p>
+        </div>
+        <div className="shrink-0">
+          <TimeRangeFilter />
+        </div>
       </div>
 
       <AnalyticsTabs
