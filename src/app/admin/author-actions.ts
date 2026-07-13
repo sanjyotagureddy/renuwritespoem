@@ -72,6 +72,8 @@ export async function updateAuthorProfile(formData: FormData) {
   });
 
   revalidatePath("/about");
+  revalidatePath("/gallery");
+  revalidatePath("/");
   revalidatePath("/admin/author");
   return updated;
 }
@@ -147,6 +149,8 @@ export async function addGalleryImage(formData: FormData) {
   });
 
   revalidatePath("/about");
+  revalidatePath("/gallery");
+  revalidatePath("/");
   revalidatePath("/admin/author");
   return newImg;
 }
@@ -176,6 +180,8 @@ export async function deleteGalleryImage(id: string) {
   });
 
   revalidatePath("/about");
+  revalidatePath("/gallery");
+  revalidatePath("/");
   revalidatePath("/admin/author");
   return { success: true };
 }
@@ -194,6 +200,8 @@ export async function updateGalleryOrder(ids: string[]) {
   );
 
   revalidatePath("/about");
+  revalidatePath("/gallery");
+  revalidatePath("/");
   revalidatePath("/admin/author");
   return { success: true };
 }
@@ -216,6 +224,8 @@ export async function updateGalleryImageCategory(id: string, category: string | 
   });
 
   revalidatePath("/about");
+  revalidatePath("/gallery");
+  revalidatePath("/");
   revalidatePath("/admin/author");
   return updated;
 }
