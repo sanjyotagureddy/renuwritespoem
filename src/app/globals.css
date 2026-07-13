@@ -265,3 +265,22 @@ h6 {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Custom styling for select and option elements to guarantee readability on dark backgrounds */
+select {
+  background-color: #171717 !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+select option {
+  background-color: #171717 !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+select option:hover,
+select option:focus,
+select option:active {
+  background-color: #d97706 !important; /* amber accent */
+  color: #000000 !important;
+}
+

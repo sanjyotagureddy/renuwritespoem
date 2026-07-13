@@ -94,6 +94,7 @@ admin, and technical work.
 - [ ] Reduce reliance on carousel-only discovery
 - [ ] Add clearer primary calls to action for reading, buying, and subscribing
 
+
 ## Phase 6: Public Poems
 
 - [x] Poems listing page
@@ -492,3 +493,19 @@ playlists, referrals, or account-export workflows yet.
 - [x] CSS-only reader badges, calculated from existing reading and account activity
 - [ ] Referrals, personal-data export, and account deletion
 - [ ] Reader engagement analytics for admins
+
+## Phase 28: Homepage Overhaul
+
+Restructure the Homepage layout to remove the hero carousel dependency and focus on answering "Why should I read this author?" immediately.
+
+- [ ] Implement the following structured layout sequence:
+  - [ ] **Hero**: Introducing Renu's writer identity and value proposition clearly (without slideshow tabs)
+  - [ ] **Featured Book**: Highlighting a prominent book card with primary call-to-action
+  - [ ] **Latest Poem**: Direct display of recent poetry excerpt, translation tags, and links
+  - [ ] **Listen to a Poem**: Compact play widget or trigger link to spoken-word recordings page
+  - [ ] **About the Author**: Engaging mini-biography section previewing Renu's journey
+  - [ ] **Reader Reviews**: Testimonial reviews showcase carousel or card grids
+  - [ ] **Instagram Feed**: Curated photo grid of social updates
+  - [ ] **Newsletter**: Distinct subscription form cards
+  - [ ] **Footer**: Clear, structured legal and explore navigation footer
+

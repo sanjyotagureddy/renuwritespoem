@@ -1,7 +1,8 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import GalleryPage from "../src/app/gallery/page";
+import AuthorGallery from "../src/components/home/author-gallery";
 
 // Mock getOrCreateAuthorProfile
 vi.mock("../src/app/admin/author-actions", () => ({
@@ -32,6 +33,7 @@ vi.mock("../src/app/admin/author-actions", () => ({
 
 describe("GalleryPage and AuthorGallery Component", () => {
   it("should render gallery page successfully and filter images by category tabs", async () => {
+    cleanup();
     const Component = await GalleryPage();
     render(Component);
 
@@ -67,4 +69,41 @@ describe("GalleryPage and AuthorGallery Component", () => {
     expect(screen.getByAltText("Launch Event 1")).toBeDefined();
     expect(screen.queryByAltText("Desk Photo 1")).toBeNull();
   });
+
+  it("should paginate images when there are more than 6 items", () => {
+    cleanup();
+
+    const mockImages = Array.from({ length: 8 }, (_, i) => ({
+      id: `img-${i + 1}`,
+      url: `https://example.com/${i + 1}.jpg`,
+      width: 100,
+      height: 100,
+      caption: `Photo Caption ${i + 1}`,
+      category: "Writing desk",
+    }));
+
+    render(<AuthorGallery images={mockImages} />);
+
+    // Verify pagination controls are visible
+    expect(screen.getByText(/Page/i)).toBeDefined();
+
+    // Verify first 6 images are present
+    for (let i = 1; i <= 6; i++) {
+      expect(screen.getByAltText(`Photo Caption ${i}`)).toBeDefined();
+    }
+    // Verify 7th and 8th images are not present on first page
+    expect(screen.queryByAltText("Photo Caption 7")).toBeNull();
+    expect(screen.queryByAltText("Photo Caption 8")).toBeNull();
+
+    // Go to next page
+    const nextBtn = screen.getByRole("button", { name: /Next/i });
+    fireEvent.click(nextBtn);
+
+    // Verify 7th and 8th images are present now
+    expect(screen.getByAltText("Photo Caption 7")).toBeDefined();
+    expect(screen.getByAltText("Photo Caption 8")).toBeDefined();
+    // Verify first image is no longer present
+    expect(screen.queryByAltText("Photo Caption 1")).toBeNull();
+  });
 });
+

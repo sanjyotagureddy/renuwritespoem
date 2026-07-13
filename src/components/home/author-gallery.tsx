@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 
 type AuthorGalleryImage = {
@@ -31,6 +31,12 @@ const GALLERY_CATEGORIES = [
 
 export default function AuthorGallery({ images }: AuthorGalleryProps) {
   const [selectedTab, setSelectedTab] = useState<string>("All");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // Reset to page 1 whenever selected tab changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedTab]);
 
   // Filter images based on selected tab
   const filteredImages = useMemo(() => {
@@ -38,6 +44,15 @@ export default function AuthorGallery({ images }: AuthorGalleryProps) {
     if (selectedTab === "All") return images;
     return images.filter((img) => img.category === selectedTab);
   }, [images, selectedTab]);
+
+  const pageSize = 6;
+  const totalPages = Math.ceil(filteredImages.length / pageSize);
+
+  // Paginated subset of filtered images
+  const paginatedImages = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredImages.slice(startIndex, startIndex + pageSize);
+  }, [filteredImages, currentPage, pageSize]);
 
   if (!images || images.length === 0) {
     return (
@@ -56,13 +71,13 @@ export default function AuthorGallery({ images }: AuthorGalleryProps) {
     return "/placeholder.jpg";
   };
 
-  // Partition filtered images to balance masonry columns
+  // Partition paginated images to balance masonry columns
   const col1: AuthorGalleryImage[] = [];
   const col2: AuthorGalleryImage[] = [];
   let h1 = 0;
   let h2 = 0;
 
-  filteredImages.forEach((img) => {
+  paginatedImages.forEach((img) => {
     const ratio = img.width && img.height ? img.height / img.width : 1.0;
     if (h1 <= h2) {
       col1.push(img);
@@ -154,11 +169,38 @@ export default function AuthorGallery({ images }: AuthorGalleryProps) {
           <p className="text-white/40 text-sm">No photos in the &quot;{selectedTab}&quot; album yet.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {renderColumn(col1)}
-          {renderColumn(col2)}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {renderColumn(col1)}
+            {renderColumn(col2)}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-6 border-t border-white/5 font-[family-name:var(--font-inter)] text-xs">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+              >
+                &larr; Previous
+              </button>
+              <span className="text-white/40">
+                Page <span className="text-white/85 font-semibold">{currentPage}</span> of{" "}
+                <span className="text-white/85 font-semibold">{totalPages}</span>
+              </span>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+              >
+                Next &rarr;
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
 }
+

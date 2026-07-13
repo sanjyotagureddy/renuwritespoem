@@ -661,11 +661,11 @@ export default function AuthorAdminClient({
                   id="uploadCategory"
                   value={uploadCategory}
                   onChange={(e) => setUploadCategory(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-white outline-none transition-colors focus:border-white/35 font-[family-name:var(--font-inter)]"
+                  className="w-full max-w-[280px] rounded-lg border border-white/10 bg-neutral-900 px-3 py-2 text-xs text-white outline-none transition-colors focus:border-white/35 font-[family-name:var(--font-inter)] cursor-pointer"
                 >
-                  <option value="Uncategorized">Uncategorized (No category)</option>
+                  <option value="Uncategorized" className="bg-neutral-900 text-white">Uncategorized (No category)</option>
                   {GALLERY_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
+                    <option key={cat} value={cat} className="bg-neutral-900 text-white">
                       {cat}
                     </option>
                   ))}
@@ -763,11 +763,11 @@ export default function AuthorAdminClient({
                           <select
                             value={img.category || "Uncategorized"}
                             onChange={(e) => handleCategoryChange(img.id, e.target.value)}
-                            className="rounded bg-white/5 border border-white/10 px-1.5 py-0.5 text-[10px] text-white/60 hover:text-white hover:border-white/20 focus:border-amber-400 outline-none w-full cursor-pointer font-[family-name:var(--font-inter)]"
+                            className="rounded bg-neutral-900 border border-white/10 px-2 py-1 text-[10px] text-white/70 hover:text-white hover:border-white/20 focus:border-amber-400 outline-none w-full max-w-[160px] cursor-pointer font-[family-name:var(--font-inter)]"
                           >
-                            <option value="Uncategorized">Uncategorized</option>
+                            <option value="Uncategorized" className="bg-neutral-900 text-white">Uncategorized</option>
                             {GALLERY_CATEGORIES.map((cat) => (
-                              <option key={cat} value={cat}>
+                              <option key={cat} value={cat} className="bg-neutral-900 text-white">
                                 {cat}
                               </option>
                             ))}
