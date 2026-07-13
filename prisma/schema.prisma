@@ -651,6 +651,7 @@ model AuthorGalleryImage {
   height    Int      @default(0)
   order     Int      @default(0)
   caption   String?
+  category  String?
   createdAt DateTime @default(now())
 
   profileId String
@@ -658,4 +659,3 @@ model AuthorGalleryImage {
 
   @@map("author_gallery_images")
 }
-

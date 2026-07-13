@@ -82,6 +82,8 @@ export async function addGalleryImage(formData: FormData) {
   const widthRaw = formData.get("width");
   const heightRaw = formData.get("height");
   const caption = String(formData.get("caption") ?? "").trim();
+  const categoryRaw = formData.get("category");
+  const category = categoryRaw ? String(categoryRaw).trim() : null;
 
   if (!file || file.size === 0) {
     throw new Error("No file uploaded.");
@@ -139,6 +141,7 @@ export async function addGalleryImage(formData: FormData) {
       width,
       height,
       caption,
+      category,
       order: nextOrder,
     },
   });
@@ -193,4 +196,26 @@ export async function updateGalleryOrder(ids: string[]) {
   revalidatePath("/about");
   revalidatePath("/admin/author");
   return { success: true };
+}
+
+export async function updateGalleryImageCategory(id: string, category: string | null) {
+  await requireAdmin();
+  const prisma = getPrisma();
+
+  const img = await prisma.authorGalleryImage.findUnique({
+    where: { id },
+  });
+
+  if (!img) {
+    throw new Error("Image not found.");
+  }
+
+  const updated = await prisma.authorGalleryImage.update({
+    where: { id },
+    data: { category },
+  });
+
+  revalidatePath("/about");
+  revalidatePath("/admin/author");
+  return updated;
 }

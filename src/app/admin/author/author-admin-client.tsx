@@ -7,6 +7,7 @@ import {
   addGalleryImage,
   deleteGalleryImage,
   updateGalleryOrder,
+  updateGalleryImageCategory,
 } from "@/app/admin/author-actions";
 import { ArrowUp, ArrowDown, Trash2, Upload, Loader2, Sparkles, Image as ImageIcon, Plus } from "lucide-react";
 
@@ -18,6 +19,7 @@ type AuthorGalleryImage = {
   width: number;
   height: number;
   caption?: string | null;
+  category?: string | null;
   order: number;
 };
 
@@ -292,10 +294,21 @@ export default function AuthorAdminClient({
   const [interviewsList, setInterviewsList] = useState<ListItem[]>(() => parseStringToList(initialProfile.interviews));
 
   // States for gallery operations
+  const GALLERY_CATEGORIES = [
+    "Professional photos",
+    "Book launches",
+    "Writing desk",
+    "Coffee moments",
+    "Travel",
+    "Reader meetups",
+    "Signing books",
+    "Events"
+  ];
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [gallery, setGallery] = useState<AuthorGalleryImage[]>(initialProfile.gallery);
   const [captionText, setCaptionText] = useState("");
+  const [uploadCategory, setUploadCategory] = useState<string>("Uncategorized");
 
   const getImgSrc = (img: AuthorGalleryImage) => {
     if (img.url) return img.url;
@@ -371,6 +384,9 @@ export default function AuthorAdminClient({
         formData.append("width", String(width));
         formData.append("height", String(height));
         formData.append("caption", captionText);
+        if (uploadCategory !== "Uncategorized") {
+          formData.append("category", uploadCategory);
+        }
 
         const newImage = await addGalleryImage(formData);
         
@@ -380,6 +396,7 @@ export default function AuthorAdminClient({
         });
       }
       setCaptionText("");
+      setUploadCategory("Uncategorized");
       e.target.value = "";
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "Failed to upload image(s).");
@@ -415,6 +432,18 @@ export default function AuthorAdminClient({
     } catch {
       alert("Failed to update display order on the server.");
       setGallery(gallery);
+    }
+  };
+
+  const handleCategoryChange = async (id: string, newCategory: string) => {
+    const finalCategory = newCategory === "Uncategorized" ? null : newCategory;
+    try {
+      await updateGalleryImageCategory(id, finalCategory);
+      setGallery((prev) =>
+        prev.map((img) => (img.id === id ? { ...img, category: finalCategory } : img))
+      );
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update category.");
     }
   };
 
@@ -623,6 +652,25 @@ export default function AuthorAdminClient({
                   className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-white placeholder:text-white/20 outline-none transition-colors focus:border-white/35"
                 />
               </div>
+
+              <div className="space-y-1.5 pt-2">
+                <label htmlFor="uploadCategory" className="block text-[10px] uppercase tracking-wider text-white/40">
+                  Image Category / Album
+                </label>
+                <select
+                  id="uploadCategory"
+                  value={uploadCategory}
+                  onChange={(e) => setUploadCategory(e.target.value)}
+                  className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-white outline-none transition-colors focus:border-white/35 font-[family-name:var(--font-inter)]"
+                >
+                  <option value="Uncategorized">Uncategorized (No category)</option>
+                  {GALLERY_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Drop file target */}
@@ -702,10 +750,29 @@ export default function AuthorAdminClient({
                           }`}>
                             {isPortrait ? "Portrait" : "Landscape"}
                           </span>
+                          {img.category && (
+                            <span className="rounded bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 text-[9px] text-amber-400 font-semibold">
+                              {img.category}
+                            </span>
+                          )}
                         </div>
-                        <p className="text-xs text-white/80 font-medium truncate font-[family-name:var(--font-inter)]">
+                        <p className="text-xs text-white/80 font-medium truncate font-[family-name:var(--font-inter)] mb-1">
                           {img.caption || <span className="italic text-white/20">No caption</span>}
                         </p>
+                        <div className="pt-0.5">
+                          <select
+                            value={img.category || "Uncategorized"}
+                            onChange={(e) => handleCategoryChange(img.id, e.target.value)}
+                            className="rounded bg-white/5 border border-white/10 px-1.5 py-0.5 text-[10px] text-white/60 hover:text-white hover:border-white/20 focus:border-amber-400 outline-none w-full cursor-pointer font-[family-name:var(--font-inter)]"
+                          >
+                            <option value="Uncategorized">Uncategorized</option>
+                            {GALLERY_CATEGORIES.map((cat) => (
+                              <option key={cat} value={cat}>
+                                {cat}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
 
                       {/* Reordering and Actions controls */}

@@ -30,6 +30,7 @@ export default async function GalleryPage() {
     width: img.width,
     height: img.height,
     caption: img.caption,
+    category: img.category,
     order: img.order,
   }));
 

@@ -5,6 +5,7 @@ import {
   addGalleryImage,
   deleteGalleryImage,
   updateGalleryOrder,
+  updateGalleryImageCategory,
 } from "../src/app/admin/author-actions";
 
 // Mock rateLimit to prevent test failures
@@ -161,7 +162,7 @@ describe("Author Profile Server Actions", () => {
   });
 
   describe("addGalleryImage", () => {
-    it("should upload a file and save details to database", async () => {
+    it("should upload a file and save details to database with category", async () => {
       process.env.BLOB_READ_WRITE_TOKEN = "mock-token";
       const formData = new FormData();
       // Mock File object
@@ -170,11 +171,13 @@ describe("Author Profile Server Actions", () => {
       formData.append("width", "800");
       formData.append("height", "600");
       formData.append("caption", "My Desk photo");
+      formData.append("category", "Writing desk");
 
       const result = await addGalleryImage(formData);
       expect(result.id).toBeDefined();
       expect(result.url).toBe("https://blob.example.com/mock-image.jpg");
       expect(result.caption).toBe("My Desk photo");
+      expect(result.category).toBe("Writing desk");
       expect(result.width).toBe(800);
       expect(result.height).toBe(600);
       expect(mockGalleryImages.length).toBe(1);
@@ -213,6 +216,17 @@ describe("Author Profile Server Actions", () => {
       expect(res.success).toBe(true);
       expect(img2.order).toBe(0);
       expect(img1.order).toBe(1);
+    });
+  });
+
+  describe("updateGalleryImageCategory", () => {
+    it("should update category in target image", async () => {
+      const img = { id: "img-category-test", category: "Original category" };
+      mockGalleryImages.push(img);
+
+      const res = await updateGalleryImageCategory("img-category-test", "Book launches");
+      expect(res.category).toBe("Book launches");
+      expect(img.category).toBe("Book launches");
     });
   });
 });
