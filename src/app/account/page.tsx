@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
+import AchievementBadges from "@/components/account/achievement-badges";
 
 export const metadata: Metadata = {
   title: "Overview",
@@ -35,6 +36,7 @@ export default async function AccountOverviewPage() {
     recentInvites,
     recentPoemViews,
     recentBookViews,
+    poemsReadCount,
   ] = await Promise.all([
     prisma.like.count({ where: { userId } }),
     prisma.bookLike.count({ where: { userId } }),
@@ -93,6 +95,7 @@ export default async function AccountOverviewPage() {
       where: { userId }, orderBy: { viewedAt: "desc" }, take: 5,
       include: { book: { select: { title: true, slug: true } } },
     }),
+    prisma.readerPoemView.count({ where: { userId } }),
   ]);
 
   const totalLikes = poemLikeCount + bookLikeCount + audioLikeCount;
@@ -181,6 +184,13 @@ export default async function AccountOverviewPage() {
           </Link>
         ))}
       </div>
+
+      <AchievementBadges
+        poemsRead={poemsReadCount}
+        booksPurchased={orderCount}
+        commentsPosted={totalComments}
+        likesGiven={totalLikes}
+      />
 
       {/* Recent Activity */}
       <div className="grid gap-6 lg:grid-cols-2">

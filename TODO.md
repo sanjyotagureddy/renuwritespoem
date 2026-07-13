@@ -489,5 +489,6 @@ playlists, referrals, or account-export workflows yet.
 - [ ] Custom reading lists and pinned favorites
 - [ ] Notification center and newsletter preference controls
 - [ ] Personal recommendations and favorite genre/language preferences
-- [ ] Achievements, referrals, data export, and account deletion
+- [x] CSS-only reader badges, calculated from existing reading and account activity
+- [ ] Referrals, personal-data export, and account deletion
 - [ ] Reader engagement analytics for admins

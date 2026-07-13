@@ -173,6 +173,83 @@ h6 {
     font-family:
       var(--font-devanagari), var(--font-inter), system-ui, sans-serif;
   }
+
+  .badge-amber {
+    color: rgb(252 211 77);
+    border-color: rgb(252 211 77 / 25%);
+    background: linear-gradient(
+      135deg,
+      rgb(245 158 11 / 14%),
+      rgb(255 255 255 / 3%)
+    );
+  }
+
+  .badge-sky {
+    color: rgb(125 211 252);
+    border-color: rgb(125 211 252 / 25%);
+    background: linear-gradient(
+      135deg,
+      rgb(14 165 233 / 14%),
+      rgb(255 255 255 / 3%)
+    );
+  }
+
+  .badge-violet {
+    color: rgb(196 181 253);
+    border-color: rgb(196 181 253 / 25%);
+    background: linear-gradient(
+      135deg,
+      rgb(139 92 246 / 14%),
+      rgb(255 255 255 / 3%)
+    );
+  }
+
+  .badge-emerald {
+    color: rgb(110 231 183);
+    border-color: rgb(110 231 183 / 25%);
+    background: linear-gradient(
+      135deg,
+      rgb(16 185 129 / 14%),
+      rgb(255 255 255 / 3%)
+    );
+  }
+
+  .celebration-amber {
+    color: rgb(252 211 77);
+    border-color: rgb(252 211 77 / 30%);
+    background: radial-gradient(
+      circle at top,
+      rgb(245 158 11 / 22%),
+      rgb(23 23 23)
+    );
+  }
+  .celebration-sky {
+    color: rgb(125 211 252);
+    border-color: rgb(125 211 252 / 30%);
+    background: radial-gradient(
+      circle at top,
+      rgb(14 165 233 / 22%),
+      rgb(23 23 23)
+    );
+  }
+  .celebration-violet {
+    color: rgb(196 181 253);
+    border-color: rgb(196 181 253 / 30%);
+    background: radial-gradient(
+      circle at top,
+      rgb(139 92 246 / 22%),
+      rgb(23 23 23)
+    );
+  }
+  .celebration-emerald {
+    color: rgb(110 231 183);
+    border-color: rgb(110 231 183 / 30%);
+    background: radial-gradient(
+      circle at top,
+      rgb(16 185 129 / 22%),
+      rgb(23 23 23)
+    );
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
