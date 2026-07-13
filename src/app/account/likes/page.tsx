@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
+import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ export default async function AccountLikesPage({ searchParams }: PageProps) {
   const [rawLikes, poemCount, bookCount, audioCount] = await Promise.all([
     prisma.$queryRaw<RawLike[]>`
       SELECT 
-        l.id::text,
+        l."poemId" as id,
         'Poem' as type,
         p.title as "targetTitle",
         p.slug as "targetSlug",
@@ -50,7 +51,7 @@ export default async function AccountLikesPage({ searchParams }: PageProps) {
       UNION ALL
       
       SELECT 
-        bl.id::text,
+        bl."bookId" as id,
         'Book' as type,
         b.title as "targetTitle",
         b.slug as "targetSlug",
@@ -62,7 +63,7 @@ export default async function AccountLikesPage({ searchParams }: PageProps) {
       UNION ALL
       
       SELECT 
-        al.id::text,
+        al."audioId" as id,
         'Audio' as type,
         a.title as "targetTitle",
         a.slug as "targetSlug",
@@ -72,7 +73,7 @@ export default async function AccountLikesPage({ searchParams }: PageProps) {
       WHERE al."userId" = ${userId}
       
       ORDER BY "createdAt" DESC
-      LIMIT ${PAGE_SIZE} OFFSET ${skip}
+      LIMIT ${Prisma.raw(String(PAGE_SIZE))} OFFSET ${Prisma.raw(String(skip))}
     `,
     prisma.like.count({ where: { userId } }),
     prisma.bookLike.count({ where: { userId } }),

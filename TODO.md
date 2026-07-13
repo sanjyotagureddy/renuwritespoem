@@ -440,3 +440,28 @@ admin, and technical work.
 4. Add public newsletter/signup CTAs on homepage and footer.
 5. Add poem search.
 6. Add reader account/profile pages.
+
+## Phase 26: Newsletter Campaign Analytics & Tracking
+
+- [ ] **Extend Database Schema**:
+  - Add tracking fields to the `CampaignDelivery` model:
+    - `openedAt` (DateTime?) — tracks first open time
+    - `openCount` (Int, default 0) — tracks total opens
+  - Create a `CampaignClick` model to track links clicked:
+    - Fields: `id`, `deliveryId` (relation to `CampaignDelivery`), `url` (String), `clickedAt` (DateTime)
+- [ ] **Implement Email Open Tracking**:
+  - Create a transparent 1x1 tracking pixel API endpoint: `/api/campaigns/track/open/[deliveryId]/pixel.gif`.
+  - When requested, record `openedAt` and increment `openCount` for the delivery, then return the pixel image binary with headers disabling browser caching.
+  - Modify the email builder to inject this tracking pixel `<img>` tag at the bottom of the HTML message body.
+- [ ] **Implement Click Tracking Wrapper**:
+  - Create a redirection wrapper API endpoint: `/api/campaigns/track/click?d=[deliveryId]&url=[targetUrl]`.
+  - When clicked, log the link url and click time in the `CampaignClick` table, then perform a 302 redirect to the destination `targetUrl`.
+  - Update the campaign parser to replace all raw anchor tags in the email content with formatted redirect tracking wrapper links.
+- [ ] **Enhance Admin Campaigns Dashboard**:
+  - Build an analytics report view:
+    - Displays overall KPIs: **Delivery Rate**, **Open Rate**, **Click-Through Rate (CTR)**.
+    - Renders visual progress bars for quick ratio scanning.
+    - Shows a table of "Top Clicked Links" with click frequencies.
+  - Render an interactive delivery table:
+    - Filter and search deliveries by email address.
+    - Show status tags for each recipient: `Sent`, `Failed`, `Opened` (with badge counting views), and `Clicked Links` list.

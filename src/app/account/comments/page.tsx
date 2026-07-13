@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
+import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -86,7 +87,7 @@ export default async function AccountCommentsPage({
       WHERE ac."userId" = ${userId}
       
       ORDER BY "createdAt" DESC
-      LIMIT ${PAGE_SIZE} OFFSET ${skip}
+      LIMIT ${Prisma.raw(String(PAGE_SIZE))} OFFSET ${Prisma.raw(String(skip))}
     `,
     prisma.comment.count({ where: { userId } }),
     prisma.bookComment.count({ where: { userId } }),
