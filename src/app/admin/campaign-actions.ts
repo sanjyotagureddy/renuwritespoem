@@ -4,6 +4,32 @@ import { revalidatePath } from "next/cache";
 import { getPrisma } from "@/lib/db";
 import { sendCampaignEmail, sendCampaignEmailBcc } from "@/lib/email";
 import { requireAdmin } from "./shared-actions";
+import { siteConfig } from "@/lib/seo";
+
+export async function injectTracking(html: string, deliveryId: string): Promise<string> {
+  // 1. Inject open tracking pixel at the end of the HTML body
+  const pixelUrl = `${siteConfig.url}/api/campaigns/track/open/${deliveryId}/pixel.gif`;
+  const pixelImg = `<img src="${pixelUrl}" alt="" width="1" height="1" style="display:none;" />`;
+  let trackedHtml = html + pixelImg;
+
+  // 2. Rewrite anchor tags with click tracking redirect
+  const urlRegex = /href="((https?:\/\/[^"]+))"/gi;
+  trackedHtml = trackedHtml.replace(urlRegex, (match, url) => {
+    // Suppress tracking for unsubscribe links, preference pages, mailto or tel links
+    if (
+      url.includes("/unsubscribe") || 
+      url.includes("/subscribe/preferences") ||
+      url.startsWith("mailto:") ||
+      url.startsWith("tel:")
+    ) {
+      return match;
+    }
+    const trackingUrl = `${siteConfig.url}/api/campaigns/track/click?d=${deliveryId}&url=${encodeURIComponent(url)}`;
+    return `href="${trackingUrl}"`;
+  });
+
+  return trackedHtml;
+}
 
 export interface CampaignData {
   subject: string;
@@ -143,62 +169,66 @@ export async function sendCampaignAction(campaignId: string) {
 
   const bodyHtml = await parseMarkdownToHtml(campaign.body);
 
-  const activeBccEmails: string[] = [];
-  const suppressedRecipientEmails: string[] = [];
-
-  for (const subscriber of subscribers) {
-    const emailLower = subscriber.email.toLowerCase();
-    if (suppressedEmails.has(emailLower)) {
-      suppressedRecipientEmails.push(subscriber.email);
-    } else {
-      activeBccEmails.push(subscriber.email);
-    }
-  }
-
   let sent = 0;
   let failed = 0;
+  const DISPATCH_BATCH_SIZE = 5;
 
-  const BATCH_SIZE = 90;
-  for (let i = 0; i < activeBccEmails.length; i += BATCH_SIZE) {
-    const batch = activeBccEmails.slice(i, i + BATCH_SIZE);
-    const emailSuccess = await sendCampaignEmailBcc({
-      bccEmails: batch,
-      subject: campaign.subject,
-      bodyHtml,
-    });
+  for (let i = 0; i < subscribers.length; i += DISPATCH_BATCH_SIZE) {
+    const chunk = subscribers.slice(i, i + DISPATCH_BATCH_SIZE);
 
-    if (emailSuccess) {
-      await prisma.campaignDelivery.createMany({
-        data: batch.map((email) => ({
-          campaignId,
-          email,
-          status: "SUCCESS",
-        })),
-      });
-      sent += batch.length;
-    } else {
-      await prisma.campaignDelivery.createMany({
-        data: batch.map((email) => ({
-          campaignId,
-          email,
-          status: "FAILED",
-          error: "BCC batch dispatch connection error or SMTP rejection",
-        })),
-      });
-      failed += batch.length;
-    }
-  }
+    await Promise.all(
+      chunk.map(async (subscriber) => {
+        const emailLower = subscriber.email.toLowerCase();
+        if (suppressedEmails.has(emailLower)) {
+          await prisma.campaignDelivery.create({
+            data: {
+              campaignId,
+              email: subscriber.email,
+              status: "FAILED",
+              error: "Recipient has unsubscribed (Suppression Check)",
+            },
+          });
+          failed++;
+          return;
+        }
 
-  if (suppressedRecipientEmails.length > 0) {
-    await prisma.campaignDelivery.createMany({
-      data: suppressedRecipientEmails.map((email) => ({
-        campaignId,
-        email,
-        status: "FAILED",
-        error: "Recipient has unsubscribed (Suppression Check)",
-      })),
-    });
-    failed += suppressedRecipientEmails.length;
+        // Create initial campaign delivery trace
+        const delivery = await prisma.campaignDelivery.create({
+          data: {
+            campaignId,
+            email: subscriber.email,
+            status: "SENDING",
+          },
+        });
+
+        // Personalize body with custom tracking links and pixel injection
+        const personalizedBodyHtml = await injectTracking(bodyHtml, delivery.id);
+
+        const emailSuccess = await sendCampaignEmail({
+          recipientEmail: subscriber.email,
+          recipientName: subscriber.name,
+          subject: campaign.subject,
+          bodyHtml: personalizedBodyHtml,
+        });
+
+        if (emailSuccess) {
+          await prisma.campaignDelivery.update({
+            where: { id: delivery.id },
+            data: { status: "SUCCESS" },
+          });
+          sent++;
+        } else {
+          await prisma.campaignDelivery.update({
+            where: { id: delivery.id },
+            data: {
+              status: "FAILED",
+              error: "SMTP individual delivery rejected or timed out",
+            },
+          });
+          failed++;
+        }
+      })
+    );
   }
 
   await prisma.campaign.update({

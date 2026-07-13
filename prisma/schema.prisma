@@ -395,12 +395,27 @@ model CampaignDelivery {
   status     String   // "SUCCESS" | "FAILED"
   error      String?
   sentAt     DateTime @default(now())
+  openedAt   DateTime?
+  openCount  Int      @default(0)
 
   campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  clicks   CampaignClick[]
 
   @@index([campaignId])
   @@index([email])
   @@map("campaign_deliveries")
+}
+
+model CampaignClick {
+  id         String   @id @default(cuid())
+  deliveryId String
+  url        String   @db.Text
+  clickedAt  DateTime @default(now())
+
+  delivery   CampaignDelivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+
+  @@index([deliveryId])
+  @@map("campaign_clicks")
 }
 
 model Audio {

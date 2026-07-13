@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
+import DeliveryLogsClient from "./delivery-logs-client";
 
 export const metadata: Metadata = {
   title: "Campaign Details & Analytics — Admin",
@@ -20,6 +21,9 @@ export default async function CampaignDetailsPage({ params }: CampaignDetailsPag
     include: {
       deliveries: {
         orderBy: { sentAt: "desc" },
+        include: {
+          clicks: true,
+        },
       },
     },
   });
@@ -29,6 +33,35 @@ export default async function CampaignDetailsPage({ params }: CampaignDetailsPag
   }
 
   const totalRecipients = campaign.sentCount + campaign.failedCount;
+  const allDeliveries = campaign.deliveries;
+  
+  // Calculate delivery stats
+  const successfulDeliveries = allDeliveries.filter((d) => d.status === "SUCCESS");
+  const totalSuccessCount = successfulDeliveries.length;
+  
+  // Calculate open stats
+  const openedDeliveries = successfulDeliveries.filter((d) => d.openedAt !== null);
+  const totalOpensCount = openedDeliveries.length;
+  const openRate = totalSuccessCount > 0 ? (totalOpensCount / totalSuccessCount) * 100 : 0;
+  
+  // Calculate click stats
+  const clickedDeliveries = successfulDeliveries.filter((d) => d.clicks.length > 0);
+  const totalClicksCount = clickedDeliveries.length;
+  const clickRate = totalSuccessCount > 0 ? (totalClicksCount / totalSuccessCount) * 100 : 0;
+
+  // Aggregate clicked links across all deliveries
+  const linkCountsMap: Record<string, number> = {};
+  allDeliveries.forEach((d) => {
+    d.clicks.forEach((c) => {
+      linkCountsMap[c.url] = (linkCountsMap[c.url] || 0) + 1;
+    });
+  });
+
+  const topClickedLinks = Object.entries(linkCountsMap)
+    .map(([url, count]) => ({ url, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const maxClickCount = topClickedLinks.length > 0 ? Math.max(...topClickedLinks.map((l) => l.count)) : 1;
 
   return (
     <div className="space-y-6 font-[family-name:var(--font-inter)] text-white">
@@ -97,7 +130,7 @@ export default async function CampaignDetailsPage({ params }: CampaignDetailsPag
         </div>
       </div>
 
-      {/* Analytics Summary Cards */}
+      {/* Analytics Summary Cards - Row 1 (Delivery Stats) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-xl border border-white/10 bg-white/[0.01] p-5 text-center">
           <span className="text-[10px] font-semibold tracking-wide text-white/40 uppercase">Total Target Recipients</span>
@@ -115,60 +148,69 @@ export default async function CampaignDetailsPage({ params }: CampaignDetailsPag
         </div>
       </div>
 
+      {/* Analytics Summary Cards - Row 2 (Engagement Stats) */}
+      {campaign.status === "SENT" && (
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="rounded-xl border border-white/10 bg-white/[0.01] p-5 text-center">
+            <span className="text-[10px] font-semibold tracking-wide text-white/40 uppercase">Unique Opens</span>
+            <p className="text-3xl font-bold mt-2 text-sky-400">{totalOpensCount}</p>
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-white/[0.01] p-5 text-center">
+            <span className="text-[10px] font-semibold tracking-wide text-white/40 uppercase">Unique Clicks</span>
+            <p className="text-3xl font-bold mt-2 text-indigo-400">{totalClicksCount}</p>
+          </div>
+
+          <div className="rounded-xl border border-sky-500/10 bg-sky-500/5 p-5 text-center">
+            <span className="text-[10px] font-semibold tracking-wide text-sky-400/60 uppercase block">Open Rate</span>
+            <p className="text-3xl font-bold mt-2 text-sky-400">{openRate.toFixed(1)}%</p>
+          </div>
+
+          <div className="rounded-xl border border-indigo-500/10 bg-indigo-500/5 p-5 text-center">
+            <span className="text-[10px] font-semibold tracking-wide text-indigo-400/60 uppercase block">Click-Through Rate</span>
+            <p className="text-3xl font-bold mt-2 text-indigo-400">{clickRate.toFixed(1)}%</p>
+          </div>
+        </div>
+      )}
+
+      {/* Top Clicked Links */}
+      {topClickedLinks.length > 0 && (
+        <div className="space-y-3">
+          <h4 className="text-xs font-semibold tracking-wider text-white/50 uppercase">Top Clicked Links</h4>
+          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-4">
+            {topClickedLinks.map(({ url, count }) => (
+              <div key={url} className="space-y-2">
+                <div className="flex justify-between text-xs items-center">
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-400 hover:underline truncate max-w-[80%] font-mono"
+                  >
+                    {url}
+                  </a>
+                  <span className="text-white/60 font-semibold">{count} {count === 1 ? "click" : "clicks"}</span>
+                </div>
+                <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className="bg-amber-400 h-1.5 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${(count / maxClickCount) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Recipients Log Table */}
       <div className="space-y-3">
         <h4 className="text-xs font-semibold tracking-wider text-white/50 uppercase">Recipient Delivery Logs</h4>
-        <div className="overflow-x-auto rounded-xl border border-white/10 bg-white/[0.02]">
-          <table className="w-full text-left text-xs text-white/60">
-            <thead className="border-b border-white/10 bg-white/[0.02] text-[10px] font-semibold tracking-wider text-white/45 uppercase">
-              <tr>
-                <th className="px-6 py-4">Recipient Email</th>
-                <th className="px-6 py-4">Delivery Status</th>
-                <th className="px-6 py-4">Trace Details / Fail Reason</th>
-                <th className="px-6 py-4 text-right">Delivery Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {campaign.deliveries.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-white/30">
-                    No recipient records logged for this campaign.
-                  </td>
-                </tr>
-              ) : (
-                campaign.deliveries.map((delivery) => (
-                  <tr key={delivery.id} className="hover:bg-white/[0.01]">
-                    <td className="px-6 py-4 font-medium text-white">{delivery.email}</td>
-                    <td className="px-6 py-4">
-                      {delivery.status === "SUCCESS" ? (
-                        <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] text-emerald-400 font-medium">
-                          Success
-                        </span>
-                      ) : (
-                        <span className="rounded-full bg-rose-500/10 px-2.5 py-0.5 text-[10px] text-rose-400 font-medium">
-                          Failed
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 max-w-sm truncate text-white/45">
-                      {delivery.error || "Completed successfully"}
-                    </td>
-                    <td className="px-6 py-4 text-right text-white/50">
-                      {new Date(delivery.sentAt).toLocaleString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DeliveryLogsClient deliveries={campaign.deliveries} />
       </div>
     </div>
   );
 }
+
