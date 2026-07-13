@@ -25,6 +25,7 @@ const navGroups = [
       { href: "/admin/genres", label: "Genres" },
       { href: "/admin/books", label: "Books" },
       { href: "/admin/audio", label: "Audio" },
+      { href: "/admin/author", label: "Author Profile" },
     ]
   },
   {

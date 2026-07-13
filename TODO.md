@@ -417,20 +417,20 @@ admin, and technical work.
 
 ## Phase 25: Premium Story-Driven Author Page & Admin Controls
 
-- [ ] Design and implement dynamic story layout on the public `/about` page:
-  - [ ] Add "Why I Write" section focusing on the author's message and core drive
-  - [ ] Add "My Writing Journey" vertical timeline or narrative layout
-  - [ ] Add "My Inspiration" section highlighting elements of love, nature, life, and spirituality
-  - [ ] Add "Awards & Publications" credentials gallery
-  - [ ] Add "Interviews & Press" links/media embeds
-  - [ ] Add "Behind the Scenes" / "Writing Desk" personal section
-  - [ ] Add a collated Gallery of 6-8 images:
-    - [ ] Create a masonry-style auto-collating layout (auto-grouping portrait and landscape images into a unified stack rather than single lines)
-- [ ] Implement Admin Dashboard controls to manage the Author Page:
-  - [ ] Create content forms to edit story sections (Why I Write, Journey, Inspiration text blocks)
-  - [ ] Build a multi-image upload and arrangement utility for the Gallery, Behind the Scenes, and Writing Desk blocks
-  - [ ] Provide options to toggle/hide optional sections on demand
-  - [ ] Set up tests for custom gallery collation logic
+- [x] Design and implement dynamic story layout on the public `/about` page:
+  - [x] Add "Why I Write" section focusing on the author's message and core drive
+  - [x] Add "My Writing Journey" vertical timeline or narrative layout
+  - [x] Add "My Inspiration" section highlighting elements of love, nature, life, and spirituality
+  - [x] Add "Awards & Publications" credentials gallery
+  - [x] Add "Interviews & Press" links/media embeds
+  - [x] Add "Behind the Scenes" / "Writing Desk" personal section
+  - [x] Add a collated Gallery of 6-8 images:
+    - [x] Create a masonry-style auto-collating layout (auto-grouping portrait and landscape images into a unified stack rather than single lines)
+- [x] Implement Admin Dashboard controls to manage the Author Page:
+  - [x] Create content forms to edit story sections (Why I Write, Journey, Inspiration text blocks)
+  - [x] Build a multi-image upload and arrangement utility for the Gallery, Behind the Scenes, and Writing Desk blocks
+  - [x] Provide options to toggle/hide optional sections on demand
+  - [x] Set up tests for custom gallery collation logic
 
 ## Highest Priority Next
 

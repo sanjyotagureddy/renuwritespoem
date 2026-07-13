@@ -550,3 +550,37 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
+model AuthorProfile {
+  id              String   @id @default(cuid())
+  whyIWrite       String?  @db.Text
+  writingJourney  String?  @db.Text
+  inspiration     String?  @db.Text
+  awards          String?  @db.Text
+  publications    String?  @db.Text
+  interviews      String?  @db.Text
+  behindTheScenes String?  @db.Text
+  writingDesk     String?  @db.Text
+  updatedAt       DateTime @updatedAt
+
+  gallery         AuthorGalleryImage[]
+
+  @@map("author_profile")
+}
+
+model AuthorGalleryImage {
+  id        String   @id @default(cuid())
+  url       String?
+  fileData  String?  @db.Text
+  fileMime  String?
+  width     Int      @default(0)
+  height    Int      @default(0)
+  order     Int      @default(0)
+  caption   String?
+  createdAt DateTime @default(now())
+
+  profileId String
+  profile   AuthorProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("author_gallery_images")
+}
+
