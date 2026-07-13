@@ -509,3 +509,22 @@ Restructure the Homepage layout to remove the hero carousel dependency and focus
   - [ ] **Newsletter**: Distinct subscription form cards
   - [ ] **Footer**: Clear, structured legal and explore navigation footer
 
+## Phase 29: Admin Analytics Overhaul
+
+Enhance the `/admin/analytics` dashboard to track sales, audience growth, and creative engagement using a multi-tab interface.
+
+- [ ] **Tabbed Navigation**: Implement client-side tabs for "Audience & Growth", "Sales & Orders", and "Content Engagement".
+- [ ] **Sales & Orders Tab**:
+  - [ ] Query and calculate total sales revenue (sum of paid orders).
+  - [ ] Calculate total copies of books sold.
+  - [ ] Display active order queue count.
+  - [ ] Render visual progress bar leaderboard of sales per book.
+  - [ ] List recent 5 orders with order number, copies, status tag, and total amount.
+- [ ] **Content Engagement Tab**:
+  - [ ] Aggregate and list top-performing spoken audio recordings (stream/view counts).
+  - [ ] List top poems ranked by reader likes and approved comments count.
+- [ ] **Audience & Growth Tab**:
+  - [ ] Integrate existing attribution table and growth snapshot metrics.
+  - [ ] Display invite-to-signup conversion rates.
+
+

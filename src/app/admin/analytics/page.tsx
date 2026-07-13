@@ -1,6 +1,7 @@
 import { getPrisma } from "@/lib/db";
-import AttributionAnalyticsTable from "@/components/admin/attribution-analytics-table";
-import { Eye, Share2 } from "lucide-react";
+import AnalyticsTabs from "@/components/admin/analytics-tabs";
+
+export const dynamic = "force-dynamic";
 
 export default async function AnalyticsDashboard() {
   const prisma = getPrisma();
@@ -13,15 +14,29 @@ export default async function AnalyticsDashboard() {
     invitesAcceptedThisWeek,
     subscribersThisWeek,
     topSharedPoems,
+    paidOrders,
+    activeOrdersCount,
+    bookSalesRaw,
+    booksInfo,
+    recentOrdersRaw,
+    topAudioRaw,
+    topPoemsRaw,
+    // Extensions
+    recentUsers,
+    recentSubscribers,
+    recentComments,
+    recentLikes,
+    recentOrdersRawFeed,
+    campaignsRaw,
   ] = await Promise.all([
     prisma.attributionLog.groupBy({
       by: ["source"],
-      _count: { id: true }
+      _count: { id: true },
     }),
     prisma.user.groupBy({
       by: ["signUpSource"],
       where: { signUpSource: { not: null } },
-      _count: { id: true }
+      _count: { id: true },
     }),
     prisma.invite.count({ where: { sentAt: { gte: sevenDaysAgo } } }),
     prisma.invite.count({ where: { signedUpAt: { gte: sevenDaysAgo } } }),
@@ -33,13 +48,104 @@ export default async function AnalyticsDashboard() {
         title: true,
         slug: true,
         views: true,
-        _count: { select: { invites: true } }
-      }
-    })
+        _count: { select: { invites: true } },
+      },
+    }),
+    prisma.bookOrder.findMany({
+      where: {
+        status: { in: ["CONFIRMED", "SHIPPED", "DELIVERED"] },
+      },
+      select: { totalAmount: true, copies: true },
+    }),
+    prisma.bookOrder.count({
+      where: { status: { in: ["PENDING", "CONFIRMED"] } },
+    }),
+    prisma.bookOrder.groupBy({
+      by: ["bookId"],
+      where: { status: { in: ["CONFIRMED", "SHIPPED", "DELIVERED"] } },
+      _sum: { copies: true },
+    }),
+    prisma.book.findMany({
+      select: { id: true, title: true },
+    }),
+    prisma.bookOrder.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { book: { select: { title: true } } },
+    }),
+    prisma.audio.findMany({
+      orderBy: { views: "desc" },
+      take: 5,
+      include: {
+        _count: { select: { likes: true, comments: true } },
+      },
+    }),
+    prisma.poem.findMany({
+      where: { published: true },
+      orderBy: { views: "desc" },
+      take: 5,
+      include: {
+        _count: { select: { likes: true, comments: true } },
+      },
+    }),
+    // Extensions
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: { name: true, email: true, signUpSource: true, createdAt: true },
+    }),
+    prisma.subscriber.findMany({
+      orderBy: { subscribedAt: "desc" },
+      take: 10,
+      select: { name: true, email: true, subscribedAt: true },
+    }),
+    prisma.comment.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        createdAt: true,
+        body: true,
+        user: { select: { name: true, email: true } },
+        poem: { select: { title: true } },
+      },
+    }),
+    prisma.like.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        createdAt: true,
+        user: { select: { name: true } },
+        poem: { select: { title: true } },
+      },
+    }),
+    prisma.bookOrder.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        createdAt: true,
+        name: true,
+        copies: true,
+        book: { select: { title: true } },
+      },
+    }),
+    prisma.campaign.findMany({
+      orderBy: { sentAt: "desc" },
+      where: { status: "SENT" },
+      include: {
+        deliveries: {
+          select: {
+            openedAt: true,
+            openCount: true,
+            clicks: { select: { id: true } },
+          },
+        },
+      },
+    }),
   ]);
 
+  // Process attribution source channels
   const sourceMap: Record<string, { clicks: number; signups: number }> = {};
-
   clicksBySource.forEach((c) => {
     if (c.source) {
       const src = c.source.toLowerCase();
@@ -64,84 +170,167 @@ export default async function AnalyticsDashboard() {
     }))
     .sort((a, b) => b.clicks - a.clicks);
 
+  // Process sales statistics
+  const totalRevenue = paidOrders.reduce((sum, order) => sum + Number(order.totalAmount), 0);
+  const totalCopiesSold = paidOrders.reduce((sum, order) => sum + order.copies, 0);
+
+  const bookSalesList = booksInfo.map((b) => {
+    const record = bookSalesRaw.find((r) => r.bookId === b.id);
+    return {
+      id: b.id,
+      title: b.title,
+      copiesSold: record?._sum?.copies ?? 0,
+    };
+  }).sort((a, b) => b.copiesSold - a.copiesSold);
+
+  const recentOrders = recentOrdersRaw.map((ord) => ({
+    id: ord.id,
+    orderNumber: ord.orderNumber,
+    name: ord.name,
+    email: ord.email,
+    copies: ord.copies,
+    totalAmount: Number(ord.totalAmount),
+    status: ord.status,
+    createdAt: ord.createdAt.toISOString(),
+    bookTitle: ord.book.title,
+  }));
+
+  // Process engagement statistics
+  const topAudio = topAudioRaw.map((aud) => ({
+    id: aud.id,
+    title: aud.title,
+    slug: aud.slug,
+    views: aud.views,
+    likesCount: aud._count.likes,
+    commentsCount: aud._count.comments,
+  }));
+
+  const topPoems = topPoemsRaw.map((p) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    views: p.views,
+    likesCount: p._count.likes,
+    commentsCount: p._count.comments,
+  }));
+
+  // Process campaign performance stats
+  const campaignHistory = campaignsRaw.map((c) => {
+    const sentCount = c.sentCount;
+    const openedCount = c.deliveries.filter((d) => d.openCount > 0 || d.openedAt !== null).length;
+    const clickedCount = c.deliveries.filter((d) => d.clicks.length > 0).length;
+    return {
+      id: c.id,
+      subject: c.subject,
+      sentAt: c.sentAt ? c.sentAt.toISOString() : c.createdAt.toISOString(),
+      sentCount,
+      openedCount,
+      clickedCount,
+      openRate: sentCount > 0 ? (openedCount / sentCount) * 100 : 0,
+      clickRate: sentCount > 0 ? (clickedCount / sentCount) * 100 : 0,
+    };
+  });
+
+  const totalCampaignsSent = campaignHistory.length;
+  const totalSentDeliveries = campaignHistory.reduce((sum, c) => sum + c.sentCount, 0);
+  const totalOpenedDeliveries = campaignHistory.reduce((sum, c) => sum + c.openedCount, 0);
+  const totalClickedDeliveries = campaignHistory.reduce((sum, c) => sum + c.clickedCount, 0);
+
+  const averageOpenRate = totalSentDeliveries > 0 ? (totalOpenedDeliveries / totalSentDeliveries) * 100 : 0;
+  const averageClickRate = totalSentDeliveries > 0 ? (totalClickedDeliveries / totalSentDeliveries) * 100 : 0;
+
+  // Process Site Activity Feed
+  const activityItems: Array<{ id: string; type: string; text: string; timestamp: Date }> = [];
+
+  recentUsers.forEach((u) => {
+    activityItems.push({
+      id: `user-${u.email}-${u.createdAt.getTime()}`,
+      type: "user",
+      text: `${u.name || u.email} registered an account${u.signUpSource ? ` via ${u.signUpSource}` : ""}`,
+      timestamp: u.createdAt,
+    });
+  });
+
+  recentSubscribers.forEach((s) => {
+    activityItems.push({
+      id: `sub-${s.email}-${s.subscribedAt.getTime()}`,
+      type: "subscriber",
+      text: `${s.name || s.email} subscribed to the newsletter`,
+      timestamp: s.subscribedAt,
+    });
+  });
+
+  recentComments.forEach((c) => {
+    activityItems.push({
+      id: `comment-${c.id}`,
+      type: "comment",
+      text: `${c.user.name || c.user.email} commented on "${c.poem.title}"`,
+      timestamp: c.createdAt,
+    });
+  });
+
+  recentLikes.forEach((l, idx) => {
+    activityItems.push({
+      id: `like-${l.poem.title}-${idx}-${l.createdAt.getTime()}`,
+      type: "like",
+      text: `${l.user.name || "A reader"} liked "${l.poem.title}"`,
+      timestamp: l.createdAt,
+    });
+  });
+
+  recentOrdersRawFeed.forEach((o, idx) => {
+    activityItems.push({
+      id: `order-feed-${idx}-${o.createdAt.getTime()}`,
+      type: "order",
+      text: `${o.name} ordered ${o.copies} cop${o.copies > 1 ? "ies" : "y"} of "${o.book.title}"`,
+      timestamp: o.createdAt,
+    });
+  });
+
+  const activityFeed = activityItems
+    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    .slice(0, 15)
+    .map((item) => ({
+      ...item,
+      timestamp: item.timestamp.toISOString(),
+    }));
+
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-3xl text-white md:text-4xl">Analytics</h1>
+    <div className="space-y-8 font-[family-name:var(--font-inter)] text-white">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold font-[family-name:var(--font-playfair)]">
+          Analytics Dashboard
+        </h1>
+        <p className="text-xs text-white/40">
+          Track growth metrics, newsletter campaigns, bookstore sales, and reader interactions.
+        </p>
       </div>
 
-      {/* Growth Snapshot */}
-      <section>
-        <div className="mb-4">
-          <h2 className="text-xl text-white">Growth Snapshot</h2>
-          <p className="mt-1 text-xs text-white/40">Weekly performance of growth features and sharing.</p>
-        </div>
-        
-        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-white/10 bg-white/3 p-5">
-            <p className="mb-2 text-xs tracking-[0.18em] text-white/40 uppercase">
-              Invites Sent (7d)
-            </p>
-            <p className="text-3xl text-white">{invitesSentThisWeek}</p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/3 p-5">
-            <p className="mb-2 text-xs tracking-[0.18em] text-white/40 uppercase">
-              Invites Accepted (7d)
-            </p>
-            <p className="text-3xl text-emerald-400">{invitesAcceptedThisWeek}</p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/3 p-5">
-            <p className="mb-2 text-xs tracking-[0.18em] text-white/40 uppercase">
-              New Subscribers (7d)
-            </p>
-            <p className="text-3xl text-amber-400">{subscribersThisWeek}</p>
-          </div>
-        </div>
-
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/3">
-          <div className="border-b border-white/10 bg-white/2 px-5 py-4">
-            <h3 className="text-sm tracking-wider text-white uppercase">Top Shared Poems</h3>
-          </div>
-          <div className="divide-y divide-white/8">
-            {topSharedPoems.length === 0 ? (
-              <div className="p-6 text-center">
-                <p className="font-[family-name:var(--font-inter)] text-white/50">
-                  No shares yet.
-                </p>
-              </div>
-            ) : (
-              topSharedPoems.map((poem) => (
-                <div key={poem.slug} className="flex items-center justify-between px-5 py-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm text-white">{poem.title}</p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-4 text-xs text-white/50">
-                    <span className="flex items-center gap-1" title="Views">
-                      <Eye className="h-3.5 w-3.5" />
-                      {poem.views}
-                    </span>
-                    <span className="flex items-center gap-1 text-emerald-400/80" title="Invites Sent">
-                      <Share2 className="h-3.5 w-3.5" />
-                      {poem._count.invites}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Attribution Analytics */}
-      <section>
-        <div className="mb-4">
-          <h2 className="text-xl text-white">Attribution Analytics</h2>
-          <p className="text-xs text-white/40 mt-1">Track which sharing channels drive the most traffic and signup conversions.</p>
-        </div>
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/3 p-5">
-          <AttributionAnalyticsTable data={attributionData} />
-        </div>
-      </section>
+      <AnalyticsTabs
+        attributionData={attributionData}
+        invitesSentThisWeek={invitesSentThisWeek}
+        invitesAcceptedThisWeek={invitesAcceptedThisWeek}
+        subscribersThisWeek={subscribersThisWeek}
+        topSharedPoems={topSharedPoems}
+        salesData={{
+          totalRevenue,
+          totalCopiesSold,
+          activeOrdersCount,
+          bookSalesList,
+          recentOrders,
+        }}
+        engagementData={{
+          topAudio,
+          topPoems,
+        }}
+        campaignData={{
+          totalCampaignsSent,
+          averageOpenRate,
+          averageClickRate,
+          campaignHistory,
+        }}
+        activityFeed={activityFeed}
+      />
     </div>
   );
 }

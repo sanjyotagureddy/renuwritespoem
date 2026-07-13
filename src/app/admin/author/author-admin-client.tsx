@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import Image from "next/image";
+import CustomSelect from "@/components/ui/custom-select";
 import {
   updateAuthorProfile,
   addGalleryImage,
@@ -657,19 +658,15 @@ export default function AuthorAdminClient({
                 <label htmlFor="uploadCategory" className="block text-[10px] uppercase tracking-wider text-white/40">
                   Image Category / Album
                 </label>
-                <select
-                  id="uploadCategory"
+                <CustomSelect
                   value={uploadCategory}
-                  onChange={(e) => setUploadCategory(e.target.value)}
-                  className="w-full max-w-[280px] rounded-lg border border-white/10 bg-neutral-900 px-3 py-2 text-xs text-white outline-none transition-colors focus:border-white/35 font-[family-name:var(--font-inter)] cursor-pointer"
-                >
-                  <option value="Uncategorized" className="bg-neutral-900 text-white">Uncategorized (No category)</option>
-                  {GALLERY_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat} className="bg-neutral-900 text-white">
-                      {cat}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setUploadCategory(val)}
+                  options={[
+                    { value: "Uncategorized", label: "Uncategorized (No category)" },
+                    ...GALLERY_CATEGORIES.map((cat) => ({ value: cat, label: cat })),
+                  ]}
+                  className="w-full max-w-[280px]"
+                />
               </div>
             </div>
 
@@ -760,18 +757,15 @@ export default function AuthorAdminClient({
                           {img.caption || <span className="italic text-white/20">No caption</span>}
                         </p>
                         <div className="pt-0.5">
-                          <select
+                          <CustomSelect
                             value={img.category || "Uncategorized"}
-                            onChange={(e) => handleCategoryChange(img.id, e.target.value)}
-                            className="rounded bg-neutral-900 border border-white/10 px-2 py-1 text-[10px] text-white/70 hover:text-white hover:border-white/20 focus:border-amber-400 outline-none w-full max-w-[160px] cursor-pointer font-[family-name:var(--font-inter)]"
-                          >
-                            <option value="Uncategorized" className="bg-neutral-900 text-white">Uncategorized</option>
-                            {GALLERY_CATEGORIES.map((cat) => (
-                              <option key={cat} value={cat} className="bg-neutral-900 text-white">
-                                {cat}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={(val) => handleCategoryChange(img.id, val)}
+                            options={[
+                              { value: "Uncategorized", label: "Uncategorized" },
+                              ...GALLERY_CATEGORIES.map((cat) => ({ value: cat, label: cat })),
+                            ]}
+                            className="w-full max-w-[160px]"
+                          />
                         </div>
                       </div>
 
