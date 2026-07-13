@@ -76,7 +76,7 @@ admin, and technical work.
 - [x] Set up global styles and typography
 - [x] Add floating social links
 - [x] Add invited-reader welcome banner
-- [ ] Add active navigation state
+- [x] Add active navigation state
 - [ ] Review floating UI overlap on small screens
 
 ## Phase 5: Home Page

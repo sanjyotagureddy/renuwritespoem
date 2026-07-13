@@ -60,16 +60,26 @@ export default function Header() {
 
         {/* Desktop Navigation */}
         <ul className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                className="font-[family-name:var(--font-inter)] text-sm uppercase tracking-wider text-white/70 hover:text-white transition-colors"
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
+          {navLinks.map((link) => {
+            const isActive =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname?.startsWith(link.href);
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className={`font-[family-name:var(--font-inter)] text-sm uppercase tracking-wider transition-colors ${
+                    isActive
+                      ? "text-amber-400 font-semibold"
+                      : "text-white/70 hover:text-white"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            );
+          })}
 
           {status !== "loading" && isLoggedIn ? (
             <li className="relative group">
@@ -132,16 +142,26 @@ export default function Header() {
               </SheetTitle>
             </SheetHeader>
             <nav className="mt-6 flex flex-col gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block py-3 px-3 rounded-lg font-[family-name:var(--font-inter)] text-sm uppercase tracking-wider text-white/70 hover:text-white hover:bg-white/5 transition-colors"
-                  onClick={() => setOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isActive =
+                  link.href === "/"
+                    ? pathname === "/"
+                    : pathname?.startsWith(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`block py-3 px-3 rounded-lg font-[family-name:var(--font-inter)] text-sm uppercase tracking-wider transition-colors ${
+                      isActive
+                        ? "text-amber-400 bg-amber-500/10 font-semibold"
+                        : "text-white/70 hover:text-white hover:bg-white/5"
+                    }`}
+                    onClick={() => setOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
 
               {isLoggedIn && (
                 <>

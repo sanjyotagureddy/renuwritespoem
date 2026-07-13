@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { getServerAuthSession } from "@/lib/auth";
 import {
-  poemLanguageFontClass,
   poemLanguageLabel,
   poemLanguageToHtmlLang,
   type PoemLanguage,
@@ -13,6 +12,7 @@ import {
 import LikeButton from "@/components/poems/like-button";
 import ListenButton from "@/components/poems/listen-button";
 import CommentSection from "@/components/poems/comment-section";
+import PoemReader from "@/components/poems/poem-reader";
 import ShareButton from "@/components/ui/share-button";
 import InviteModal from "@/components/ui/invite-modal";
 import ViewTracker from "@/components/poems/view-tracker";
@@ -320,30 +320,15 @@ export default async function PoemDetailPage({ params }: PageProps) {
             </div>
           )}
 
-          <h1
-            lang={lang}
-            className={`max-w-2xl text-4xl leading-tight text-white md:text-5xl ${poemLanguageFontClass(language)}`}
-            style={poem.font ? { fontFamily: `'${poem.font}', serif` } : undefined}
-          >
-            {poem.title}
-          </h1>
-
-          {poem.excerpt ? (
-            <p
+          <div className="mt-8">
+            <PoemReader
+              title={poem.title}
+              content={poem.content}
+              excerpt={poem.excerpt}
+              font={poem.font}
+              language={language}
               lang={lang}
-              className={`mt-5 max-w-2xl border-l border-amber-200/25 pl-4 text-lg leading-relaxed text-white/70 ${poemLanguageFontClass(language)}`}
-              style={poem.font ? { fontFamily: `'${poem.font}', serif` } : undefined}
-            >
-              {poem.excerpt}
-            </p>
-          ) : null}
-
-          <div
-            lang={lang}
-            className={`mt-10 max-w-[42rem] text-lg leading-[2] whitespace-pre-line text-white/90 md:text-xl ${poemLanguageFontClass(language)}`}
-            style={poem.font ? { fontFamily: `'${poem.font}', serif` } : undefined}
-          >
-            {poem.content}
+            />
           </div>
 
           {poem.tags.length > 0 ? (
