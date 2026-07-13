@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import LegalFooterNav from "@/components/ui/legal-footer-nav";
 
 export const metadata: Metadata = {
   title: "Shipping & Refund Policy",
@@ -181,28 +182,4 @@ function Section({
   );
 }
 
-function LegalFooterNav({ current }: { current: string }) {
-  const links = [
-    { href: "/privacy", label: "Privacy Policy" },
-    { href: "/terms", label: "Terms of Use" },
-    { href: "/shipping", label: "Shipping & Refunds" },
-    { href: "/support", label: "Support" },
-  ];
-  return (
-    <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap gap-4">
-      {links.map((l) => (
-        <Link
-          key={l.href}
-          href={l.href}
-          className={`text-xs transition-colors ${
-            l.href === current
-              ? "text-white/70 pointer-events-none"
-              : "text-white/35 hover:text-white"
-          }`}
-        >
-          {l.label}
-        </Link>
-      ))}
-    </div>
-  );
-}
+

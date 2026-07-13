@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import ContactForm from "@/components/contact-form";
+import { Mail } from "lucide-react";
+import { InstagramIcon, BlogIcon } from "@/components/icons";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -29,42 +31,57 @@ export default function ContactPage() {
           Other Ways to Reach Me
         </h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-            <h3 className="mb-2 font-[family-name:var(--font-inter)] text-sm tracking-wider text-white/40 uppercase">
-              Email
-            </h3>
-            <a
-              href="mailto:renuwritespoem@gmail.com"
-              className="font-[family-name:var(--font-inter)] text-white/70 transition-colors hover:text-white"
-            >
-              renuwritespoem@gmail.com
-            </a>
+          <div className="rounded-xl border border-white/10 bg-white/5 p-6 flex items-start gap-4">
+            <div className="mt-1 text-amber-400 shrink-0">
+              <Mail className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="mb-2 font-[family-name:var(--font-inter)] text-sm tracking-wider text-white/40 uppercase">
+                Email
+              </h3>
+              <a
+                href="mailto:renuwritespoem@gmail.com"
+                className="font-[family-name:var(--font-inter)] text-white/70 transition-colors hover:text-white"
+              >
+                renuwritespoem@gmail.com
+              </a>
+            </div>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-            <h3 className="mb-2 font-[family-name:var(--font-inter)] text-sm tracking-wider text-white/40 uppercase">
-              Social
-            </h3>
-            <a
-              href="https://www.instagram.com/renuwrites_poem/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-[family-name:var(--font-inter)] text-white/70 transition-colors hover:text-white"
-            >
-              @renuwrites_poem on Instagram
-            </a>
+          <div className="rounded-xl border border-white/10 bg-white/5 p-6 flex items-start gap-4">
+            <div className="mt-1 text-amber-400 shrink-0">
+              <InstagramIcon className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="mb-2 font-[family-name:var(--font-inter)] text-sm tracking-wider text-white/40 uppercase">
+                Social
+              </h3>
+              <a
+                href="https://www.instagram.com/renuwrites_poem/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-[family-name:var(--font-inter)] text-white/70 transition-colors hover:text-white"
+              >
+                @renuwrites_poem on Instagram
+              </a>
+            </div>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-            <h3 className="mb-2 font-[family-name:var(--font-inter)] text-sm tracking-wider text-white/40 uppercase">
-              Blog
-            </h3>
-            <a
-              href="https://pillayrenu.blogspot.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-[family-name:var(--font-inter)] text-white/70 transition-colors hover:text-white"
-            >
-              pillayrenu.blogspot.com
-            </a>
+          <div className="rounded-xl border border-white/10 bg-white/5 p-6 flex items-start gap-4 col-span-1 md:col-span-2">
+            <div className="mt-1 text-amber-400 shrink-0">
+              <BlogIcon className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="mb-2 font-[family-name:var(--font-inter)] text-sm tracking-wider text-white/40 uppercase">
+                Blog
+              </h3>
+              <a
+                href="https://pillayrenu.blogspot.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-[family-name:var(--font-inter)] text-white/70 transition-colors hover:text-white"
+              >
+                pillayrenu.blogspot.com
+              </a>
+            </div>
           </div>
         </div>
       </div>

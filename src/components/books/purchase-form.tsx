@@ -107,6 +107,7 @@ export default function PurchaseForm({
         );
       setSuccess(true);
       setOrderId(data.orderId);
+      window.dispatchEvent(new CustomEvent("achievement-check"));
     } catch (cause) {
       setError(
         cause instanceof Error

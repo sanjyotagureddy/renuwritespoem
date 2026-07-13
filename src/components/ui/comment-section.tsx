@@ -81,6 +81,7 @@ export default function CommentSection({
         setNotice(null);
       }
       setText("");
+      window.dispatchEvent(new CustomEvent("achievement-check"));
     }
     setSubmitting(false);
   }

@@ -33,6 +33,9 @@ export default function AudioClient({ initialAudio }: { initialAudio: Track[] })
       if (!sessionStorage.getItem(viewedKey)) {
         sessionStorage.setItem(viewedKey, "true");
         fetch(`/api/audio/${track.id}/view`, { method: "POST" })
+          .then(() => {
+            window.dispatchEvent(new CustomEvent("achievement-check"));
+          })
           .catch((err) => console.error("Failed to track view:", err));
       }
     }

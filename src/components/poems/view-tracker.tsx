@@ -16,7 +16,11 @@ export default function ViewTracker({ poemId }: ViewTrackerProps) {
 
       fetch(`/api/poems/${poemId}/view`, {
         method: "POST",
-      }).catch((err) => console.error("Failed to track view:", err));
+      })
+        .then(() => {
+          window.dispatchEvent(new CustomEvent("achievement-check"));
+        })
+        .catch((err) => console.error("Failed to track view:", err));
     }
   }, [poemId]);
 

@@ -58,6 +58,7 @@ export default function LikeButton({
     const listData = await listRes.json();
     setUsers(listData.users ?? []);
     setLoading(false);
+    window.dispatchEvent(new CustomEvent("achievement-check"));
   }
 
   function handleCountClick() {

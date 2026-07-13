@@ -2,6 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 import AttributionTracker from "./attribution-tracker";
+import AchievementTracker from "@/components/account/achievement-tracker";
 
 export default function AuthSessionProvider({
   children,
@@ -11,6 +12,7 @@ export default function AuthSessionProvider({
   return (
     <SessionProvider>
       <AttributionTracker />
+      <AchievementTracker />
       {children}
     </SessionProvider>
   );
