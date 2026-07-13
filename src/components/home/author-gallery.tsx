@@ -32,18 +32,32 @@ const GALLERY_CATEGORIES = [
 export default function AuthorGallery({ images }: AuthorGalleryProps) {
   const [selectedTab, setSelectedTab] = useState<string>("All");
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [shuffledImages, setShuffledImages] = useState<AuthorGalleryImage[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Shuffle images array client-side on mount
+  useEffect(() => {
+    const arr = [...images];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    setShuffledImages(arr);
+    setIsMounted(true);
+  }, [images]);
 
   // Reset to page 1 whenever selected tab changes
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedTab]);
 
-  // Filter images based on selected tab
+  // Filter images based on selected tab (using shuffled images once mounted)
   const filteredImages = useMemo(() => {
-    if (!images || images.length === 0) return [];
-    if (selectedTab === "All") return images;
-    return images.filter((img) => img.category === selectedTab);
-  }, [images, selectedTab]);
+    const displayList = isMounted ? shuffledImages : images;
+    if (!displayList || displayList.length === 0) return [];
+    if (selectedTab === "All") return displayList;
+    return displayList.filter((img) => img.category === selectedTab);
+  }, [images, shuffledImages, isMounted, selectedTab]);
 
   const pageSize = 6;
   const totalPages = Math.ceil(filteredImages.length / pageSize);
