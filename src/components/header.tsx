@@ -20,6 +20,7 @@ const baseNavLinks = [
   { href: "/genres", label: "Genres" },
   { href: "/books", label: "Books" },
   { href: "/audio", label: "Audio" },
+  { href: "/gallery", label: "Gallery" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];

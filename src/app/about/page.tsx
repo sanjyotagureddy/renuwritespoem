@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { InstagramIcon, BlogIcon } from "@/components/icons";
 import { getOrCreateAuthorProfile } from "@/app/admin/author-actions";
-import AuthorGallery from "@/components/home/author-gallery";
 
 export const metadata: Metadata = {
   title: "About Renu | Poet, Author & Dreamer",
@@ -297,20 +297,7 @@ export default async function AboutPage() {
           )}
         </div>
 
-        {/* Gallery Section */}
-        {profile.gallery.length > 0 && (
-          <section className="space-y-6 pt-4 border-t border-white/5">
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-amber-400 font-semibold">
-                Visual Sanctuary
-              </span>
-              <h2 className="text-2xl md:text-3xl font-bold font-[family-name:var(--font-playfair)] text-white">
-                Gallery
-              </h2>
-            </div>
-            <AuthorGallery images={profile.gallery} />
-          </section>
-        )}
+
 
         {/* Behind the Scenes & Writing Desk split */}
         {(profile.behindTheScenes || profile.writingDesk) && (
@@ -431,6 +418,34 @@ export default async function AboutPage() {
               </section>
             )}
           </div>
+        )}
+
+        {/* Visual Sanctuary Gallery CTA */}
+        {profile.gallery.length > 0 && (
+          <section className="relative rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-12 overflow-hidden group">
+            {/* Ambient subtle warm glow on hover */}
+            <div className="absolute right-0 bottom-0 w-80 h-80 bg-amber-500/[0.01] group-hover:bg-amber-500/[0.03] rounded-full blur-[80px] pointer-events-none transition-all duration-500" />
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+              <div className="space-y-3">
+                <span className="inline-block text-[10px] uppercase tracking-[0.2em] text-amber-400 font-bold">
+                  Visual Sanctuary
+                </span>
+                <h3 className="text-2xl md:text-3xl font-bold font-[family-name:var(--font-playfair)] text-white">
+                  Explore the Photo Gallery
+                </h3>
+                <p className="text-sm text-white/50 leading-relaxed font-[family-name:var(--font-inter)] max-w-xl">
+                  Step inside captured moments of Renu&apos;s writing desk, physical books collection, work setups, and creative highlights.
+                </p>
+              </div>
+              <Link
+                href="/gallery"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-black hover:bg-amber-400 transition-all shadow-lg hover:shadow-amber-500/10 active:scale-95 w-fit shrink-0 self-start md:self-center font-[family-name:var(--font-inter)]"
+              >
+                <span>View Photo Gallery</span>
+                <span className="text-[10px]">&rarr;</span>
+              </Link>
+            </div>
+          </section>
         )}
       </div>
 
