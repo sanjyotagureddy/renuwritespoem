@@ -20,10 +20,16 @@ type NavGroup = {
 export default function AdminNav({
   sessionUser,
   unrepliedCount,
+  pendingCommentsCount = 0,
+  pendingOrdersCount = 0,
+  unverifiedSubscribersCount = 0,
   navGroups,
 }: {
   sessionUser: { email: string; name: string };
   unrepliedCount: number;
+  pendingCommentsCount?: number;
+  pendingOrdersCount?: number;
+  unverifiedSubscribersCount?: number;
   navGroups: NavGroup[];
 }) {
   const pathname = usePathname();
@@ -142,8 +148,23 @@ export default function AdminNav({
                               >
                                 <span>{item.label}</span>
                                 {item.label === "Messages" && unrepliedCount > 0 && (
-                                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-violet-500 px-1.5 text-[9px] font-bold text-white">
+                                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-violet-500 px-1.5 text-[9px] font-bold text-white shrink-0 ml-2">
                                     {unrepliedCount > 99 ? "99+" : unrepliedCount}
+                                  </span>
+                                )}
+                                {item.label === "Comments" && pendingCommentsCount > 0 && (
+                                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[9px] font-bold text-white shrink-0 ml-2 animate-pulse">
+                                    {pendingCommentsCount > 99 ? "99+" : pendingCommentsCount}
+                                  </span>
+                                )}
+                                {item.label === "Orders" && pendingOrdersCount > 0 && (
+                                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[9px] font-bold text-white shrink-0 ml-2">
+                                    {pendingOrdersCount > 99 ? "99+" : pendingOrdersCount}
+                                  </span>
+                                )}
+                                {item.label === "Subscribers" && unverifiedSubscribersCount > 0 && (
+                                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-500 px-1.5 text-[9px] font-bold text-white shrink-0 ml-2">
+                                    {unverifiedSubscribersCount > 99 ? "99+" : unverifiedSubscribersCount}
                                   </span>
                                 )}
                               </Link>

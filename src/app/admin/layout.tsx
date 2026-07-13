@@ -86,11 +86,25 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
-  // Fetch unreplied messages count for the nav badge
+  // Fetch badge counts for the sidebar nav
   let unrepliedCount = 0;
+  let pendingCommentsCount = 0;
+  let pendingOrdersCount = 0;
+  let unverifiedSubscribersCount = 0;
   try {
-    unrepliedCount = await getPrisma().contactMessage.count({
+    const prisma = getPrisma();
+    unrepliedCount = await prisma.contactMessage.count({
       where: { repliedAt: null },
+    });
+    pendingCommentsCount =
+      (await prisma.comment.count({ where: { status: "PENDING" } })) +
+      (await prisma.bookComment.count({ where: { status: "PENDING" } })) +
+      (await prisma.audioComment.count({ where: { status: "PENDING" } }));
+    pendingOrdersCount = await prisma.bookOrder.count({
+      where: { status: "PENDING" },
+    });
+    unverifiedSubscribersCount = await prisma.subscriber.count({
+      where: { verified: false },
     });
   } catch {
     // Silently ignore — don't break the entire admin layout
@@ -105,6 +119,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           email: session.user.email ?? "admin@renuwritespoem.com",
         }}
         unrepliedCount={unrepliedCount}
+        pendingCommentsCount={pendingCommentsCount}
+        pendingOrdersCount={pendingOrdersCount}
+        unverifiedSubscribersCount={unverifiedSubscribersCount}
         navGroups={navGroups}
       />
 
