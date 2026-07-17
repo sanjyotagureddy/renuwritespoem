@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
-import { createHmac } from "crypto";
+import { verifyUnsubscribeToken } from "@/lib/unsubscribe-helper";
 import { sendAdminUnsubscribeNotification } from "@/lib/email";
-
-function getUnsubscribeToken(email: string): string {
-  const secret = process.env.NEXTAUTH_SECRET || "default-secret-key-12345";
-  return createHmac("sha256", secret).update(email).digest("hex").slice(0, 16);
-}
 
 export async function GET(request: Request) {
   try {
@@ -37,8 +32,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const expectedToken = getUnsubscribeToken(email);
-    if (token !== expectedToken) {
+    if (!verifyUnsubscribeToken(email, token)) {
       return new NextResponse(
         `<html>
           <head>
