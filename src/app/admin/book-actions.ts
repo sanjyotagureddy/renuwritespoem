@@ -11,11 +11,11 @@ import { DeleteBookSchema, ToggleBookFeaturedSchema, UpdateBookStatusSchema } fr
 import { siteConfig } from "@/lib/seo";
 import { createCampaign, sendCampaignAction } from "./campaign-actions";
 
-async function triggerBookNotification(title: string, slug: string, description: string | null) {
+async function triggerBookNotification(id: string, title: string, slug: string, description: string | null) {
   try {
     const campaign = await createCampaign({
       subject: `New Book Available: "${title}"`,
-      body: `Renu has released a new book: **${title}**.\n\n${description || "Browse the new poetry book collection."}\n\n[Explore Book](${siteConfig.url}/books/${slug})`,
+      body: `Renu has released a new book: **${title}**.\n\n${description || "Browse the new poetry book collection."}\n\n[[BOOK:${id}]]\n\n[Explore Book](${siteConfig.url}/books/${slug})`,
     });
     await sendCampaignAction(campaign.id);
   } catch (error) {
@@ -182,7 +182,7 @@ export async function createBook(formData: FormData) {
   await invalidateCache("home:featured-data");
 
   if (status === "AVAILABLE" && notifySubscribers) {
-    await triggerBookNotification(title, slug, description);
+    await triggerBookNotification(book.id, title, slug, description);
   }
 
   revalidatePath("/books");
@@ -294,7 +294,7 @@ export async function updateBook(formData: FormData) {
   await invalidateCache(["home:featured-data", `book:details:${existing.slug}`]);
 
   if (status === "AVAILABLE" && existing.status !== "AVAILABLE" && notifySubscribers) {
-    await triggerBookNotification(title, existing.slug, description);
+    await triggerBookNotification(id, title, existing.slug, description);
   }
 
   revalidatePath("/books");

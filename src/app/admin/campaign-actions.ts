@@ -261,6 +261,12 @@ async function parseMarkdownToHtml(markdown: string): Promise<string> {
   // Italics (*text*)
   html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
 
+  // Images (![alt](url)) — must come before links to avoid partial matching
+  html = html.replace(
+    /!\[(.*?)\]\((https?:\/\/.*?)\)/g,
+    '<img src="$2" alt="$1" style="max-width:100%; height:auto; border-radius:8px; margin:12px 0; display:block;" />'
+  );
+
   // Links ([label](url))
   html = html.replace(
     /\[(.*?)\]\((https?:\/\/.*?)\)/g,
@@ -287,13 +293,25 @@ async function parseMarkdownToHtml(markdown: string): Promise<string> {
   const prisma = getPrisma();
   const { siteConfig } = await import("@/lib/seo");
 
+  // Helper to ensure cover URLs are absolute (email clients can't resolve relative paths)
+  function absoluteCoverUrl(url: string | null | undefined): string {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+    return `${siteConfig.url}${url.startsWith("/") ? url : `/${url}`}`;
+  }
+
   if (poemMatches.length > 0) {
     const poems = await prisma.poem.findMany({ where: { id: { in: poemMatches } } });
     for (const poem of poems) {
+      const poemCover = absoluteCoverUrl(poem.coverImage);
+      const coverBlock = poemCover
+        ? `<img src="${poemCover}" alt="${poem.title}" style="max-width:100%; height:auto; border-radius:8px; margin-bottom:12px; display:block; max-height:200px; object-fit:cover;" />`
+        : "";
       const card = `
         <table style="width:100%; border:1px solid #f3e8df; border-radius:12px; background-color:#fff7ed; padding:16px; margin:20px 0; border-spacing:0; border-collapse:collapse; text-align:left;">
           <tr>
             <td style="padding:4px 0;">
+              ${coverBlock}
               <span style="display:inline-block; font-size:10px; font-weight:bold; color:#9a3412; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:4px;">Featured Poem</span>
               <h3 style="margin:0 0 8px; color:#431407; font-family:serif; font-size:17px; font-weight:bold; line-height:1.3;">${poem.title}</h3>
               <p style="margin:0 0 12px; font-size:13px; color:#4b5563; line-height:1.6; font-style:italic;">"${poem.excerpt || "Read this moving poem..."}"</p>
@@ -309,12 +327,12 @@ async function parseMarkdownToHtml(markdown: string): Promise<string> {
   if (bookMatches.length > 0) {
     const books = await prisma.book.findMany({ where: { id: { in: bookMatches } } });
     for (const book of books) {
-      const cover = book.coverImage || `${siteConfig.url}/placeholder-book.png`;
+      const cover = absoluteCoverUrl(book.coverImage) || `${siteConfig.url}/placeholder-book.png`;
       const card = `
         <table style="width:100%; border:1px solid #f3e8df; border-radius:12px; background-color:#fff7ed; padding:16px; margin:20px 0; border-spacing:0; border-collapse:collapse; text-align:left;">
           <tr>
             <td style="width:80px; vertical-align:top; padding-right:16px;">
-              <img src="${cover}" style="width:80px; height:auto; border-radius:6px; box-shadow:0 4px 6px rgba(0,0,0,0.05); display:block;" />
+              <img src="${cover}" alt="${book.title}" style="width:80px; height:auto; border-radius:6px; box-shadow:0 4px 6px rgba(0,0,0,0.05); display:block;" />
             </td>
             <td style="vertical-align:top; padding-top:4px;">
               <span style="display:inline-block; font-size:10px; font-weight:bold; color:#9a3412; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:4px;">Featured Collection</span>
@@ -332,10 +350,15 @@ async function parseMarkdownToHtml(markdown: string): Promise<string> {
   if (audioMatches.length > 0) {
     const audios = await prisma.audio.findMany({ where: { id: { in: audioMatches } } });
     for (const audio of audios) {
+      const audioCover = absoluteCoverUrl(audio.coverUrl);
+      const audioCoverBlock = audioCover
+        ? `<img src="${audioCover}" alt="${audio.title}" style="max-width:100%; height:auto; border-radius:8px; margin-bottom:12px; display:block; max-height:200px; object-fit:cover;" />`
+        : "";
       const card = `
         <table style="width:100%; border:1px solid #f3e8df; border-radius:12px; background-color:#fff7ed; padding:16px; margin:20px 0; border-spacing:0; border-collapse:collapse; text-align:left;">
           <tr>
             <td style="padding:4px 0;">
+              ${audioCoverBlock}
               <span style="display:inline-block; font-size:10px; font-weight:bold; color:#9a3412; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:4px;">Audio Recitation</span>
               <h3 style="margin:0 0 8px; color:#431407; font-family:serif; font-size:17px; font-weight:bold; line-height:1.3;">🔊 ${audio.title}</h3>
               <p style="margin:0 0 12px; font-size:13px; color:#4b5563; line-height:1.5;">${audio.description || "Listen to this beautiful recitation voiced by Renu..."}</p>

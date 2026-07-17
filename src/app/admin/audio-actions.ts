@@ -9,11 +9,11 @@ import { slugify } from "@/lib/utils";
 import { siteConfig } from "@/lib/seo";
 import { createCampaign, sendCampaignAction } from "./campaign-actions";
 
-async function triggerAudioNotification(title: string, description: string | null) {
+async function triggerAudioNotification(id: string, title: string, description: string | null) {
   try {
     const campaign = await createCampaign({
       subject: `New Audio Recitation: "${title}"`,
-      body: `Listen to a new audio recitation voiced by Renu: **${title}**.\n\n${description || "Listen to the recitation."}\n\n[Listen Now](${siteConfig.url}/audio)`,
+      body: `Listen to a new audio recitation voiced by Renu: **${title}**.\n\n${description || "Listen to the recitation."}\n\n[[AUDIO:${id}]]\n\n[Listen Now](${siteConfig.url}/audio)`,
     });
     await sendCampaignAction(campaign.id);
   } catch (error) {
@@ -73,7 +73,7 @@ export async function createAudio(formData: FormData) {
   const slug = `${baseSlug}-${randomSuffix}`;
 
   const prisma = getPrisma();
-  await prisma.audio.create({
+  const audio = await prisma.audio.create({
     data: {
       title,
       slug,
@@ -89,7 +89,7 @@ export async function createAudio(formData: FormData) {
   revalidatePath("/admin/audio");
 
   if (publishNow && notifySubscribers) {
-    await triggerAudioNotification(title, description);
+    await triggerAudioNotification(audio.id, title, description);
   }
 
   redirect("/admin/audio");
@@ -213,7 +213,7 @@ export async function updateAudio(formData: FormData) {
   revalidatePath("/admin/audio");
 
   if (publishNow && !existing.published && notifySubscribers) {
-    await triggerAudioNotification(title, description);
+    await triggerAudioNotification(existing.id, title, description);
   }
 
   redirect("/admin/audio");

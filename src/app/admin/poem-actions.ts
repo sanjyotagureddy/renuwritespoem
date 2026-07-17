@@ -10,11 +10,11 @@ import { slugify } from "@/lib/utils";
 import { siteConfig } from "@/lib/seo";
 import { createCampaign, sendCampaignAction } from "./campaign-actions";
 
-async function triggerPoemNotification(title: string, slug: string, excerpt: string) {
+async function triggerPoemNotification(id: string, title: string, slug: string, excerpt: string) {
   try {
     const campaign = await createCampaign({
       subject: `New Poem: "${title}"`,
-      body: `Renu has published a new poem: **${title}**.\n\n${excerpt || "Read the moving new verses on Renu Writes Poem."}\n\n[Read Poem](${siteConfig.url}/poems/${slug})`,
+      body: `Renu has published a new poem: **${title}**.\n\n${excerpt || "Read the moving new verses on Renu Writes Poem."}\n\n[[POEM:${id}]]\n\n[Read Poem](${siteConfig.url}/poems/${slug})`,
     });
     await sendCampaignAction(campaign.id);
   } catch (error) {
@@ -82,7 +82,7 @@ export async function createPoem(formData: FormData) {
   const slug = `${baseSlug}-${randomSuffix}`;
 
   const prisma = getPrisma();
-  await prisma.poem.create({
+  const poem = await prisma.poem.create({
     data: {
       title,
       slug,
@@ -100,7 +100,7 @@ export async function createPoem(formData: FormData) {
   await invalidateCache("home:featured-data");
 
   if (publishNow && notifySubscribers) {
-    await triggerPoemNotification(title, slug, content.slice(0, 180));
+    await triggerPoemNotification(poem.id, title, slug, content.slice(0, 180));
   }
 
   revalidatePath("/poems");
@@ -152,7 +152,7 @@ export async function updatePoem(formData: FormData) {
   await invalidateCache(["home:featured-data", `poem:details:${existing.slug}`]);
 
   if (publishNow && !existing.published && notifySubscribers) {
-    await triggerPoemNotification(title, existing.slug, content.slice(0, 180));
+    await triggerPoemNotification(existing.id, title, existing.slug, content.slice(0, 180));
   }
 
   revalidatePath("/poems");
