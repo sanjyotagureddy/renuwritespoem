@@ -9,9 +9,9 @@ import {
   poemLanguageToHtmlLang,
   type PoemLanguage,
 } from "@/lib/domain/poem-language";
-import LikeButton from "@/components/poems/like-button";
+import LikeButton from "@/components/ui/like-button";
 import ListenButton from "@/components/poems/listen-button";
-import CommentSection from "@/components/poems/comment-section";
+import CommentSection from "@/components/ui/comment-section";
 import PoemReader from "@/components/poems/poem-reader";
 import ShareButton from "@/components/ui/share-button";
 import InviteModal from "@/components/ui/invite-modal";
@@ -404,7 +404,7 @@ export default async function PoemDetailPage({ params }: PageProps) {
             {/* Action Bar: Save & Like side-by-side in equal grid */}
             <div className="grid grid-cols-2 gap-3 w-full">
               <SaveButton slug={poem.slug} type="poem" />
-              <LikeButton slug={poem.slug} />
+              <LikeButton slug={poem.slug} type="poem" />
             </div>
 
             <ListenButton content={poem.content} title={poem.title} language={language} />
@@ -421,7 +421,7 @@ export default async function PoemDetailPage({ params }: PageProps) {
               buttonAccent="border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 text-amber-300"
             />
             <div className="border-t border-white/10 pt-5">
-              <CommentSection slug={poem.slug} />
+              <CommentSection slug={poem.slug} type="poem" />
             </div>
           </div>
         </aside>

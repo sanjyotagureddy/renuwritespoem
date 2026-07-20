@@ -1,4 +1,5 @@
 "use client";
+import { CommentType } from "@/types/domain";
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
@@ -11,7 +12,7 @@ export type CommentItem = {
   createdAt: string; // ISO string from server
   status: "PENDING" | "APPROVED" | "REJECTED";
   user: { name: string | null; email: string };
-  commentType: "poem" | "book" | "audio";
+  commentType: CommentType;
   targetTitle: string;
   targetLink: string;
   pinned: boolean;
@@ -64,7 +65,7 @@ export default function CommentsList({
 
   async function handleStatusChange(
     id: string,
-    commentType: "poem" | "book" | "audio",
+    commentType: CommentType,
     newStatus: "PENDING" | "APPROVED" | "REJECTED",
   ) {
     const oldComment = comments.find((c) => c.id === id && c.commentType === commentType);
@@ -91,7 +92,7 @@ export default function CommentsList({
     });
   }
 
-  async function handleTogglePin(id: string, commentType: "poem" | "book" | "audio", newPinned: boolean) {
+  async function handleTogglePin(id: string, commentType: CommentType, newPinned: boolean) {
     startTransition(async () => {
       try {
         await toggleCommentPin(id, commentType, newPinned);
@@ -104,7 +105,7 @@ export default function CommentsList({
     });
   }
 
-  async function handleDelete(id: string, commentType: "poem" | "book" | "audio") {
+  async function handleDelete(id: string, commentType: CommentType) {
     const oldComment = comments.find((c) => c.id === id && c.commentType === commentType);
     if (!oldComment) return;
     const prevStatus = oldComment.status;
@@ -330,3 +331,5 @@ export default function CommentsList({
     </div>
   );
 }
+
+

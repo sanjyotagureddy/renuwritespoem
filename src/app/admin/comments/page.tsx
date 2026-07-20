@@ -1,3 +1,4 @@
+import { CommentType } from "@/types/domain";
 import type { Metadata } from "next";
 import { getPrisma } from "@/lib/db";
 import CommentsList, { type CommentItem } from "@/components/admin/comments-list";
@@ -126,7 +127,7 @@ export default async function CommentsPage({ searchParams }: PageProps) {
       name: c.userName,
       email: c.userEmail,
     },
-    commentType: c.commentType as "poem" | "book" | "audio",
+    commentType: c.commentType as CommentType,
     targetTitle: c.targetTitle,
     targetLink: 
       c.commentType === "poem" 
@@ -172,3 +173,5 @@ export default async function CommentsPage({ searchParams }: PageProps) {
     </div>
   );
 }
+
+

@@ -4,8 +4,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import BookPurchaseLayout from "@/components/books/book-purchase-layout";
-import BookLikeButton from "@/components/books/like-button";
-import BookCommentSection from "@/components/books/comment-section";
+import LikeButton from "@/components/ui/like-button";
+import CommentSection from "@/components/ui/comment-section";
 import ShareButton from "@/components/ui/share-button";
 import InviteModal from "@/components/ui/invite-modal";
 import { siteConfig } from "@/lib/seo";
@@ -296,7 +296,7 @@ export default async function BookDetailPage({ params }: PageProps) {
             <div className="space-y-6 rounded-2xl border border-white/15 bg-white/3 p-5">
               <div className="grid grid-cols-2 gap-3 w-full">
                 <SaveButton slug={book.slug} type="book" />
-                <BookLikeButton slug={book.slug} />
+                <LikeButton slug={book.slug} type="book" />
               </div>
               <ShareButton
                 shareUrl={`${siteConfig.url}/books/${book.slug}`}
@@ -309,7 +309,7 @@ export default async function BookDetailPage({ params }: PageProps) {
                 buttonAccent="hover:border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400"
               />
               <div className="border-t border-white/10 pt-5">
-                <BookCommentSection slug={book.slug} />
+                <CommentSection slug={book.slug} type="book" />
               </div>
             </div>
           </aside>

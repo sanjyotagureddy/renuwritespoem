@@ -1,4 +1,5 @@
 "use server";
+import { CommentType } from "@/types/domain";
 
 import { revalidatePath } from "next/cache";
 import { getPrisma } from "@/lib/db";
@@ -6,7 +7,7 @@ import { requireAdmin } from "./shared-actions";
 
 export async function updateCommentStatus(
   id: string,
-  commentType: "poem" | "book" | "audio",
+  commentType: CommentType,
   status: "PENDING" | "APPROVED" | "REJECTED",
 ) {
   await requireAdmin();
@@ -31,7 +32,7 @@ export async function updateCommentStatus(
   revalidatePath("/admin/comments");
 }
 
-export async function deleteCommentAdmin(id: string, commentType: "poem" | "book" | "audio") {
+export async function deleteCommentAdmin(id: string, commentType: CommentType) {
   await requireAdmin();
   const prisma = getPrisma();
 
@@ -51,7 +52,7 @@ export async function deleteCommentAdmin(id: string, commentType: "poem" | "book
   revalidatePath("/admin/comments");
 }
 
-export async function toggleCommentPin(id: string, commentType: "poem" | "book" | "audio", pin: boolean) {
+export async function toggleCommentPin(id: string, commentType: CommentType, pin: boolean) {
   await requireAdmin();
   const prisma = getPrisma();
 
@@ -73,3 +74,5 @@ export async function toggleCommentPin(id: string, commentType: "poem" | "book" 
   }
   revalidatePath("/admin/comments");
 }
+
+

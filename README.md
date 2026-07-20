@@ -13,11 +13,12 @@ Create a beautiful, accessible, and SEO-optimized platform where a poet can publ
 | Framework      | Next.js 15 (App Router)             |
 | Language       | TypeScript                          |
 | Styling        | Tailwind CSS                        |
-| Components     | shadcn/ui                           |
+| Components     | shadcn/ui & Custom Glassmorphism    |
 | Authentication | Auth.js (Google OAuth & Credentials)|
 | Database       | PostgreSQL (Supabase)               |
 | ORM            | Prisma                              |
 | Email          | Gmail SMTP / Nodemailer             |
+| Testing        | Vitest (Unit) / Playwright (E2E)    |
 | Deployment     | Vercel                              |
 
 ## Features & Capabilities
@@ -36,20 +37,19 @@ Create a beautiful, accessible, and SEO-optimized platform where a poet can publ
 - **Comment Moderation Hub**: A single, clean review panel to approve, reject, pin, or delete comments across all media.
 - **Subscribers & Campaign broadcasting**: Lists newsletter signups, handles manual actions, exports to CSV, and drafts/broadcasts rich newsletter campaigns.
 - **Orders Panel**: Verifies payment screenshots, sets shipping status (Pending, Confirmed, Shipped, Delivered), and manages courier tracking URLs.
-- **Inbox Inbox**: Central contact log with AI-assisted email response helpers.
+- **Inbox**: Central contact log with AI-assisted email response helpers.
 
 ## Architecture Overview
 
-This is a **monolithic Next.js application** deployed as a single unit on Vercel.
+This is a **monolithic Next.js application** utilizing a robust Layered Architecture with Route Groups.
 
-- **Server Components** for SEO-critical content pages
-- **Server Actions** for mutations
-- **Route Handlers** for webhook integrations
-- **Prisma** for direct database access (no repository pattern)
-- **Zod** for runtime validation
-- **Feature-based folder organization**
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed architecture documentation.
+- **`src/app/` (Routing Layer)**: Next.js App Router utilizing Route Groups (`(auth)`, `(marketing)`, `(legal)`) to keep routes clean.
+- **`src/actions/` (Server Actions)**: Next.js Server Actions completely isolated from the routing directory for security.
+- **`src/components/` (UI Layer)**: Feature-based UI components (`home`, `poems`, `admin`, `books`, `auth`).
+- **`src/services/` (Business Logic)**: Dedicated classes (`OrderService`, `PoemService`, `CampaignService`) abstracting core domain logic.
+- **`src/lib/` (Utilities)**: Shared configuration, database clients, rate limiting, and split-module email templates.
+- **`src/middleware.ts`**: Global request pipeline handling `x-trace-id` traceability and `next-auth` routing protection.
+- **`test/` (Testing)**: Categorized unit test suites (`actions`, `components`, `lib`, `pages`) running on Vitest with `jsdom`.
 
 ## Local Development
 
@@ -80,6 +80,9 @@ npm run db:seed
 
 # Start development server
 npm run dev
+
+# Run Vitest test suite
+npm run test
 ```
 
 ### Local Docker Database (Optional)
@@ -120,16 +123,11 @@ ADMIN_EMAIL=orders-and-contact@example.com
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-For local development, set `DATABASE_URL` and `DIRECT_URL` in `.env.local` to
-the Docker URL from `.env.example`. These local-only values override any
-Supabase integration variables.
+For local development, set `DATABASE_URL` and `DIRECT_URL` in `.env.local` to the Docker URL from `.env.example`. These local-only values override any Supabase integration variables.
 
-Email is sent through Gmail SMTP using an app password, not your normal Gmail
-login password. If you change the sending account later, update the Gmail email
-and app password in Vercel, then redeploy.
+Email is sent through Gmail SMTP using an app password, not your normal Gmail login password. If you change the sending account later, update the Gmail email and app password in Vercel, then redeploy.
 
-For Google OAuth, add this exact authorized redirect URI in the Google Cloud
-console (replace the origin in production):
+For Google OAuth, add this exact authorized redirect URI in the Google Cloud console (replace the origin in production):
 
 ```text
 http://localhost:3000/api/auth/callback/google
@@ -143,29 +141,9 @@ The application deploys to **Vercel** via Git push to `main`.
 - Production deployment on merge to `main`
 - Database hosted on Supabase PostgreSQL
 - Environment variables managed in Vercel dashboard
-- Production builds run pending Prisma migrations before Next.js builds;
-  preview deployments do not change the database schema
+- Production builds run pending Prisma migrations before Next.js builds; preview deployments do not change the database schema
 
-Required production environment variables include:
-
-```env
-DATABASE_URL=postgresql://...
-DIRECT_URL=postgresql://...
-AUTH_SECRET=...
-AUTH_GOOGLE_ID=...
-AUTH_GOOGLE_SECRET=...
-ADMIN_EMAILS=admin@example.com
-NEXTAUTH_URL=https://your-domain.example
-NEXT_PUBLIC_SITE_URL=https://your-domain.example
-GMAIL_USER=your-gmail@gmail.com
-GMAIL_APP_PASSWORD=your-16-character-app-password
-FROM_EMAIL=your-gmail@gmail.com
-ADMIN_EMAIL=orders-and-contact@example.com
-```
-
-`DIRECT_URL` is preferred for migrations. If your database provider presents a
-self-signed certificate chain, the migration deploy script handles that during
-Vercel builds.
+`DIRECT_URL` is preferred for migrations. If your database provider presents a self-signed certificate chain, the migration deploy script handles that during Vercel builds.
 
 ## Project Documentation
 
@@ -182,9 +160,10 @@ Vercel builds.
 
 1. Create a feature branch from `main`
 2. Follow the coding standards in [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md)
-3. Write meaningful commit messages (conventional commits)
-4. Open a pull request using the PR template
-5. Ensure all checks pass before requesting review
+3. Ensure automated tests are added for new features in `test/unit/`
+4. Write meaningful commit messages (conventional commits)
+5. Open a pull request using the PR template
+6. Ensure all tests (`npm run test`) and checks pass before requesting review
 
 ### Commit Convention
 

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import BookLikeButton from "./like-button";
-import BookCommentSection from "./comment-section";
+import LikeButton from "@/components/ui/like-button";
+import CommentSection from "@/components/ui/comment-section";
 import PurchaseForm from "./purchase-form";
 import BookDescription from "./book-description";
 import ShareButton from "@/components/ui/share-button";
@@ -155,7 +155,7 @@ export default function BookPurchaseLayout({ book }: BookPurchaseLayoutProps) {
           <div className="space-y-6 rounded-2xl border border-white/15 bg-white/3 p-5">
             <div className="grid grid-cols-2 gap-3 w-full">
               <SaveButton slug={book.slug} type="book" />
-              <BookLikeButton slug={book.slug} />
+              <LikeButton slug={book.slug} type="book" />
             </div>
             <ShareButton
               shareUrl={`${siteConfig.url}/books/${book.slug}`}
@@ -168,7 +168,7 @@ export default function BookPurchaseLayout({ book }: BookPurchaseLayoutProps) {
               buttonAccent="hover:border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400"
             />
             <div className="border-t border-white/10 pt-5">
-              <BookCommentSection slug={book.slug} />
+              <CommentSection slug={book.slug} type="book" />
             </div>
           </div>
         </aside>

@@ -4,7 +4,7 @@ import { getPrisma } from "@/lib/db";
 import { checkCommentTone } from "@/lib/moderation/contact-guard";
 import { rateLimit } from "@/lib/moderation/rate-limit";
 
-export type CommentType = "poem" | "book" | "audio";
+import { CommentType } from "@/types/domain";
 
 interface SharedComment {
   id: string;
