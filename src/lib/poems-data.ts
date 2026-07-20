@@ -85,3 +85,40 @@ export async function getPoems({
 
   return { poems, totalCount };
 }
+
+export async function getPoemOfTheDay(dateSeed?: string) {
+  const prisma = getPrisma();
+  const poems = await prisma.poem.findMany({
+    where: { published: true },
+    select: { id: true },
+  });
+
+  if (poems.length === 0) return null;
+
+  let seed = dateSeed;
+  if (!seed) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const date = String(today.getDate()).padStart(2, '0');
+    seed = `${year}-${month}-${date}`;
+  }
+
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash << 5) - hash + seed.charCodeAt(i);
+    hash |= 0;
+  }
+
+  const index = Math.abs(hash) % poems.length;
+  const selectedId = poems[index].id;
+
+  return prisma.poem.findUnique({
+    where: { id: selectedId },
+    include: {
+      genre: { select: { name: true, slug: true } },
+      _count: { select: { likes: true, comments: true } },
+    },
+  });
+}
+

@@ -2,6 +2,13 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 
+// Mock IntersectionObserver for Framer Motion
+global.IntersectionObserver = class IntersectionObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+};
+
 // Mock rateLimit
 vi.mock("@/lib/rate-limit", () => ({
   rateLimit: vi.fn().mockResolvedValue({ limited: false, remaining: 99, resetTime: 0 }),
@@ -35,6 +42,21 @@ vi.mock("../src/lib/db", () => {
             _count: { likes: 1, comments: 2 },
           },
         ]),
+        findUnique: vi.fn().mockResolvedValue({
+          id: "poem-day-1",
+          title: "Poem of the Day Mock",
+          slug: "poem-of-the-day-mock",
+          language: "EN",
+          genre: { name: "Spirituality", slug: "spirituality" },
+          content: "Mocked content of daily poem.",
+          excerpt: "Mocked excerpt of daily poem.",
+          featured: false,
+          published: true,
+          publishedAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          _count: { likes: 10, comments: 5 },
+        }),
       },
       book: {
         findMany: vi.fn().mockResolvedValue([
@@ -115,8 +137,13 @@ describe("Homepage Overhaul rendering", () => {
 
     // 1. Hero
     expect(screen.getByText("Poetry & Stories in Three Languages")).toBeDefined();
-    expect(screen.getByText("Renu Writes Poem")).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Renu Writes Poem", level: 1 })).toBeDefined();
     expect(screen.getByText("Explore Poems")).toBeDefined();
+
+    // Poem of the Day
+    expect(screen.getByText("✨ Poem of the Day")).toBeDefined();
+    expect(screen.getByText("Daily Verse Inspiration")).toBeDefined();
+    expect(screen.getByText("Poem of the Day Mock")).toBeDefined();
 
     // 2. Featured Book
     expect(screen.getByText("Featured Release")).toBeDefined();

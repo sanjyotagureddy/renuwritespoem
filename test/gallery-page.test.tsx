@@ -72,6 +72,7 @@ describe("GalleryPage and AuthorGallery Component", () => {
 
   it("should paginate images when there are more than 6 items", () => {
     cleanup();
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.999);
 
     const mockImages = Array.from({ length: 8 }, (_, i) => ({
       id: `img-${i + 1}`,
@@ -104,6 +105,8 @@ describe("GalleryPage and AuthorGallery Component", () => {
     expect(screen.getByAltText("Photo Caption 8")).toBeDefined();
     // Verify first image is no longer present
     expect(screen.queryByAltText("Photo Caption 1")).toBeNull();
+
+    randomSpy.mockRestore();
   });
 });
 

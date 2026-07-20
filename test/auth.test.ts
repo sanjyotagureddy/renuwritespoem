@@ -223,8 +223,8 @@ describe("auth callbacks & credentials", () => {
       if (!jwtCallback) throw new Error("jwt callback not found");
 
       const token = await jwtCallback({
-        token: { email: "reader@example.com", userId: "reader-id" },
-        user: { id: "reader-id", email: "reader@example.com" },
+        token: { email: "verified@example.com", userId: "verified-id" },
+        user: { id: "verified-id", email: "verified@example.com" },
         account: null,
         profile: null,
       });

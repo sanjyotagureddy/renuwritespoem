@@ -38,9 +38,9 @@ const socialLinks = [
   },
 ];
 
-export default function Footer() {
+export default function Footer({ forceShow = false }: { forceShow?: boolean }) {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) {
+  if (pathname?.startsWith("/admin") || (pathname === "/" && !forceShow)) {
     return null;
   }
   return (
