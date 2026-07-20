@@ -1,5 +1,5 @@
 import { getPrisma } from "@/lib/db";
-import { updateOrderStatus } from "../order-actions";
+import { updateOrderStatus } from "../actions/order-actions";
 import OrdersClient from "./orders-client";
 
 export default async function AdminOrdersPage() {

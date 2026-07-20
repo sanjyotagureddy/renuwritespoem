@@ -1,6 +1,6 @@
 "use client";
 
-import { deletePoem } from "../poem-actions";
+import { deletePoem } from "../actions/poem-actions";
 
 export default function DeletePoemForm({ poemId }: { poemId: string }) {
   return (

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { updateAudio } from "../../../audio-actions";
+import { updateAudio } from "../../../actions/audio-actions";
 
 type EditAudioFormProps = {
   track: {

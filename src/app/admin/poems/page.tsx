@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { poemLanguageLabel, type PoemLanguage } from "@/lib/domain/poem-language";
-import { togglePublish, toggleFeatured } from "../poem-actions";
+import { togglePublish, toggleFeatured } from "../actions/poem-actions";
 import DeletePoemForm from "./delete-poem-form";
 import { formatDate } from "@/lib/utils";
 

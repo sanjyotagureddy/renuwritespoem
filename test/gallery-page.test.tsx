@@ -5,7 +5,7 @@ import GalleryPage from "../src/app/gallery/page";
 import AuthorGallery from "../src/components/home/author-gallery";
 
 // Mock getOrCreateAuthorProfile
-vi.mock("../src/app/admin/author-actions", () => ({
+vi.mock("../src/app/admin/actions/author-actions", () => ({
   getOrCreateAuthorProfile: vi.fn().mockResolvedValue({
     id: "profile-id",
     gallery: [

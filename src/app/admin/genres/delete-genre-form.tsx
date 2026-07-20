@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteGenre } from "../genre-actions";
+import { deleteGenre } from "../actions/genre-actions";
 
 export default function DeleteGenreForm({
   genreId,

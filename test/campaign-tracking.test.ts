@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { injectTracking } from "../src/app/admin/campaign-actions";
+import { injectTracking } from "../src/app/admin/actions/campaign-actions";
 import { GET as trackOpenHandler } from "../src/app/api/campaigns/track/open/[deliveryId]/pixel.gif/route";
 import { GET as trackClickHandler } from "../src/app/api/campaigns/track/click/route";
 import { NextRequest } from "next/server";

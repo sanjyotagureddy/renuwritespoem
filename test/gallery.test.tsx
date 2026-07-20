@@ -28,7 +28,7 @@ const mockGetProfile = vi.fn().mockResolvedValue({
   ],
 });
 
-vi.mock("../src/app/admin/author-actions", () => ({
+vi.mock("../src/app/admin/actions/author-actions", () => ({
   getOrCreateAuthorProfile: () => mockGetProfile(),
 }));
 

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { updateCommentStatus, deleteCommentAdmin, toggleCommentPin } from "@/app/admin/comment-actions";
+import { updateCommentStatus, deleteCommentAdmin, toggleCommentPin } from "@/app/admin/actions/comment-actions";
 import { Check, X, Trash2, BookOpen, FileText, Pin, Music } from "lucide-react";
 
 export type CommentItem = {

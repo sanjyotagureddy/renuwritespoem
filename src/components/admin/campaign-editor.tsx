@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { createCampaign, updateCampaign } from "@/app/admin/campaign-actions";
+import { createCampaign, updateCampaign } from "@/app/admin/actions/campaign-actions";
 
 type CampaignData = {
   id?: string;

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { createAudio } from "../../audio-actions";
+import { createAudio } from "../../actions/audio-actions";
 
 export default function NewAudioForm() {
   const [loading, setLoading] = useState(false);

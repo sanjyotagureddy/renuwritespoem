@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { toggleCommentPin, updateCommentStatus } from "@/app/admin/comment-actions";
+import { toggleCommentPin, updateCommentStatus } from "@/app/admin/actions/comment-actions";
 import CommentForm from "./comment-section/comment-form";
 import CommentItem, { CommentData } from "./comment-section/comment-item";
 

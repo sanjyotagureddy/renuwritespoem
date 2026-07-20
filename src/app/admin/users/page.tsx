@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Role } from "@prisma/client";
 import { getPrisma } from "@/lib/db";
 import { formatDate, generateAvatarUrl } from "@/lib/utils";
-import { updateUserRole, adminResendVerification, adminSendPasswordReset } from "../user-actions";
+import { updateUserRole, adminResendVerification, adminSendPasswordReset } from "../actions/user-actions";
 
 async function handleResendVerification(formData: FormData) {
   "use server";

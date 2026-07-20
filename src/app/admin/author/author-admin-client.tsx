@@ -9,7 +9,7 @@ import {
   deleteGalleryImage,
   updateGalleryOrder,
   updateGalleryImageCategory,
-} from "@/app/admin/author-actions";
+} from "@/app/admin/actions/author-actions";
 import { ArrowUp, ArrowDown, Trash2, Upload, Loader2, Sparkles, Image as ImageIcon, Plus } from "lucide-react";
 
 type AuthorGalleryImage = {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { deleteSubscriber, toggleSubscriberStatus, bulkSubscribeUsers } from "../subscriber-actions";
+import { deleteSubscriber, toggleSubscriberStatus, bulkSubscribeUsers } from "../actions/subscriber-actions";
 import { Loader2 } from "lucide-react";
 
 type SubscriberItem = {

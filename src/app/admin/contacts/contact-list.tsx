@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition, useCallback } from "react";
-import { replyToContact, deleteContact, markAsUnread } from "../contact-actions";
+import { replyToContact, deleteContact, markAsUnread } from "../actions/contact-actions";
 import { Mail, Trash2, ChevronDown, ChevronUp, CheckCircle2, Send, MailOpen, Sparkles } from "lucide-react";
 
 type ContactMessage = {

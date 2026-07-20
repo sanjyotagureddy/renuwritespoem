@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
-import { updatePoem } from "../../../poem-actions";
+import { updatePoem } from "../../../actions/poem-actions";
 
 type EditPoemPageProps = {
   params: Promise<{ id: string }>;

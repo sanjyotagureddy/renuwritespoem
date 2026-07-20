@@ -9,7 +9,7 @@ vi.mock("@/lib/moderation/rate-limit", () => ({
 }));
 
 // Mock author actions
-vi.mock("../src/app/admin/author-actions", () => ({
+vi.mock("../src/app/admin/actions/author-actions", () => ({
   getOrCreateAuthorProfile: vi.fn().mockResolvedValue({
     id: "profile-id",
     whyIWrite: "Mocked Why I Write",

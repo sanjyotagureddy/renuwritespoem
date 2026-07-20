@@ -1,4 +1,4 @@
-import { getOrCreateAuthorProfile } from "@/app/admin/author-actions";
+import { getOrCreateAuthorProfile } from "@/app/admin/actions/author-actions";
 import AuthorAdminClient from "./author-admin-client";
 
 export const metadata = {

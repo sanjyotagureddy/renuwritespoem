@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Role } from "@prisma/client";
 import { getPrisma } from "@/lib/db";
 import { formatDate, formatDateTime, generateAvatarUrl } from "@/lib/utils";
-import { updateUserModeration, updateUserRole } from "../../user-actions";
+import { updateUserModeration, updateUserRole } from "../../actions/user-actions";
 
 type PageProps = {
   params: Promise<{ id: string }>;

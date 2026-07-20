@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { InstagramIcon, BlogIcon } from "@/components/icons";
-import { getOrCreateAuthorProfile } from "@/app/admin/author-actions";
+import { getOrCreateAuthorProfile } from "@/app/admin/actions/author-actions";
 
 export const metadata: Metadata = {
   title: "About Renu | Poet, Author & Dreamer",

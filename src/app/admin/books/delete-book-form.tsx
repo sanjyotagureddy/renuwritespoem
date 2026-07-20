@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteBook } from "../book-actions";
+import { deleteBook } from "../actions/book-actions";
 
 export default function DeleteBookForm({ bookId }: { bookId: string }) {
   return (

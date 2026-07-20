@@ -4,7 +4,7 @@ import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { deleteCampaign, sendTestEmailAction, sendCampaignAction } from "../campaign-actions";
+import { deleteCampaign, sendTestEmailAction, sendCampaignAction } from "../actions/campaign-actions";
 
 type CampaignItem = {
   id: string;

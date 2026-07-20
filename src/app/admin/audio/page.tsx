@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getPrisma } from "@/lib/db";
-import { updateAudioStatus } from "../audio-actions";
+import { updateAudioStatus } from "../actions/audio-actions";
 import DeleteAudioForm from "./delete-audio-form";
 import { formatDate } from "@/lib/utils";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteAudio } from "../audio-actions";
+import { deleteAudio } from "../actions/audio-actions";
 
 export default function DeleteAudioForm({ audioId }: { audioId: string }) {
   return (

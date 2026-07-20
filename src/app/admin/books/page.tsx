@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
-import { toggleBookFeatured, updateBookStatus } from "../book-actions";
+import { toggleBookFeatured, updateBookStatus } from "../actions/book-actions";
 import DeleteBookForm from "./delete-book-form";
 import { statusLabel, statusColor, formatDate } from "@/lib/utils";
 

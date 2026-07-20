@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getOrCreateAuthorProfile } from "@/app/admin/author-actions";
+import { getOrCreateAuthorProfile } from "@/app/admin/actions/author-actions";
 import AuthorGallery from "@/components/home/author-gallery";
 
 export const metadata: Metadata = {
