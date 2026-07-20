@@ -79,12 +79,21 @@ export default function PrintCardModal({ slug, poemTitle, content = "" }: PrintC
   const cardPreviewRef = useRef<HTMLDivElement>(null);
   const activeThemeObj = THEMES.find((t) => t.id === selectedTheme) || THEMES[0];
 
-  // Excerpt for portrait live preview
+  // All poem lines for portrait preview & PNG export (no truncation)
   const poemLines = content
     .split("\n")
     .map((l) => l.trim())
-    .filter((l) => l.length > 0)
-    .slice(0, 16);
+    .filter((l) => l.length > 0);
+
+  const totalLines = poemLines.length;
+  const poemTextSizeClass =
+    totalLines > 32
+      ? "text-[6.5px] leading-[1.1]"
+      : totalLines > 22
+      ? "text-[7.5px] leading-tight"
+      : totalLines > 14
+      ? "text-[8.5px] leading-snug"
+      : "text-[10px] leading-relaxed";
 
   // Client-Side High-Res PNG Card Generation (for WhatsApp & Social Sharing)
   const handleDownloadImage = async () => {
@@ -93,6 +102,19 @@ export default function PrintCardModal({ slug, poemTitle, content = "" }: PrintC
     setErrorMsg(null);
 
     try {
+      // Log card creation & increment downloadCount in database
+      fetch(`/api/poems/${slug}/print-card`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dedicatedTo,
+          fromName,
+          message,
+          theme: selectedTheme,
+          orientation: "portrait",
+        }),
+      }).catch((logErr) => console.warn("Card log skipped:", logErr));
+
       const dataUrl = await toPng(cardPreviewRef.current, {
         cacheBust: true,
         pixelRatio: 2.5,
@@ -447,7 +469,7 @@ export default function PrintCardModal({ slug, poemTitle, content = "" }: PrintC
                         {poemLines.map((line, idx) => (
                           <p
                             key={idx}
-                            className={`text-[10px] font-[family-name:var(--font-inter)] leading-snug ${activeThemeObj.cardText}`}
+                            className={`font-[family-name:var(--font-inter)] ${poemTextSizeClass} ${activeThemeObj.cardText}`}
                           >
                             {line}
                           </p>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import AudioPlayer from "./audio-player";
 import LikeButton from "@/components/ui/like-button";
+import SaveButton from "@/components/ui/save-button";
 import CommentSection from "@/components/ui/comment-section";
 
 type Track = {
@@ -136,7 +137,10 @@ export default function AudioClient({ initialAudio }: { initialAudio: Track[] })
                     <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] tracking-wider text-white/50 uppercase whitespace-nowrap">
                       {track.views.toLocaleString()} {track.views === 1 ? 'play' : 'plays'}
                     </span>
-                    <LikeButton slug={track.slug} type="audio" />
+                    <div className="grid grid-cols-2 gap-2 w-full max-w-[260px]">
+                      <SaveButton slug={track.slug} type="poem" />
+                      <LikeButton slug={track.slug} type="audio" />
+                    </div>
                     <button
                       type="button"
                       onClick={() => setOpenCommentsAudio(track)}

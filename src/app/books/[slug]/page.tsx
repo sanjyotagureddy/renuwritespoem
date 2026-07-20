@@ -294,8 +294,10 @@ export default async function BookDetailPage({ params }: PageProps) {
         {!canPurchase && (
           <aside className="lg:sticky lg:top-24">
             <div className="space-y-6 rounded-2xl border border-white/15 bg-white/3 p-5">
-              <BookLikeButton slug={book.slug} />
-              <SaveButton slug={book.slug} type="book" />
+              <div className="grid grid-cols-2 gap-3 w-full">
+                <SaveButton slug={book.slug} type="book" />
+                <BookLikeButton slug={book.slug} />
+              </div>
               <ShareButton
                 shareUrl={`${siteConfig.url}/books/${book.slug}`}
                 title={book.title}

@@ -66,13 +66,13 @@ export default function LikeButton({
   }
 
   return (
-    <div className="relative">
-      <div className="flex items-center gap-2">
+    <div className="relative w-full">
+      <div className="flex items-center w-full">
         <button
           type="button"
           onClick={handleToggle}
           disabled={loading || !session?.user}
-          className={`flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition-colors ${
+          className={`w-full h-10 inline-flex items-center justify-center gap-1.5 rounded-full border px-4 text-xs font-semibold uppercase tracking-wider transition-all active:scale-95 whitespace-nowrap shadow-sm ${
             liked
               ? "border-rose-400/40 bg-rose-500/15 text-rose-400"
               : "border-white/15 bg-white/5 text-white/60 hover:border-white/30 hover:text-white"
@@ -80,7 +80,7 @@ export default function LikeButton({
           title={!session?.user ? "Sign in to like" : liked ? "Unlike" : "Like"}
         >
           <motion.span
-            className="text-base inline-block"
+            className="text-sm inline-block"
             key={liked ? "liked" : "unliked"}
             animate={{ scale: liked ? [1, 1.4, 0.9, 1.1, 1] : 1 }}
             transition={{ duration: 0.4 }}
@@ -88,17 +88,19 @@ export default function LikeButton({
             {liked ? "♥" : "♡"}
           </motion.span>
           <span>Like</span>
+          {count > 0 && (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCountClick();
+              }}
+              className="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-white/80 hover:bg-white/20 transition-colors"
+              title="View people who liked"
+            >
+              {count}
+            </span>
+          )}
         </button>
-
-        {count > 0 && (
-          <button
-            type="button"
-            onClick={handleCountClick}
-            className="cursor-pointer text-sm text-white/50 transition-colors hover:text-white"
-          >
-            {count} {count === 1 ? "like" : "likes"}
-          </button>
-        )}
       </div>
 
       {/* Users popup */}

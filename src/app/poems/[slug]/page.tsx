@@ -21,6 +21,8 @@ import PrintCardModal from "@/components/poems/print-card-modal";
 import { siteConfig } from "@/lib/seo";
 import { getCache, setCache } from "@/lib/cache";
 
+import { Printer, Eye } from "lucide-react";
+
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
@@ -387,8 +389,24 @@ export default async function PoemDetailPage({ params }: PageProps) {
         {/* Sidebar — Likes & Comments */}
         <aside className="lg:sticky lg:top-[96px]">
           <div className="space-y-6 rounded-2xl border border-white/15 bg-white/[0.03] p-5">
-            <LikeButton slug={poem.slug} />
-            <SaveButton slug={poem.slug} type="poem" />
+            {/* Engagement Stats Header */}
+            <div className="flex items-center justify-between text-xs text-white/50 border-b border-white/10 pb-3">
+              <span className="flex items-center gap-1.5 font-medium text-white/60">
+                <Eye className="w-3.5 h-3.5 text-white/40" />
+                {(poem.views ?? 0).toLocaleString()} {poem.views === 1 ? "Read" : "Reads"}
+              </span>
+              <span className="flex items-center gap-1.5 font-medium text-amber-300/90">
+                <Printer className="w-3.5 h-3.5 text-amber-400" />
+                {poem.downloadCount ?? 0} {poem.downloadCount === 1 ? "Card Gifted" : "Cards Gifted"}
+              </span>
+            </div>
+
+            {/* Action Bar: Save & Like side-by-side in equal grid */}
+            <div className="grid grid-cols-2 gap-3 w-full">
+              <SaveButton slug={poem.slug} type="poem" />
+              <LikeButton slug={poem.slug} />
+            </div>
+
             <ListenButton content={poem.content} title={poem.title} language={language} />
             <ShareButton
               shareUrl={`${siteConfig.url}/poems/${poem.slug}`}

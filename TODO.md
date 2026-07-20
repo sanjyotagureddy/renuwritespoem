@@ -569,16 +569,12 @@ special rather than being a generic "download as PDF" button.
   - Design a bright, warm, print-friendly template (not the site's dark
     theme — this is meant to be read on paper) using the site's existing
     amber/cream palette and Playfair Display heading font
-  - Reuse existing multilingual font handling (`poemLanguageFontClass`) so
-    Hindi/Marathi poems render with correct typography
+  - Reuse existing multilingual font handling so Hindi/Marathi poems render with correct Devanagari typography (`NotoSansDevanagari`)
   - Render the dedication line (if provided) in a distinct, card-like
     inscription style, separate from the poem itself
   - Add a small, tasteful site watermark (URL or wordmark) in a corner
-  - Add a QR code linking back to the poem's own page — the main channel
-    for turning a printed gift into a return visit
-  - Fix card dimensions to a standard foldable/printable size (e.g. A5
-    folded to A6, or postcard proportions) so it prints cleanly on a
-    standard home printer without cropping
+  - Fix card dimensions to standard A5 Portrait keepsake proportions so it prints cleanly on a standard home printer without cropping
+  - Added expressive SVG vector line art motifs floating above the footer line (Quill, Mountain Peaks with Moon, Botanical Rose)
 
 - [x] **Admin Visibility**:
   - Add a lightweight "Cards Generated" count to the per-poem admin view
@@ -586,11 +582,10 @@ special rather than being a generic "download as PDF" button.
   - Surface a simple "most gifted poems" list, mirroring the existing
     "top shared poems" pattern from Phase 20
 
-### Later (only after the MVP is in use)
-
-- [ ] Multiple template/theme choices for the printed card
-- [ ] Opt-in public "cards sent" counter on the poem page itself
-  (anonymized, no dedication content shown)
-- [ ] Let a reader preview the generated card before downloading
-- [ ] Extend the same PDF pipeline to books (a "gift this book" card
-  linking to the purchase page) once the poem version is proven out
+- [x] **Interactive Live Preview & Multi-Theme Customization**:
+  - [x] Multiple template/theme choices for the printed card (Classic Sanctuary, Minimalist Solitude, Romantic Rose)
+  - [x] Real-time live card preview in modal
+  - [x] Fixed Devanagari (Hindi / Marathi) PDF font shaping by enabling `@pdf-lib/fontkit`'s OpenType Indic state machine with `regenerator-runtime`
+  - [x] Instant client-side 2.5x Retina PNG Image export (`html-to-image`) for WhatsApp & social media sharing
+  - [x] Segmented export format selector (PNG Image vs PDF Card) with unified hero action bar
+  - [x] Aligned sidebar action buttons with canonical Amber/Gold site design system
