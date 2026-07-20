@@ -498,12 +498,12 @@ playlists, referrals, or account-export workflows yet.
 
 Restructure the Homepage layout to remove the hero carousel dependency and focus on answering "Why should I read this author?" immediately.
 
-- [ ] Implement the following structured layout sequence:
-  - [ ] **Hero**: Introducing Renu's writer identity and value proposition clearly (without slideshow tabs)
-  - [ ] **Featured Book**: Highlighting a prominent book card with primary call-to-action
-  - [ ] **Latest Poem**: Direct display of recent poetry excerpt, translation tags, and links
-  - [ ] **Listen to a Poem**: Compact play widget or trigger link to spoken-word recordings page
-  - [ ] **About the Author**: Engaging mini-biography section previewing Renu's journey
+- [x] Implement the following structured layout sequence:
+  - [x] **Hero**: Introducing Renu's writer identity and value proposition clearly (without slideshow tabs)
+  - [x] **Featured Book**: Highlighting a prominent book card with primary call-to-action
+  - [x] **Latest Poem**: Direct display of recent poetry excerpt, translation tags, and links
+  - [x] **Listen to a Poem**: Compact play widget or trigger link to spoken-word recordings page
+  - [x] **About the Author**: Engaging mini-biography section previewing Renu's journey
   - [ ] **Reader Reviews**: Testimonial reviews showcase carousel or card grids
   - [ ] **Instagram Feed**: Curated photo grid of social updates
   - [ ] **Newsletter**: Distinct subscription form cards
@@ -513,19 +513,19 @@ Restructure the Homepage layout to remove the hero carousel dependency and focus
 
 Enhance the `/admin/analytics` dashboard to track sales, audience growth, and creative engagement using a multi-tab interface.
 
-- [ ] **Tabbed Navigation**: Implement client-side tabs for "Audience & Growth", "Sales & Orders", and "Content Engagement".
-- [ ] **Sales & Orders Tab**:
-  - [ ] Query and calculate total sales revenue (sum of paid orders).
-  - [ ] Calculate total copies of books sold.
-  - [ ] Display active order queue count.
-  - [ ] Render visual progress bar leaderboard of sales per book.
-  - [ ] List recent 5 orders with order number, copies, status tag, and total amount.
-- [ ] **Content Engagement Tab**:
-  - [ ] Aggregate and list top-performing spoken audio recordings (stream/view counts).
-  - [ ] List top poems ranked by reader likes and approved comments count.
-- [ ] **Audience & Growth Tab**:
-  - [ ] Integrate existing attribution table and growth snapshot metrics.
-  - [ ] Display invite-to-signup conversion rates.
+- [x] **Tabbed Navigation**: Implement client-side tabs for "Audience & Growth", "Sales & Orders", and "Content Engagement".
+- [x] **Sales & Orders Tab**:
+  - [x] Query and calculate total sales revenue (sum of paid orders).
+  - [x] Calculate total copies of books sold.
+  - [x] Display active order queue count.
+  - [x] Render visual progress bar leaderboard of sales per book.
+  - [x] List recent 5 orders with order number, copies, status tag, and total amount.
+- [x] **Content Engagement Tab**:
+  - [x] Aggregate and list top-performing spoken audio recordings (stream/view counts).
+  - [x] List top poems ranked by reader likes and approved comments count.
+- [x] **Audience & Growth Tab**:
+  - [x] Integrate existing attribution table and growth snapshot metrics.
+  - [x] Display invite-to-signup conversion rates.
 
 ## Phase 30: Printable Poem Cards & Dedication Gifting
 

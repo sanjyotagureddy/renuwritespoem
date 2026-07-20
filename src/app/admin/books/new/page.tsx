@@ -50,6 +50,33 @@ export default function NewBookPage() {
             <input id="purchaseUrl" name="purchaseUrl" type="url" className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40" placeholder="https://..." />
           </div>
 
+          <div className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-5">
+            <h3 className="text-sm font-semibold text-white">SEO Settings (Optional)</h3>
+            <div>
+              <label htmlFor="seoTitle" className="mb-2 block text-sm text-white/80">
+                SEO Title
+              </label>
+              <input
+                id="seoTitle"
+                name="seoTitle"
+                className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40"
+                placeholder="Custom title for search engines"
+              />
+            </div>
+            <div>
+              <label htmlFor="seoDescription" className="mb-2 block text-sm text-white/80">
+                SEO Description
+              </label>
+              <textarea
+                id="seoDescription"
+                name="seoDescription"
+                rows={3}
+                className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40"
+                placeholder="Meta description for search results"
+              />
+            </div>
+          </div>
+
           <div>
             <label htmlFor="status" className="block text-sm text-white/80 mb-2">Status</label>
             <select id="status" name="status" defaultValue="COMING_SOON" className="w-full rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white outline-none focus:border-white/40">

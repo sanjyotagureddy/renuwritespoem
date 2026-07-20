@@ -112,6 +112,8 @@ export async function createBook(formData: FormData) {
     parseMoney(String(formData.get("shippingCharge") ?? "").trim(), 40) ?? 40;
   const status = String(formData.get("status") ?? "COMING_SOON");
   const notifySubscribers = formData.get("notifySubscribers") === "on";
+  const seoTitle = String(formData.get("seoTitle") ?? "").trim() || null;
+  const seoDescription = String(formData.get("seoDescription") ?? "").trim() || null;
   const coverFile = formData.get("coverImage") as File | null;
 
   if (!title) throw new Error("Title is required.");
@@ -159,6 +161,8 @@ export async function createBook(formData: FormData) {
       title,
       slug,
       description: description || null,
+      seoTitle,
+      seoDescription,
       coverData,
       coverMime,
       coverImage,
@@ -211,6 +215,8 @@ export async function updateBook(formData: FormData) {
     parseMoney(String(formData.get("shippingCharge") ?? "").trim(), 40) ?? 40;
   const status = String(formData.get("status") ?? "COMING_SOON");
   const notifySubscribers = formData.get("notifySubscribers") === "on";
+  const seoTitle = String(formData.get("seoTitle") ?? "").trim() || null;
+  const seoDescription = String(formData.get("seoDescription") ?? "").trim() || null;
   const coverFile = formData.get("coverImage") as File | null;
 
   if (!id || !title) throw new Error("ID and title are required.");
@@ -233,6 +239,8 @@ export async function updateBook(formData: FormData) {
   const updateData: Record<string, unknown> = {
     title,
     description: description || null,
+    seoTitle,
+    seoDescription,
     price,
     discountedPrice,
     shippingCharge,

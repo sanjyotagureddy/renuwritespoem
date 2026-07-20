@@ -130,6 +130,8 @@ model Poem {
   slug        String   @unique
   content     String
   excerpt     String?
+  seoTitle    String?
+  seoDescription String?
   coverImage  String?
   published   Boolean  @default(false)
   featured    Boolean  @default(false)
@@ -207,6 +209,8 @@ model Book {
   title        String
   slug         String     @unique
   description  String?
+  seoTitle     String?
+  seoDescription String?
   coverImage   String?
   coverData    String?
   coverMime    String?

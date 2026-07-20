@@ -69,6 +69,8 @@ export async function createPoem(formData: FormData) {
   const language = String(formData.get("language") ?? "EN") as PoemLanguage;
   const genreId = String(formData.get("genreId") ?? "").trim();
   const font = String(formData.get("font") ?? "").trim() || null;
+  const seoTitle = String(formData.get("seoTitle") ?? "").trim() || null;
+  const seoDescription = String(formData.get("seoDescription") ?? "").trim() || null;
   const publishNow = formData.get("publishNow") === "on";
   const notifySubscribers = formData.get("notifySubscribers") === "on";
   const tags = parseTags(formData);
@@ -90,6 +92,8 @@ export async function createPoem(formData: FormData) {
       excerpt: content.length > 180 ? content.slice(0, 180) : null,
       language,
       genreId: genreId || null,
+      seoTitle,
+      seoDescription,
       published: publishNow,
       publishedAt: publishNow ? new Date() : null,
       tags: { create: createTagRelations(tags) },
@@ -118,6 +122,8 @@ export async function updatePoem(formData: FormData) {
   const language = String(formData.get("language") ?? "EN") as PoemLanguage;
   const genreId = String(formData.get("genreId") ?? "").trim();
   const font = String(formData.get("font") ?? "").trim() || null;
+  const seoTitle = String(formData.get("seoTitle") ?? "").trim() || null;
+  const seoDescription = String(formData.get("seoDescription") ?? "").trim() || null;
   const publishNow = formData.get("publishNow") === "on";
   const notifySubscribers = formData.get("notifySubscribers") === "on";
   const tags = parseTags(formData);
@@ -138,6 +144,8 @@ export async function updatePoem(formData: FormData) {
       excerpt: content.length > 180 ? content.slice(0, 180) : null,
       language,
       genreId: genreId || null,
+      seoTitle,
+      seoDescription,
       published: publishNow,
       publishedAt:
         publishNow && !existing.publishedAt ? new Date() : existing.publishedAt,
