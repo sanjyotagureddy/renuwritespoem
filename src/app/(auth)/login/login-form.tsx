@@ -5,7 +5,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import GoogleSignInButton from "@/components/auth/google-sign-in-button";
-import { resendVerificationAction } from "../actions/auth-actions";
+import { resendVerificationAction } from "@/actions/auth-actions";
 
 type LoginFormProps = {
   initialError?: string | null;

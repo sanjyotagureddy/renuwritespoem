@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { signUpAction } from "../actions/auth-actions";
+import { signUpAction } from "@/actions/auth-actions";
 import PasswordFieldGroup from "@/components/auth/password-field-group";
 
 export default function SignUpForm() {
