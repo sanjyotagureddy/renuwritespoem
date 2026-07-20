@@ -255,11 +255,11 @@ export default async function Home() {
       <ScrollSnapInitializer />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema).replace(/</g, "\u003c") }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema).replace(/</g, "\u003c") }}
       />
 
       <div className="h-[calc(100vh-72px)] w-full overflow-y-auto snap-y snap-mandatory scroll-smooth font-[family-name:var(--font-inter)] text-white/80 relative">

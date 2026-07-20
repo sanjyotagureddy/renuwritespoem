@@ -47,23 +47,31 @@ export default function PrivacyPolicyPage() {
           <ul>
             <li>
               <strong className="text-white/80">Account information</strong> — when you sign in with
-              Google, we receive your name, email address, and profile picture.
+              Google or register an account, we receive your name, email address, and profile picture.
+            </li>
+            <li>
+              <strong className="text-white/80">Newsletter subscriptions</strong> — when you subscribe to
+              our updates, we store your email address, double opt-in status, and newsletter preferences.
             </li>
             <li>
               <strong className="text-white/80">Book orders</strong> — when you place a book order we
-              collect your name, email, phone number, and delivery address.
+              collect your name, email, phone number, and delivery address to fulfill your purchase.
             </li>
             <li>
-              <strong className="text-white/80">Comments & interactions</strong> — any comment text,
+              <strong className="text-white/80">Comments &amp; interactions</strong> — any comment text,
               likes, or invitations you send through the platform.
+            </li>
+            <li>
+              <strong className="text-white/80">Gamification &amp; badges</strong> — we compute reader milestones
+              (e.g., number of books read, comments liked, or active status) to award reader achievement badges.
             </li>
             <li>
               <strong className="text-white/80">Contact messages</strong> — when you use the contact
               form we receive your name, email, phone, subject, and message.
             </li>
             <li>
-              <strong className="text-white/80">Analytics & attribution</strong> — we log
-              anonymous share-source events (e.g. WhatsApp, email) and page views
+              <strong className="text-white/80">Analytics &amp; attribution</strong> — if you consent, we log
+              anonymous share-source events (e.g. WhatsApp, email referrals) and page views
               to understand how readers discover our content. No personally
               identifiable information is stored in these logs.
             </li>
@@ -72,14 +80,15 @@ export default function PrivacyPolicyPage() {
 
         <Section title="3. How We Use Your Information">
           <ul>
-            <li>To operate and improve the website and its features.</li>
+            <li>To operate and improve the website, its community features, and reading badges.</li>
+            <li>To send you our email newsletter updates, new poem alerts, and book releases.</li>
             <li>To process and fulfil book orders and notify you of their status.</li>
             <li>To send you email invitations you initiate through the platform.</li>
             <li>To respond to contact/support enquiries.</li>
             <li>To moderate comments and maintain community safety.</li>
             <li>
               To understand traffic sources and improve our content — using only
-              anonymised analytics data.
+              anonymised analytics and attribution data where consent has been provided.
             </li>
           </ul>
           <p>
@@ -88,13 +97,17 @@ export default function PrivacyPolicyPage() {
           </p>
         </Section>
 
-        <Section title="4. Cookies & Local Storage">
+        <Section title="4. Cookies &amp; Local Storage">
           <p>
             We use session cookies provided by NextAuth.js solely to keep you
             signed in. We do not use third-party advertising cookies. Vercel
-            Analytics may set anonymous performance cookies. You can disable
-            cookies in your browser settings; this will prevent you from signing
-            in or posting comments.
+            Analytics may set anonymous performance cookies.
+          </p>
+          <p>
+            We also use browser local storage to save your visual choices (e.g., poem text size adjustments),
+            badge celebration triggers, and referral attribution tags (to remember how you first landed on our site).
+            You can customize your tracking preferences or opt out of referral tracking at any time by selecting 
+            &quot;Essential Only&quot; in our cookie preferences banner.
           </p>
         </Section>
 

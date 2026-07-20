@@ -12,6 +12,9 @@ function AttributionTrackerInner() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    const consent = localStorage.getItem("cookie-consent");
+    if (consent !== "accepted") return;
+
     const src = searchParams.get("src");
     if (src) {
       const cleanSrc = src.toLowerCase().trim().slice(0, 50);
@@ -41,6 +44,9 @@ function AttributionTrackerInner() {
   useEffect(() => {
     // Sync signup source when user signs up / signs in
     if (status === "authenticated" && session?.user?.id) {
+      const consent = localStorage.getItem("cookie-consent");
+      if (consent !== "accepted") return;
+
       const storedSrc = localStorage.getItem("attribution_src");
       const synced = localStorage.getItem("attribution_synced");
 

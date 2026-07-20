@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import AttributionTracker from "./attribution-tracker";
 import AchievementTracker from "@/components/account/achievement-tracker";
+import CookieConsentBanner from "@/components/ui/cookie-consent";
 
 export default function AuthSessionProvider({
   children,
@@ -13,6 +14,7 @@ export default function AuthSessionProvider({
     <SessionProvider>
       <AttributionTracker />
       <AchievementTracker />
+      <CookieConsentBanner />
       {children}
     </SessionProvider>
   );

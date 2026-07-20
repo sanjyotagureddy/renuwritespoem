@@ -151,11 +151,11 @@ export default async function BookDetailPage({ params }: PageProps) {
       <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(bookSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(bookSchema).replace(/</g, "\u003c") }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\u003c") }}
         />
         <Link
           href="/books"
@@ -193,11 +193,11 @@ export default async function BookDetailPage({ params }: PageProps) {
     <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(bookSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(bookSchema).replace(/</g, "\u003c") }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\u003c") }}
       />
       <Link
         href="/books"
