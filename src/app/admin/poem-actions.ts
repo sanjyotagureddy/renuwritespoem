@@ -87,7 +87,7 @@ export async function createPoem(formData: FormData) {
       title,
       slug,
       content,
-      excerpt: content.slice(0, 180),
+      excerpt: content.length > 180 ? content.slice(0, 180) : null,
       language,
       genreId: genreId || null,
       published: publishNow,
@@ -135,7 +135,7 @@ export async function updatePoem(formData: FormData) {
     data: {
       title,
       content,
-      excerpt: content.slice(0, 180),
+      excerpt: content.length > 180 ? content.slice(0, 180) : null,
       language,
       genreId: genreId || null,
       published: publishNow,

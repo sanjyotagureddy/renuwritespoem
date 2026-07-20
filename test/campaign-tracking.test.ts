@@ -9,6 +9,12 @@ vi.mock("@/lib/seo", () => ({
   siteConfig: {
     url: "https://renuwritespoem.com",
   },
+  siteUrl: "https://renuwritespoem.com",
+}));
+
+// Mock rateLimit
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimit: vi.fn().mockResolvedValue({ limited: false, remaining: 99, resetTime: 0 }),
 }));
 
 // Mock hoisted variables
