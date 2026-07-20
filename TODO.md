@@ -594,8 +594,8 @@ special rather than being a generic "download as PDF" button.
 
 Based on the architecture audit, the following technical debt and structure issues need to be addressed to ensure maintainability.
 
-- [ ] **Split God-Files**:
-  - [ ] Break down `src/lib/email.ts` (834 lines) into a dedicated `src/lib/email/` directory with separate files for shell, auth, orders, and campaigns.
+- [x] **Split God-Files**:
+  - [x] Break down `src/lib/email.ts` (834 lines) into a dedicated `src/lib/email/` directory with separate files for shell, auth, orders, and campaigns.
   - [ ] Break down `src/app/page.tsx` (659 lines) by extracting sections (hero, featured, audio) into `src/components/home/`.
   - [ ] Break down `src/components/admin/analytics-tabs.tsx` (671 lines) into individual tab components (`OverviewTab`, `EngagementTab`, etc.).
   - [x] Break down `src/components/poems/print-card-modal.tsx` (496 lines) by extracting themes, preview, and export logic.
