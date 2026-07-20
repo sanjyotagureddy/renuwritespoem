@@ -51,18 +51,18 @@ async function getHomepageData(): Promise<HomepageCacheData> {
 
   const [featuredPoems, latestPoemRecord, featuredBook, latestAudio, testimonials, galleryPhotos, authorProfileRecord] = await Promise.all([
     prisma.poem.findMany({
-      where: { status: "PUBLISHED", featured: true },
+      where: { published: true, featured: true },
       include: { genre: { select: { name: true } }, _count: { select: { likes: true, comments: true } } },
       orderBy: { publishedAt: "desc" },
       take: 3,
     }),
     prisma.poem.findFirst({
-      where: { status: "PUBLISHED" },
+      where: { published: true },
       include: { genre: { select: { name: true } }, _count: { select: { likes: true, comments: true } } },
       orderBy: { publishedAt: "desc" },
     }),
     prisma.book.findFirst({
-      where: { status: "PUBLISHED", featured: true },
+      where: { status: "AVAILABLE", featured: true },
       select: {
         id: true,
         title: true,
@@ -75,25 +75,11 @@ async function getHomepageData(): Promise<HomepageCacheData> {
       orderBy: { publishedAt: "desc" },
     }),
     prisma.audio.findFirst({
-      where: { status: "PUBLISHED" },
+      where: { published: true },
       orderBy: { publishedAt: "desc" },
     }),
-    prisma.testimonial.findMany({
-      where: { isApproved: true },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      select: {
-        id: true,
-        body: true,
-        userName: true,
-        userImage: true,
-        targetTitle: true,
-        targetLink: true,
-        createdAt: true,
-      },
-    }),
+    Promise.resolve([] as { id: string; body: string; userName: string; userImage: string | null; targetTitle: string; targetLink: string; createdAt: Date }[]),
     prisma.authorGalleryImage.findMany({
-      where: { isVisible: true },
       orderBy: { order: "asc" },
       take: 4,
     }),
