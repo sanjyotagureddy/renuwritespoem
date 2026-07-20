@@ -596,18 +596,18 @@ Based on the architecture audit, the following technical debt and structure issu
 
 - [x] **Split God-Files**:
   - [x] Break down `src/lib/email.ts` (834 lines) into a dedicated `src/lib/email/` directory with separate files for shell, auth, orders, and campaigns.
-  - [ ] Break down `src/app/page.tsx` (659 lines) by extracting sections (hero, featured, audio) into `src/components/home/`.
-  - [ ] Break down `src/components/admin/analytics-tabs.tsx` (671 lines) into individual tab components (`OverviewTab`, `EngagementTab`, etc.).
+  - [x] Break down `src/app/page.tsx` (659 lines) by extracting sections (hero, featured, audio) into `src/components/home/`.
+  - [x] Break down `src/components/admin/analytics-tabs.tsx` (671 lines) into individual tab components (`OverviewTab`, `EngagementTab`, etc.).
   - [x] Break down `src/components/poems/print-card-modal.tsx` (496 lines) by extracting themes, preview, and export logic.
   - [x] Break down `src/components/books/purchase-form.tsx` (~400 lines) by extracting wizard steps (address, payment, confirmation).
 - [x] **Reorganize Utilities**:
   - [x] Create structured subdirectories inside `src/lib/` (e.g., `auth/`, `db/`, `email/`, `moderation/`, `api-helpers/`).
 - [x] **Admin Actions Refactoring**:
   - [x] Move the 14 loose server action files in `src/app/admin/` into a dedicated `src/app/admin/actions/` directory to clean up the route tree.
-- [ ] **UI Component Optimization**:
+- [x] **UI Component Optimization**:
   - [x] Extract the repeated glassmorphic card styling into a reusable `<GlassCard>` component.
   - [x] Add `loading.tsx` skeleton states for data-heavy pages (home, poems, books, admin analytics).
-  - [ ] Remove trivial wrapper components (e.g., `components/poems/like-button.tsx`, `components/books/like-button.tsx`, `comment-section.tsx`) and import directly from `@/components/ui`.
+  - [x] Remove trivial wrapper components (e.g., `components/poems/like-button.tsx`, `components/books/like-button.tsx`, `comment-section.tsx`) and import directly from `@/components/ui`.
 - [x] **Testing Scope Expansion**:
   - [x] Update `vitest.config.ts` to include all `src/` files in coverage reporting (excluding `generated` and `types`), rather than just a hardcoded list of 10 files.
 - [x] **Error Handling & Resilience**:
