@@ -326,7 +326,7 @@ export default async function Home() {
                   Daily Verse Inspiration
                 </h2>
                 <p className="text-sm text-white/50 font-[family-name:var(--font-inter)] font-light max-w-xl mx-auto">
-                  A handpicked poem from Renu's collections, changing automatically every twenty-four hours.
+                  A handpicked poem from Renu&apos;s collections, changing automatically every twenty-four hours.
                 </p>
               </div>
 
