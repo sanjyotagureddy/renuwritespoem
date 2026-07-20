@@ -17,6 +17,7 @@ import ShareButton from "@/components/ui/share-button";
 import InviteModal from "@/components/ui/invite-modal";
 import ViewTracker from "@/components/poems/view-tracker";
 import SaveButton from "@/components/ui/save-button";
+import PrintCardModal from "@/components/poems/print-card-modal";
 import { siteConfig } from "@/lib/seo";
 import { getCache, setCache } from "@/lib/cache";
 
@@ -393,12 +394,13 @@ export default async function PoemDetailPage({ params }: PageProps) {
               shareUrl={`${siteConfig.url}/poems/${poem.slug}`}
               title={poem.title}
               shareText={shareText}
-              accentClass="text-amber-400 hover:bg-amber-500/10 border-amber-500/30"
+              accentClass="text-amber-400 hover:bg-amber-500/10 border-amber-500/30 bg-amber-500/5"
             />
+            <PrintCardModal slug={poem.slug} poemTitle={poem.title} content={poem.content} />
             <InviteModal
               poemId={poem.id}
               accentClass="text-amber-400 border-amber-500/30"
-              buttonAccent="hover:border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 text-amber-400"
+              buttonAccent="border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 text-amber-300"
             />
             <div className="border-t border-white/10 pt-5">
               <CommentSection slug={poem.slug} />

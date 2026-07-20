@@ -138,6 +138,7 @@ model Poem {
   updatedAt   DateTime @updatedAt
   font        String?
   views       Int      @default(0)
+  downloadCount Int    @default(0)
 
   genreId String?
   genre   Genre?  @relation(fields: [genreId], references: [id])
@@ -148,6 +149,7 @@ model Poem {
   invites  Invite[]
   saves    SavedPoem[]
   readerViews ReaderPoemView[]
+  printCards  PrintCard[]
 
   @@index([genreId])
   @@index([language])
@@ -658,4 +660,20 @@ model AuthorGalleryImage {
   profile   AuthorProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@map("author_gallery_images")
+}
+
+model PrintCard {
+  id          String   @id @default(cuid())
+  poemId      String
+  dedicatedTo String?
+  fromName    String?
+  message     String?  @db.VarChar(200)
+  theme       String   @default("classic")
+  createdAt   DateTime @default(now())
+  ipHash      String
+
+  poem        Poem     @relation(fields: [poemId], references: [id], onDelete: Cascade)
+
+  @@index([poemId])
+  @@map("print_cards")
 }

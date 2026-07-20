@@ -229,11 +229,17 @@ export default async function AnalyticsDashboard(props: {
     commentsCount: aud._count.comments,
   }));
 
+  // Query total printable cards generated
+  const totalCardsGenerated = "printCard" in prisma && typeof (prisma as any).printCard?.count === "function"
+    ? await (prisma as any).printCard.count()
+    : 0;
+
   const topPoems = topPoemsRaw.map((p) => ({
     id: p.id,
     title: p.title,
     slug: p.slug,
     views: p.views,
+    downloadCount: p.downloadCount || 0,
     likesCount: p._count.likes,
     commentsCount: p._count.comments,
   }));
@@ -351,6 +357,7 @@ export default async function AnalyticsDashboard(props: {
         engagementData={{
           topAudio,
           topPoems,
+          totalCardsGenerated,
         }}
         campaignData={{
           totalCampaignsSent,

@@ -16,6 +16,7 @@ import {
   Send,
   UserPlus,
   Clock,
+  Printer,
 } from "lucide-react";
 
 type AnalyticsTabsProps = {
@@ -51,6 +52,7 @@ type AnalyticsTabsProps = {
     }>;
   };
   engagementData: {
+    totalCardsGenerated?: number;
     topAudio: Array<{
       id: string;
       title: string;
@@ -64,6 +66,7 @@ type AnalyticsTabsProps = {
       title: string;
       slug: string;
       views: number;
+      downloadCount?: number;
       likesCount: number;
       commentsCount: number;
     }>;
@@ -569,6 +572,10 @@ export default function AnalyticsTabs({
                             <span className="flex items-center gap-1" title="Comments">
                               <MessageSquare className="h-3 w-3 text-sky-400" />
                               {poem.commentsCount}
+                            </span>
+                            <span className="flex items-center gap-1 font-medium text-amber-300" title="Cards Printed">
+                              <Printer className="h-3 w-3 text-amber-400" />
+                              {poem.downloadCount || 0}
                             </span>
                           </div>
                         </div>

@@ -527,4 +527,70 @@ Enhance the `/admin/analytics` dashboard to track sales, audience growth, and cr
   - [ ] Integrate existing attribution table and growth snapshot metrics.
   - [ ] Display invite-to-signup conversion rates.
 
+## Phase 30: Printable Poem Cards & Dedication Gifting
 
+Give readers a way to turn any poem into a personal, giftable keepsake — a
+free, instantly generated print-ready PDF card, distinct from the physical
+print-on-demand shop idea. The dedication step is what makes this feel
+special rather than being a generic "download as PDF" button.
+
+- [x] **Extend Database Schema**:
+  - Create a `PrintCard` model to log generated cards (for abuse monitoring
+    and lightweight analytics, not for storing the PDF itself):
+    - Fields: `id`, `poemId` (relation to `Poem`), `dedicatedTo` (String?),
+      `fromName` (String?), `message` (String?, capped length),
+      `createdAt`, `ipHash` (String, for rate-limit/abuse auditing only)
+  - Add a `downloadCount` integer field (default 0) to the `Poem` model to
+    store the total number of times a poem has been generated/printed as a card
+  - Add an index on `poemId` to support a "most gifted poems" admin view later
+
+- [x] **Dedication Form & Flow**:
+  - Add a "🖨 Print as a Card" action alongside Like/Save/Share/Invite on
+    the poem detail sidebar
+  - Build a modal/form with: dedication name ("For ___"), from name
+    (optional), and a short personal message (~100 char cap)
+  - Run the message field through the existing `checkCommentTone` guard
+    before accepting it, same pattern used for comments
+  - Make all fields optional — a reader can generate a plain, undecorated
+    card with no dedication at all
+
+- [x] **PDF Generation**:
+  - Add a `POST /api/poems/[slug]/print-card` route that accepts the
+    optional dedication fields and returns a generated PDF
+  - Atomically increment the `downloadCount` field on the corresponding
+    `Poem` record upon successful creation of the `PrintCard` log
+  - Choose a serverless-friendly PDF library (e.g. `@react-pdf/renderer`)
+    that doesn't require a headless browser, to stay compatible with
+    Vercel's function constraints
+  - Rate limit the route more strictly than typical API routes given PDF
+    generation cost (e.g. `rateLimit("print-card", 8, 3600000)` — 8/hour)
+
+- [x] **Card Layout & Design**:
+  - Design a bright, warm, print-friendly template (not the site's dark
+    theme — this is meant to be read on paper) using the site's existing
+    amber/cream palette and Playfair Display heading font
+  - Reuse existing multilingual font handling (`poemLanguageFontClass`) so
+    Hindi/Marathi poems render with correct typography
+  - Render the dedication line (if provided) in a distinct, card-like
+    inscription style, separate from the poem itself
+  - Add a small, tasteful site watermark (URL or wordmark) in a corner
+  - Add a QR code linking back to the poem's own page — the main channel
+    for turning a printed gift into a return visit
+  - Fix card dimensions to a standard foldable/printable size (e.g. A5
+    folded to A6, or postcard proportions) so it prints cleanly on a
+    standard home printer without cropping
+
+- [x] **Admin Visibility**:
+  - Add a lightweight "Cards Generated" count to the per-poem admin view
+    or the analytics dashboard, sourced from the `PrintCard` model
+  - Surface a simple "most gifted poems" list, mirroring the existing
+    "top shared poems" pattern from Phase 20
+
+### Later (only after the MVP is in use)
+
+- [ ] Multiple template/theme choices for the printed card
+- [ ] Opt-in public "cards sent" counter on the poem page itself
+  (anonymized, no dedication content shown)
+- [ ] Let a reader preview the generated card before downloading
+- [ ] Extend the same PDF pipeline to books (a "gift this book" card
+  linking to the purchase page) once the poem version is proven out
