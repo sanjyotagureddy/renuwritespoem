@@ -58,7 +58,7 @@ export default function LoginForm({ initialError, verified: initialVerified }: L
         router.push(callbackUrl);
         router.refresh();
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
@@ -77,7 +77,7 @@ export default function LoginForm({ initialError, verified: initialVerified }: L
       } else if (res.success) {
         setResendSuccess(true);
       }
-    } catch (err) {
+    } catch {
       setError("Failed to resend verification email. Please try again.");
     } finally {
       setResending(false);

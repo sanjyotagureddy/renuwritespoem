@@ -3,6 +3,8 @@
 import { useEffect, useId, useRef, useState } from "react";
 import SuccessScreen from "./purchase-form/success-screen";
 import PaymentQR from "./purchase-form/payment-qr";
+import AddressFields from "./purchase-form/address-fields";
+import OrderSummary from "./purchase-form/order-summary";
 
 type PurchaseFormProps = {
   bookId: string;
@@ -209,134 +211,18 @@ export default function PurchaseForm({
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
             {/* Left: Form fields */}
             <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-xs text-white/60">
-                    Full Name *
-                  </label>
-                  <input
-                    name="name"
-                    required
-                    className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-white/30"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs text-white/60">
-                    Email *
-                  </label>
-                  <input
-                    name="email"
-                    type="email"
-                    required
-                    className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-white/30"
-                  />
-                </div>
-              </div>
+              <AddressFields />
 
-              <div>
-                <label className="mb-1.5 block text-xs text-white/60">
-                  Phone *
-                </label>
-                <input
-                  name="phone"
-                  type="tel"
-                  required
-                  inputMode="tel"
-                  autoComplete="tel"
-                  maxLength={15}
-                  className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-white/30"
-                />
-              </div>
+              <OrderSummary
+                copies={copies}
+                setCopies={setCopies}
+                subtotal={subtotal}
+                payablePrice={payablePrice}
+                shippingCharge={shippingCharge}
+                total={total}
+              />
 
-              <div>
-                <label className="mb-1.5 block text-xs text-white/60">
-                  Address *
-                </label>
-                <textarea
-                  name="address"
-                  required
-                  rows={2}
-                  className="w-full resize-none rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-white/30"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                  <label className="mb-1.5 block text-xs text-white/60">
-                    City *
-                  </label>
-                  <input
-                    name="city"
-                    required
-                    className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-white/30"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs text-white/60">
-                    State *
-                  </label>
-                  <input
-                    name="state"
-                    required
-                    className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-white/30"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs text-white/60">
-                    Pincode *
-                  </label>
-                  <input
-                    name="pincode"
-                    required
-                    pattern="\d{6}"
-                    maxLength={6}
-                    inputMode="numeric"
-                    autoComplete="postal-code"
-                    className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-white/30"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="mb-1.5 block text-xs text-white/60">
-                    Copies
-                  </label>
-                  <select
-                    value={copies}
-                    onChange={(e) => setCopies(parseInt(e.target.value, 10))}
-                    className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-white/30"
-                  >
-                    {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex flex-col justify-end">
-                  <p className="mb-1 text-xs text-white/40">Subtotal</p>
-                  <p className="text-xl font-medium text-white">
-                    ₹{subtotal.toLocaleString("en-IN")}
-                  </p>
-                  <p className="text-[10px] text-white/30">
-                    ₹{payablePrice.toLocaleString("en-IN")} × {copies}
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-white/10 bg-white/2 px-4 py-3 text-sm text-white/70">
-                <div className="flex items-center justify-between">
-                  <span>Shipping</span>
-                  <span>₹{shippingCharge.toLocaleString("en-IN")}</span>
-                </div>
-                <div className="mt-1 flex items-center justify-between text-white">
-                  <span>Total Payable</span>
-                  <span>₹{total.toLocaleString("en-IN")}</span>
-                </div>
-              </div>
-
-              <div>
+              <div className="pt-4">
                 <label className="mb-1.5 block text-xs text-white/60">
                   Payment Screenshot *
                 </label>

@@ -306,6 +306,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                               className="h-10 w-10 rounded-full border border-white/10 object-cover"
                             />
                           ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={generateAvatarUrl(user.id || user.email)}
                               alt=""

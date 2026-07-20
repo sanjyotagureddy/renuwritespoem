@@ -23,7 +23,7 @@ export default function BooksError({
         </div>
         <div className="space-y-2">
           <h2 className="text-xl font-medium text-white md:text-2xl">
-            Oops! It's not you, it's us.
+            Oops! It&apos;s not you, it&apos;s us.
           </h2>
           <p className="text-sm text-white/60">
             We had a little hiccup grabbing the books collection. Please give it another try!

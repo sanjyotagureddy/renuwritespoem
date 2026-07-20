@@ -23,7 +23,7 @@ export default function ForgotPasswordForm() {
       } else if (res.success) {
         setSuccess(true);
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);

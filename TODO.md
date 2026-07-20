@@ -598,8 +598,8 @@ Based on the architecture audit, the following technical debt and structure issu
   - [ ] Break down `src/lib/email.ts` (834 lines) into a dedicated `src/lib/email/` directory with separate files for shell, auth, orders, and campaigns.
   - [ ] Break down `src/app/page.tsx` (659 lines) by extracting sections (hero, featured, audio) into `src/components/home/`.
   - [ ] Break down `src/components/admin/analytics-tabs.tsx` (671 lines) into individual tab components (`OverviewTab`, `EngagementTab`, etc.).
-  - [ ] Break down `src/components/poems/print-card-modal.tsx` (496 lines) by extracting themes, preview, and export logic.
-  - [ ] Break down `src/components/books/purchase-form.tsx` (~400 lines) by extracting wizard steps (address, payment, confirmation).
+  - [x] Break down `src/components/poems/print-card-modal.tsx` (496 lines) by extracting themes, preview, and export logic.
+  - [x] Break down `src/components/books/purchase-form.tsx` (~400 lines) by extracting wizard steps (address, payment, confirmation).
 - [x] **Reorganize Utilities**:
   - [x] Create structured subdirectories inside `src/lib/` (e.g., `auth/`, `db/`, `email/`, `moderation/`, `api-helpers/`).
 - [x] **Admin Actions Refactoring**:
