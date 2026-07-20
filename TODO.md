@@ -605,13 +605,13 @@ Based on the architecture audit, the following technical debt and structure issu
 - [x] **Admin Actions Refactoring**:
   - [x] Move the 14 loose server action files in `src/app/admin/` into a dedicated `src/app/admin/actions/` directory to clean up the route tree.
 - [ ] **UI Component Optimization**:
-  - [ ] Extract the repeated glassmorphic card styling into a reusable `<GlassCard>` component.
-  - [ ] Add `loading.tsx` skeleton states for data-heavy pages (home, poems, books, admin analytics).
+  - [x] Extract the repeated glassmorphic card styling into a reusable `<GlassCard>` component.
+  - [x] Add `loading.tsx` skeleton states for data-heavy pages (home, poems, books, admin analytics).
   - [ ] Remove trivial wrapper components (e.g., `components/poems/like-button.tsx`, `components/books/like-button.tsx`, `comment-section.tsx`) and import directly from `@/components/ui`.
 - [ ] **Testing Scope Expansion**:
   - [ ] Update `vitest.config.ts` to include all `src/` files in coverage reporting (excluding `generated` and `types`), rather than just a hardcoded list of 10 files.
-- [ ] **Error Handling & Resilience**:
-  - [ ] Add per-route error boundaries (`error.tsx`) for `/admin`, `/poems`, and `/books`.
+- [x] **Error Handling & Resilience**:
+  - [x] Add per-route error boundaries (`error.tsx`) for `/admin`, `/poems`, and `/books`.
 - [ ] **Types Formalization**:
   - [ ] Move scattered shared domain types (e.g., `HomepageCacheData`, `CommentType`, `LikeType`, theme types) into the central `src/types/` directory.
 - [ ] **Business Logic Separation (Service Layer)**:
