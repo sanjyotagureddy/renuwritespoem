@@ -81,6 +81,8 @@ describe("GalleryPage and AuthorGallery Component", () => {
       height: 100,
       caption: `Photo Caption ${i + 1}`,
       category: "Writing desk",
+      fileData: null,
+      fileMime: null,
     }));
 
     render(<AuthorGallery images={mockImages} />);

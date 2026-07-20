@@ -153,9 +153,9 @@ describe("auth callbacks & credentials", () => {
       if (!signInCallback) throw new Error("signIn callback not found");
 
       const result = await signInCallback({
-        user: { name: "Test" },
-        account: null,
-        profile: null,
+        user: { name: "Test" } as any,
+        account: null as any,
+        profile: undefined,
       });
 
       expect(result).toBe(false);
@@ -166,9 +166,9 @@ describe("auth callbacks & credentials", () => {
       if (!signInCallback) throw new Error("signIn callback not found");
 
       const result = await signInCallback({
-        user: { email: "disabled@example.com" },
-        account: null,
-        profile: null,
+        user: { email: "disabled@example.com" } as any,
+        account: null as any,
+        profile: undefined,
       });
 
       expect(result).toBe(false);
@@ -179,9 +179,9 @@ describe("auth callbacks & credentials", () => {
       if (!signInCallback) throw new Error("signIn callback not found");
 
       const result = await signInCallback({
-        user: { email: "unverified@example.com" },
+        user: { email: "unverified@example.com" } as any,
         account: { provider: "google" } as any,
-        profile: null,
+        profile: undefined,
       });
 
       expect(result).toBe(true);
@@ -192,9 +192,9 @@ describe("auth callbacks & credentials", () => {
       if (!signInCallback) throw new Error("signIn callback not found");
 
       const result = await signInCallback({
-        user: { email: "admin@example.com" },
-        account: null,
-        profile: null,
+        user: { email: "admin@example.com" } as any,
+        account: null as any,
+        profile: undefined,
       });
 
       expect(result).toBe(true);
@@ -208,9 +208,9 @@ describe("auth callbacks & credentials", () => {
 
       const token = await jwtCallback({
         token: { email: "admin@example.com" },
-        user: { id: "admin-id", email: "admin@example.com" },
-        account: null,
-        profile: null,
+        user: { id: "admin-id", email: "admin@example.com" } as any,
+        account: null as any,
+        profile: undefined,
         trigger: "signIn",
       });
 
@@ -224,9 +224,9 @@ describe("auth callbacks & credentials", () => {
 
       const token = await jwtCallback({
         token: { email: "verified@example.com", userId: "verified-id" },
-        user: { id: "verified-id", email: "verified@example.com" },
-        account: null,
-        profile: null,
+        user: { id: "verified-id", email: "verified@example.com" } as any,
+        account: null as any,
+        profile: undefined,
       });
 
       expect(token.role).toBe("READER");
@@ -239,9 +239,9 @@ describe("auth callbacks & credentials", () => {
 
       const token = await jwtCallback({
         token: { email: "disabled@example.com", userId: "disabled-id" },
-        user: { id: "disabled-id", email: "disabled@example.com" },
-        account: null,
-        profile: null,
+        user: { id: "disabled-id", email: "disabled@example.com" } as any,
+        account: null as any,
+        profile: undefined,
       });
 
       expect(token.disabled).toBe(true);
@@ -253,27 +253,27 @@ describe("auth callbacks & credentials", () => {
       const sessionCallback = authOptions.callbacks?.session;
       if (!sessionCallback) throw new Error("session callback not found");
 
-      const session = await sessionCallback({
-        session: { expires: "", user: { name: "", email: "", image: "" } },
+      const session = await (sessionCallback as any)({
+        session: { expires: "", user: { id: "", role: "READER", name: "", email: "", image: "" } },
         token: { userId: "user-123", role: "READER", disabled: false },
-        user: { id: "user-123", email: "" } as any,
+        user: { id: "user-123", email: "" },
       });
 
-      expect(session.user?.id).toBe("user-123");
-      expect(session.user?.role).toBe("READER");
+      expect((session.user as any)?.id).toBe("user-123");
+      expect((session.user as any)?.role).toBe("READER");
     });
 
     it("should clear userId if token is marked disabled", async () => {
       const sessionCallback = authOptions.callbacks?.session;
       if (!sessionCallback) throw new Error("session callback not found");
 
-      const session = await sessionCallback({
-        session: { expires: "", user: { name: "", email: "", image: "" } },
+      const session = await (sessionCallback as any)({
+        session: { expires: "", user: { id: "", role: "READER", name: "", email: "", image: "" } },
         token: { userId: "disabled-id", role: "READER", disabled: true },
-        user: { id: "disabled-id", email: "" } as any,
+        user: { id: "disabled-id", email: "" },
       });
 
-      expect(session.user?.id).toBe("");
+      expect((session.user as any)?.id).toBe("");
     });
   });
 
@@ -282,7 +282,7 @@ describe("auth callbacks & credentials", () => {
       const createUserEvent = authOptions.events?.createUser;
       if (!createUserEvent) throw new Error("createUser event not found");
 
-      await expect(createUserEvent({ user: { email: "new@example.com", name: "New User" } })).resolves.not.toThrow();
+      await expect(createUserEvent({ user: { id: "new-id", email: "new@example.com", name: "New User" } as any })).resolves.not.toThrow();
     });
   });
 });

@@ -48,8 +48,9 @@ describe("AchievementTracker Component", () => {
     vi.clearAllMocks();
 
     vi.mocked(useSession).mockReturnValue({
-      data: { user: { id: "user-123", email: "test@example.com" } },
+      data: { user: { id: "user-123", email: "test@example.com", role: "READER" }, expires: "2099-01-01" },
       status: "authenticated",
+      update: vi.fn(),
     });
 
     vi.mocked(usePathname).mockReturnValue("/poems/some-poem");
@@ -78,6 +79,7 @@ describe("AchievementTracker Component", () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: "unauthenticated",
+      update: vi.fn(),
     });
 
     const { container } = render(<AchievementTracker />);

@@ -4,10 +4,14 @@ import { render, screen } from "@testing-library/react";
 
 // Mock IntersectionObserver for Framer Motion
 global.IntersectionObserver = class IntersectionObserver {
+  readonly root: Element | Document | null = null;
+  readonly rootMargin: string = "";
+  readonly thresholds: ReadonlyArray<number> = [];
   observe = vi.fn();
   unobserve = vi.fn();
   disconnect = vi.fn();
-};
+  takeRecords = vi.fn().mockReturnValue([]);
+} as unknown as typeof IntersectionObserver;
 
 // Mock rateLimit
 vi.mock("@/lib/rate-limit", () => ({

@@ -41,10 +41,10 @@ describe("GET /api/account/badges", () => {
 
   it("should return 429 if rate limit is exceeded", async () => {
     vi.mocked(getServerAuthSession).mockResolvedValue({
-      user: { id: "user-123", email: "test@example.com", name: "Test User" },
+      user: { id: "user-123", email: "test@example.com", name: "Test User", role: "READER" },
       expires: "123",
     });
-    vi.mocked(rateLimit).mockResolvedValue({ limited: true, remaining: 0, reset: 0 });
+    vi.mocked(rateLimit).mockResolvedValue({ limited: true, remaining: 0, resetTime: 0 });
 
     const response = await GET();
     expect(response.status).toBe(429);
@@ -54,10 +54,10 @@ describe("GET /api/account/badges", () => {
 
   it("should return list of badges on success", async () => {
     vi.mocked(getServerAuthSession).mockResolvedValue({
-      user: { id: "user-123", email: "test@example.com", name: "Test User" },
+      user: { id: "user-123", email: "test@example.com", name: "Test User", role: "READER" },
       expires: "123",
     });
-    vi.mocked(rateLimit).mockResolvedValue({ limited: false, remaining: 59, reset: 0 });
+    vi.mocked(rateLimit).mockResolvedValue({ limited: false, remaining: 59, resetTime: 0 });
     mockCount.mockResolvedValue(1); // will unlock all 1-threshold badges
 
     const response = await GET();

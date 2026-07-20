@@ -134,6 +134,8 @@ export default function AnalyticsTabs({
         return <ShoppingBag className="h-3.5 w-3.5 text-emerald-400" />;
       case "like":
         return <Heart className="h-3.5 w-3.5 text-rose-500" />;
+      case "print_card":
+        return <Printer className="h-3.5 w-3.5 text-amber-400" />;
       default:
         return <Clock className="h-3.5 w-3.5 text-white/40" />;
     }
@@ -181,7 +183,7 @@ export default function AnalyticsTabs({
             }`}
         >
           <Activity className="h-4 w-4" />
-          Activity &amp; Engagement
+          Activity & Engagement
         </button>
       </div>
 
@@ -477,17 +479,52 @@ export default function AnalyticsTabs({
 
       {/* Tab 4: Engagement & Activity Feed */}
       {activeTab === "engagement" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
-          {/* Left Column: Popular Creative Works */}
-          <div className="lg:col-span-5 space-y-6">
-            {/* Top Spoken Audio Releases */}
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
-              <div className="border-b border-white/10 bg-white/[0.02] px-5 py-4">
-                <h3 className="text-xs font-bold tracking-wider text-white uppercase flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-violet-400" />
-                  Top Spoken Recordings
-                </h3>
-              </div>
+        <div className="space-y-6 animate-fadeIn">
+          {/* Key Creative Engagement Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.02] p-5 hover:border-amber-500/35 hover:bg-amber-500/[0.03] transition-all">
+              <p className="mb-2 text-[10px] tracking-widest text-amber-400/60 uppercase font-semibold flex items-center gap-1.5">
+                <Printer className="w-3.5 h-3.5 text-amber-400" />
+                <span>Keepsake Cards Created</span>
+              </p>
+              <p className="text-3xl font-bold text-amber-400">
+                {(engagementData.totalCardsGenerated ?? 0).toLocaleString()}
+              </p>
+              <p className="mt-1 text-[10px] text-white/40">Anonymous PDF and WhatsApp image cards created by readers</p>
+            </div>
+            <div className="rounded-2xl border border-violet-500/20 bg-violet-500/[0.02] p-5 hover:border-violet-500/35 hover:bg-violet-500/[0.03] transition-all">
+              <p className="mb-2 text-[10px] tracking-widest text-violet-400/60 uppercase font-semibold flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-violet-400" />
+                <span>Audio Recording Plays</span>
+              </p>
+              <p className="text-3xl font-bold text-violet-400">
+                {engagementData.topAudio.reduce((sum, a) => sum + a.views, 0).toLocaleString()}
+              </p>
+              <p className="mt-1 text-[10px] text-white/40">Total spoken-word poem recording streams</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 hover:border-white/20 hover:bg-white/[0.03] transition-all">
+              <p className="mb-2 text-[10px] tracking-widest text-white/40 uppercase font-semibold flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5 text-white/60" />
+                <span>Poem Page Reads</span>
+              </p>
+              <p className="text-3xl font-bold text-white">
+                {engagementData.topPoems.reduce((sum, p) => sum + p.views, 0).toLocaleString()}
+              </p>
+              <p className="mt-1 text-[10px] text-white/40">Total anonymous and reader poem page views</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Column: Popular Creative Works */}
+            <div className="lg:col-span-5 space-y-6">
+              {/* Top Spoken Audio Releases */}
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
+                <div className="border-b border-white/10 bg-white/[0.02] px-5 py-4">
+                  <h3 className="text-xs font-bold tracking-wider text-white uppercase flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-violet-400" />
+                    Top Spoken Recordings
+                  </h3>
+                </div>
               <div className="divide-y divide-white/5">
                 {engagementData.topAudio.length === 0 ? (
                   <p className="p-8 text-center text-xs text-white/30 italic">No audio play stats recorded.</p>
@@ -626,6 +663,7 @@ export default function AnalyticsTabs({
             </div>
           </div>
         </div>
+      </div>
       )}
     </div>
   );

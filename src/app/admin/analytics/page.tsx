@@ -45,6 +45,7 @@ export default async function AnalyticsDashboard(props: {
     recentComments,
     recentLikes,
     recentOrdersRawFeed,
+    recentPrintCardsFeed,
     campaignsRaw,
   ] = await Promise.all([
     prisma.attributionLog.groupBy({
@@ -153,6 +154,17 @@ export default async function AnalyticsDashboard(props: {
         book: { select: { title: true } },
       },
     }),
+    (prisma as unknown as { printCard?: { findMany: (args: unknown) => Promise<Array<{ id: string; createdAt: Date; format: string; poem: { title: string } }>> } })
+      .printCard?.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        select: {
+          id: true,
+          createdAt: true,
+          format: true,
+          poem: { select: { title: true } },
+        },
+      }).catch(() => []) ?? Promise.resolve([]),
     prisma.campaign.findMany({
       orderBy: { sentAt: "desc" },
       where: { status: "SENT", sentAt: dateFilter },
@@ -315,6 +327,16 @@ export default async function AnalyticsDashboard(props: {
       type: "order",
       text: `${o.name} ordered ${o.copies} cop${o.copies > 1 ? "ies" : "y"} of "${o.book.title}"`,
       timestamp: o.createdAt,
+    });
+  });
+
+  (recentPrintCardsFeed || []).forEach((card, idx) => {
+    if (!card?.poem?.title) return;
+    activityItems.push({
+      id: `print-card-${card.id || idx}-${new Date(card.createdAt).getTime()}`,
+      type: "print_card",
+      text: `A reader created a Keepsake Card for "${card.poem.title}" (${(card.format || "PNG").toUpperCase()} format)`,
+      timestamp: new Date(card.createdAt),
     });
   });
 

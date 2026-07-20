@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="35%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="goldGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Edge-to-Edge Full Bleed Golden Feather Quill Emblem -->
+  <g filter="url(#goldGlow)">
+    <!-- Feather Vanes - Full Bleed Top-Right to Center -->
+    <path d="M 512 0 C 350 70 200 220 120 450 C 160 395 210 350 280 320 C 235 290 220 250 250 215 C 295 245 350 230 390 190 C 345 165 345 125 395 95 C 420 120 465 95 512 0 Z" fill="url(#goldGrad)" />
+    
+    <!-- Shaft Stem - Full Diagonal Bleed to Bottom-Left Corner -->
+    <path d="M 480 30 Q 300 180 0 512" stroke="#FEF08A" stroke-width="20" stroke-linecap="round" />
+    
+    <!-- Ink Nib Tip - Edge-to-Edge Bottom-Left Corner -->
+    <polygon points="0,512 0,440 72,512" fill="#FCD34D" />
+    
+    <!-- Top Sparkle Star Accent -->
+    <path d="M 460 50 L 472 15 L 484 50 L 512 62 L 484 74 L 472 109 L 460 74 L 425 62 Z" fill="#FEF08A" />
+  </g>
+</svg>
