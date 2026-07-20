@@ -78,6 +78,11 @@ try {
 
   let baselineApplied = false;
   if (migrationTable.rows[0].exists) {
+    try {
+      await client.query("DELETE FROM _prisma_migrations WHERE migration_name = '20260713190500_add_gallery_category'");
+      console.log("Deleted failed migration state for 190500.");
+    } catch(e) {}
+    
     const result = await client.query(
       'SELECT 1 FROM "_prisma_migrations" WHERE migration_name = $1 AND finished_at IS NOT NULL LIMIT 1',
       [baseline],
