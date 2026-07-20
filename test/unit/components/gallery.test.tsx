@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import GalleryPage from "../src/app/gallery/page";
+import GalleryPage from "../../../src/app/(marketing)/gallery/page";
 
 // Mock the getOrCreateAuthorProfile server action
 const mockGetProfile = vi.fn().mockResolvedValue({
@@ -28,7 +28,7 @@ const mockGetProfile = vi.fn().mockResolvedValue({
   ],
 });
 
-vi.mock("../src/app/admin/actions/author-actions", () => ({
+vi.mock("../../../src/app/admin/actions/author-actions", () => ({
   getOrCreateAuthorProfile: () => mockGetProfile(),
 }));
 

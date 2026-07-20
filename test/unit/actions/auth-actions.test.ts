@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { signUpAction, resendVerificationAction, forgotPasswordAction, resetPasswordAction } from "../src/actions/auth-actions";
+import { signUpAction, resendVerificationAction, forgotPasswordAction, resetPasswordAction } from "../../../src/actions/auth-actions";
 
 // Mock rateLimit to prevent test failures
 vi.mock("@/lib/moderation/rate-limit", () => {

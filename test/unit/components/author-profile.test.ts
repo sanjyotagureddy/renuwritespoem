@@ -6,7 +6,7 @@ import {
   deleteGalleryImage,
   updateGalleryOrder,
   updateGalleryImageCategory,
-} from "../src/app/admin/actions/author-actions";
+} from "../../../src/app/admin/actions/author-actions";
 
 // Mock rateLimit to prevent test failures
 vi.mock("@/lib/moderation/rate-limit", () => {
@@ -16,7 +16,7 @@ vi.mock("@/lib/moderation/rate-limit", () => {
 });
 
 // Mock requireAdmin from shared-actions
-vi.mock("../src/app/admin/actions/shared-actions", () => {
+vi.mock("../../../src/app/admin/actions/shared-actions", () => {
   return {
     requireAdmin: vi.fn().mockResolvedValue({ user: { role: "ADMIN" } }),
   };
@@ -53,7 +53,7 @@ let mockProfile = {
 
 let mockGalleryImages: any[] = [];
 
-vi.mock("../src/lib/db", () => {
+vi.mock("../../../src/lib/db", () => {
   return {
     getPrisma: () => ({
       authorProfile: {

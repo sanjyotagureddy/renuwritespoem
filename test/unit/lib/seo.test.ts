@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { absoluteUrl, truncateDescription } from "../src/lib/seo";
+import { absoluteUrl, truncateDescription } from "../../../src/lib/seo";
 
 describe("seo helpers", () => {
   describe("absoluteUrl", () => {

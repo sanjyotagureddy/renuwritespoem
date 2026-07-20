@@ -19,13 +19,13 @@ vi.mock("@/lib/moderation/rate-limit", () => ({
 }));
 
 // Mock cache
-vi.mock("../src/lib/cache", () => ({
+vi.mock("../../../src/lib/cache", () => ({
   getCache: vi.fn().mockResolvedValue(null), // Force query execution
   setCache: vi.fn().mockResolvedValue(true),
 }));
 
 // Mock database storage to avoid connection requirement
-vi.mock("../src/lib/db", () => {
+vi.mock("../../../src/lib/db", () => {
   return {
     getPrisma: () => ({
       poem: {
@@ -132,7 +132,7 @@ vi.mock("../src/lib/db", () => {
 });
 
 // Import after hoisting mocks
-import Home from "../src/app/page";
+import Home from "../../../src/app/page";
 
 describe("Homepage Overhaul rendering", () => {
   it("should render all restructured sections successfully", async () => {

@@ -70,7 +70,7 @@ vi.mock("bcryptjs", () => {
   };
 });
 
-import { authOptions } from "../src/lib/auth";
+import { authOptions } from "../../../src/lib/auth";
 
 describe("auth callbacks & credentials", () => {
   const originalEnv = process.env.ADMIN_EMAILS;

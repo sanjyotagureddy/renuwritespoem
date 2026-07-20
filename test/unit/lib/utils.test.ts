@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatDate, formatDateTime, slugify, getReadingTime, generateAvatarUrl, statusLabel, statusColor, getRandomPoeticPhrase, POETIC_PHRASES } from "../src/lib/utils";
+import { formatDate, formatDateTime, slugify, getReadingTime, generateAvatarUrl, statusLabel, statusColor, getRandomPoeticPhrase, POETIC_PHRASES } from "../../../src/lib/utils";
 
 describe("utils library helpers", () => {
   describe("formatDate & formatDateTime", () => {

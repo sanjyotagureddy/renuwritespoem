@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { CampaignService } from "../src/services/campaign-service";
-import { GET as trackOpenHandler } from "../src/app/api/campaigns/track/open/[deliveryId]/pixel.gif/route";
-import { GET as trackClickHandler } from "../src/app/api/campaigns/track/click/route";
+import { CampaignService } from "../../../src/services/campaign-service";
+import { GET as trackOpenHandler } from "../../../src/app/api/campaigns/track/open/[deliveryId]/pixel.gif/route";
+import { GET as trackClickHandler } from "../../../src/app/api/campaigns/track/click/route";
 import { NextRequest } from "next/server";
 
 // Mock siteConfig
@@ -25,7 +25,7 @@ const { mockFindUnique, mockUpdate, mockCreate } = vi.hoisted(() => ({
 }));
 
 // Mock db
-vi.mock("../src/lib/db", () => ({
+vi.mock("../../../src/lib/db", () => ({
   getPrisma: () => ({
     campaignDelivery: {
       findUnique: mockFindUnique,

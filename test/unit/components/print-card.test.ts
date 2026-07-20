@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { POST as printCardHandler } from "../src/app/api/poems/[slug]/print-card/route";
+import { POST as printCardHandler } from "../../../src/app/api/poems/[slug]/print-card/route";
 import { NextRequest } from "next/server";
 
 // Mock rateLimit

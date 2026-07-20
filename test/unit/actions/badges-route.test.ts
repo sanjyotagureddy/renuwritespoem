@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET } from "../src/app/api/account/badges/route";
+import { GET } from "../../../src/app/api/account/badges/route";
 import { getServerAuthSession } from "@/lib/auth";
 import { rateLimit } from "@/lib/moderation/rate-limit";
 
@@ -12,7 +12,7 @@ vi.mock("@/lib/moderation/rate-limit", () => ({
 }));
 
 const mockCount = vi.fn().mockResolvedValue(0);
-vi.mock("../src/lib/db", () => ({
+vi.mock("../../../src/lib/db", () => ({
   getPrisma: () => ({
     like: { count: mockCount },
     bookLike: { count: mockCount },

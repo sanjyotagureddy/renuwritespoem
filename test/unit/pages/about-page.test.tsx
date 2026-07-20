@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import AboutPage from "../src/app/about/page";
+import AboutPage from "../../../src/app/(marketing)/about/page";
 
 // Mock rateLimit
 vi.mock("@/lib/moderation/rate-limit", () => ({
@@ -9,7 +9,7 @@ vi.mock("@/lib/moderation/rate-limit", () => ({
 }));
 
 // Mock author actions
-vi.mock("../src/app/admin/actions/author-actions", () => ({
+vi.mock("../../../src/app/admin/actions/author-actions", () => ({
   getOrCreateAuthorProfile: vi.fn().mockResolvedValue({
     id: "profile-id",
     whyIWrite: "Mocked Why I Write",

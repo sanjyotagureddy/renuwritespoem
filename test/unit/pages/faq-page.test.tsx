@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import FAQPage from "../src/app/faq/page";
+import FAQPage from "../../../src/app/(marketing)/faq/page";
 
 describe("FAQPage Component", () => {
   it("should render FAQ page successfully with all accordion questions and legal footer", () => {

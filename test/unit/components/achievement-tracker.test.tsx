@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, cleanup, act } from "@testing-library/react";
-import AchievementTracker from "../src/components/account/achievement-tracker";
+import AchievementTracker from "../../../src/components/account/achievement-tracker";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 

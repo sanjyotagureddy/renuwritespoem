@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { OrderSchema, InviteSchema, CommentSchema } from "../src/lib/validations";
+import { OrderSchema, InviteSchema, CommentSchema } from "../../../src/lib/validations";
 
 describe("validation schemas", () => {
   describe("OrderSchema", () => {

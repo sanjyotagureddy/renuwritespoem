@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
-import AnalyticsTabs from "../src/components/admin/analytics-tabs";
+import AnalyticsTabs from "../../../src/components/admin/analytics-tabs";
 
 describe("AnalyticsTabs Component", () => {
   const mockAttributionData = [

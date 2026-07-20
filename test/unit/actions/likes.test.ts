@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import AccountLikesPage from "../src/app/account/likes/page";
+import AccountLikesPage from "../../../src/app/account/likes/page";
 
 // Mock getServerAuthSession
 vi.mock("@/lib/auth", () => ({
@@ -28,7 +28,7 @@ const mockQueryRaw = vi.fn().mockResolvedValue([
 
 const mockCount = vi.fn().mockResolvedValue(1);
 
-vi.mock("../src/lib/db", () => ({
+vi.mock("../../../src/lib/db", () => ({
   getPrisma: () => ({
     $queryRaw: mockQueryRaw,
     like: { count: mockCount },

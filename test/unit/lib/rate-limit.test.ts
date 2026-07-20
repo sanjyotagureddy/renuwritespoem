@@ -40,7 +40,7 @@ describe("rate limiter utility", () => {
     process.env.UPSTASH_REDIS_REST_URL = "https://mock-redis.upstash.io";
     process.env.UPSTASH_REDIS_REST_TOKEN = "mock-token";
     
-    const mod = await import("../src/lib/moderation/rate-limit");
+    const mod = await import("../../../src/lib/moderation/rate-limit");
     rateLimit = mod.rateLimit;
   });
 

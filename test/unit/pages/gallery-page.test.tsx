@@ -1,11 +1,11 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
-import GalleryPage from "../src/app/gallery/page";
-import AuthorGallery from "../src/components/home/author-gallery";
+import GalleryPage from "../../../src/app/(marketing)/gallery/page";
+import AuthorGallery from "../../../src/components/home/author-gallery";
 
 // Mock getOrCreateAuthorProfile
-vi.mock("../src/app/admin/actions/author-actions", () => ({
+vi.mock("../../../src/app/admin/actions/author-actions", () => ({
   getOrCreateAuthorProfile: vi.fn().mockResolvedValue({
     id: "profile-id",
     gallery: [

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import PasswordFieldGroup from "../src/components/auth/password-field-group";
+import PasswordFieldGroup from "../../../src/components/auth/password-field-group";
 
 // Wrapper to manage state in test
 function TestWrapper() {
