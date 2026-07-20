@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { validateContactMessageTone } from "@/lib/contact-guard";
+import { validateContactMessageTone } from "@/lib/moderation/contact-guard";
 
 export default function ContactForm() {
   const [submitting, setSubmitting] = useState(false);

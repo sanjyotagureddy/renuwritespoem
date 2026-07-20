@@ -14,13 +14,13 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: [
-        "src/lib/auth.ts",
-        "src/lib/unsubscribe-helper.ts",
+        "src/lib/auth/index.ts",
+        "src/lib/email/unsubscribe-helper.ts",
         "src/lib/validations.ts",
-        "src/lib/rate-limit.ts",
-        "src/lib/contact-guard.ts",
+        "src/lib/moderation/rate-limit.ts",
+        "src/lib/moderation/contact-guard.ts",
         "src/lib/seo.ts",
-        "src/lib/poem-language.ts",
+        "src/lib/domain/poem-language.ts",
         "src/lib/utils.ts",
         "src/app/actions/auth-actions.ts",
         "src/components/auth/password-field-group.tsx",

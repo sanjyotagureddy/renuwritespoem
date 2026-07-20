@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import BadgeCelebration from "./badge-celebration";
-import { Badge } from "@/lib/badges";
+import { Badge } from "@/lib/domain/badges";
 
 export default function AchievementTracker() {
   const pathname = usePathname();

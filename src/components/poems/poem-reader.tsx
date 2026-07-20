@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { poemLanguageFontClass, type PoemLanguage } from "@/lib/poem-language";
+import { poemLanguageFontClass, type PoemLanguage } from "@/lib/domain/poem-language";
 
 type PoemReaderProps = {
   title: string;

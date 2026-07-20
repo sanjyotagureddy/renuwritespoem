@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { getBadges, fetchUserBadgeStats } from "../src/lib/badges";
+import { getBadges, fetchUserBadgeStats } from "../src/lib/domain/badges";
 import { PrismaClient } from "@prisma/client";
 
 describe("getBadges", () => {

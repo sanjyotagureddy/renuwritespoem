@@ -8,7 +8,7 @@ import {
   poemLanguageLabel,
   poemLanguageToHtmlLang,
   type PoemLanguage,
-} from "@/lib/poem-language";
+} from "@/lib/domain/poem-language";
 import LikeButton from "@/components/poems/like-button";
 import ListenButton from "@/components/poems/listen-button";
 import CommentSection from "@/components/poems/comment-section";
@@ -19,7 +19,7 @@ import ViewTracker from "@/components/poems/view-tracker";
 import SaveButton from "@/components/ui/save-button";
 import PrintCardModal from "@/components/poems/print-card-modal";
 import { siteConfig } from "@/lib/seo";
-import { getCache, setCache } from "@/lib/cache";
+import { getCache, setCache } from "@/lib/db/cache";
 
 import { Printer, Eye } from "lucide-react";
 

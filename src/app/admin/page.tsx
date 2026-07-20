@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
-import { poemLanguageLabel, type PoemLanguage } from "@/lib/poem-language";
+import { poemLanguageLabel, type PoemLanguage } from "@/lib/domain/poem-language";
 import { toggleFeatured } from "./poem-actions";
 import ClearCacheButton from "@/components/admin/clear-cache-button";
 import { formatDate } from "@/lib/utils";

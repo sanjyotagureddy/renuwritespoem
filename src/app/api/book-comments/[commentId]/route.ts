@@ -1,4 +1,4 @@
-import { handleDeleteComment, handlePatchComment } from "@/lib/comments-api-helper";
+import { handleDeleteComment, handlePatchComment } from "@/lib/api-helpers/comments-api-helper";
 
 export async function PATCH(
   request: Request,

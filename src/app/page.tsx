@@ -2,11 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { siteConfig } from "@/lib/seo";
-import { getCache, setCache } from "@/lib/cache";
+import { getCache, setCache } from "@/lib/db/cache";
 import TestimonialsSection from "@/components/home/testimonials-section";
 import { Poem, Audio, AuthorProfile, AuthorGalleryImage } from "@prisma/client";
-import { poemLanguageLabel } from "@/lib/poem-language";
-import { getPoemOfTheDay } from "@/lib/poems-data";
+import { poemLanguageLabel } from "@/lib/domain/poem-language";
+import { getPoemOfTheDay } from "@/lib/domain/poems-data";
 import { ScrollSnapInitializer, ScrollReveal } from "@/components/home/scroll-reveal-container";
 import Footer from "@/components/footer";
 

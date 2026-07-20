@@ -9,7 +9,7 @@ import BookCommentSection from "@/components/books/comment-section";
 import ShareButton from "@/components/ui/share-button";
 import InviteModal from "@/components/ui/invite-modal";
 import { siteConfig } from "@/lib/seo";
-import { getCache, setCache } from "@/lib/cache";
+import { getCache, setCache } from "@/lib/db/cache";
 import BookDescription from "@/components/books/book-description";
 import BookViewTracker from "@/components/books/book-view-tracker";
 import SaveButton from "@/components/ui/save-button";

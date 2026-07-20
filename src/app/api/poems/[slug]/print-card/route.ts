@@ -6,10 +6,10 @@ import { PDFDocument, rgb, PDFFont } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { PrismaPromise } from "@prisma/client";
 import { getPrisma } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
-import { checkCommentTone } from "@/lib/contact-guard";
+import { rateLimit } from "@/lib/moderation/rate-limit";
+import { checkCommentTone } from "@/lib/moderation/contact-guard";
 import { siteConfig } from "@/lib/seo";
-import { invalidateCache } from "@/lib/cache";
+import { invalidateCache } from "@/lib/db/cache";
 
 export const dynamic = "force-dynamic";
 

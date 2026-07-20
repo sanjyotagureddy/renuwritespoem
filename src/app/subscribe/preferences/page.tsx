@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import { getPrisma } from "@/lib/db";
-import { verifyUnsubscribeToken } from "@/lib/unsubscribe-helper";
+import { verifyUnsubscribeToken } from "@/lib/email/unsubscribe-helper";
 import PreferencesForm from "./preferences-form";
 import Link from "next/link";
 

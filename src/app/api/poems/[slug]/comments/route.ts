@@ -1,4 +1,4 @@
-import { handleGetComments, handlePostComment } from "@/lib/comments-api-helper";
+import { handleGetComments, handlePostComment } from "@/lib/api-helpers/comments-api-helper";
 
 export async function GET(
   request: Request,

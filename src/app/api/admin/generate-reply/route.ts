@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getServerAuthSession } from "@/lib/auth";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/moderation/rate-limit";
 
 export async function POST(request: Request) {
   // Admin-only

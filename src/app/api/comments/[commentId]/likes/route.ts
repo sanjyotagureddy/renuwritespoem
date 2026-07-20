@@ -1,4 +1,4 @@
-import { handleCommentLikeToggle } from "@/lib/likes-api-helper";
+import { handleCommentLikeToggle } from "@/lib/api-helpers/likes-api-helper";
 
 export async function POST(
   request: Request,

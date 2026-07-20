@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import { siteConfig } from "@/lib/seo";
 import { getPrisma } from "@/lib/db";
-import { getUnsubscribeToken } from "@/lib/unsubscribe-helper";
+import { getUnsubscribeToken } from "@/lib/email/unsubscribe-helper";
 
 function getMailer() {
   const user = process.env.GMAIL_USER;

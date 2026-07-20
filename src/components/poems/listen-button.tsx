@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Play, Pause, Square, Volume2 } from "lucide-react";
-import { type PoemLanguage } from "@/lib/poem-language";
+import { type PoemLanguage } from "@/lib/domain/poem-language";
 
 type ListenButtonProps = {
   content: string;

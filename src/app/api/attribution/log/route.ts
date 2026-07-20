@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/moderation/rate-limit";
 
 export async function POST(request: Request) {
   try {

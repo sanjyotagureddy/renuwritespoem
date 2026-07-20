@@ -1,4 +1,4 @@
-import { handleGetEntityLikes, handleEntityLikeToggle } from "@/lib/likes-api-helper";
+import { handleGetEntityLikes, handleEntityLikeToggle } from "@/lib/api-helpers/likes-api-helper";
 
 export async function GET(
   request: Request,

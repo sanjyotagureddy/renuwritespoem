@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { getUnsubscribeToken, verifyUnsubscribeToken } from "../src/lib/unsubscribe-helper";
+import { getUnsubscribeToken, verifyUnsubscribeToken } from "../src/lib/email/unsubscribe-helper";
 
 describe("unsubscribe-helper", () => {
   const originalEnv = process.env.NEXTAUTH_SECRET;

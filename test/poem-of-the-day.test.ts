@@ -29,7 +29,7 @@ vi.mock("../src/lib/db", () => {
   };
 });
 
-import { getPoemOfTheDay } from "../src/lib/poems-data";
+import { getPoemOfTheDay } from "../src/lib/domain/poems-data";
 
 describe("getPoemOfTheDay", () => {
   beforeEach(() => {

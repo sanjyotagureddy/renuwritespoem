@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
-import { invalidateCache } from "@/lib/cache";
+import { invalidateCache } from "@/lib/db/cache";
 
 export async function requireAdmin() {
   const session = await getServerAuthSession();

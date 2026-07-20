@@ -1,4 +1,4 @@
-import { getBadges, Badge } from "@/lib/badges";
+import { getBadges, Badge } from "@/lib/domain/badges";
 import BadgeCelebration from "./badge-celebration";
 import BadgeCollectionDialog from "./badge-collection-dialog";
 

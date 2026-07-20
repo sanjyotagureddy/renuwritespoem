@@ -589,3 +589,30 @@ special rather than being a generic "download as PDF" button.
   - [x] Instant client-side 2.5x Retina PNG Image export (`html-to-image`) for WhatsApp & social media sharing
   - [x] Segmented export format selector (PNG Image vs PDF Card) with unified hero action bar
   - [x] Aligned sidebar action buttons with canonical Amber/Gold site design system
+
+## Phase 31: Codebase Architecture & Technical Debt Refactoring
+
+Based on the architecture audit, the following technical debt and structure issues need to be addressed to ensure maintainability.
+
+- [ ] **Split God-Files**:
+  - [ ] Break down `src/lib/email.ts` (834 lines) into a dedicated `src/lib/email/` directory with separate files for shell, auth, orders, and campaigns.
+  - [ ] Break down `src/app/page.tsx` (659 lines) by extracting sections (hero, featured, audio) into `src/components/home/`.
+  - [ ] Break down `src/components/admin/analytics-tabs.tsx` (671 lines) into individual tab components (`OverviewTab`, `EngagementTab`, etc.).
+  - [ ] Break down `src/components/poems/print-card-modal.tsx` (496 lines) by extracting themes, preview, and export logic.
+  - [ ] Break down `src/components/books/purchase-form.tsx` (~400 lines) by extracting wizard steps (address, payment, confirmation).
+- [x] **Reorganize Utilities**:
+  - [x] Create structured subdirectories inside `src/lib/` (e.g., `auth/`, `db/`, `email/`, `moderation/`, `api-helpers/`).
+- [ ] **Admin Actions Refactoring**:
+  - [ ] Move the 14 loose server action files in `src/app/admin/` into a dedicated `src/app/admin/actions/` directory to clean up the route tree.
+- [ ] **UI Component Optimization**:
+  - [ ] Extract the repeated glassmorphic card styling into a reusable `<GlassCard>` component.
+  - [ ] Add `loading.tsx` skeleton states for data-heavy pages (home, poems, books, admin analytics).
+  - [ ] Remove trivial wrapper components (e.g., `components/poems/like-button.tsx`, `components/books/like-button.tsx`, `comment-section.tsx`) and import directly from `@/components/ui`.
+- [ ] **Testing Scope Expansion**:
+  - [ ] Update `vitest.config.ts` to include all `src/` files in coverage reporting (excluding `generated` and `types`), rather than just a hardcoded list of 10 files.
+- [ ] **Error Handling & Resilience**:
+  - [ ] Add per-route error boundaries (`error.tsx`) for `/admin`, `/poems`, and `/books`.
+- [ ] **Types Formalization**:
+  - [ ] Move scattered shared domain types (e.g., `HomepageCacheData`, `CommentType`, `LikeType`, theme types) into the central `src/types/` directory.
+- [ ] **Business Logic Separation (Service Layer)**:
+  - [ ] Introduce a `src/services/` layer for complex domains (`poem-service.ts`, `order-service.ts`, `campaign-service.ts`) to move business logic out of route handlers and server actions.

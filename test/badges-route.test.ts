@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "../src/app/api/account/badges/route";
 import { getServerAuthSession } from "@/lib/auth";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/moderation/rate-limit";
 
 vi.mock("@/lib/auth", () => ({
   getServerAuthSession: vi.fn(),
 }));
 
-vi.mock("@/lib/rate-limit", () => ({
+vi.mock("@/lib/moderation/rate-limit", () => ({
   rateLimit: vi.fn(),
 }));
 

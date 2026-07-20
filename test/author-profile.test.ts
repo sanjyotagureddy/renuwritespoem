@@ -9,7 +9,7 @@ import {
 } from "../src/app/admin/author-actions";
 
 // Mock rateLimit to prevent test failures
-vi.mock("@/lib/rate-limit", () => {
+vi.mock("@/lib/moderation/rate-limit", () => {
   return {
     rateLimit: vi.fn().mockResolvedValue({ limited: false, remaining: 99, resetTime: 0 }),
   };

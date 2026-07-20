@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getPrisma } from "@/lib/db";
-import type { PoemLanguage } from "@/lib/poem-language";
-import { invalidateCache } from "@/lib/cache";
+import type { PoemLanguage } from "@/lib/domain/poem-language";
+import { invalidateCache } from "@/lib/db/cache";
 import { requireAdmin } from "./shared-actions";
 import { slugify } from "@/lib/utils";
 import { siteConfig } from "@/lib/seo";

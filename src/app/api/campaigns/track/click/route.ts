@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/moderation/rate-limit";
 import { siteUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";

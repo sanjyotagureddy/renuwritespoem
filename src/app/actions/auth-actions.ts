@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { getPrisma } from "@/lib/db";
 import { SignUpSchema, ForgotPasswordSchema, ResetPasswordSchema } from "@/lib/validations";
 import { sendAccountVerificationEmail, sendPasswordResetEmail } from "@/lib/email";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/moderation/rate-limit";
 
 export type ActionResponse = {
   success?: boolean;

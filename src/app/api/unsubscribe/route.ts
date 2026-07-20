@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
-import { verifyUnsubscribeToken } from "@/lib/unsubscribe-helper";
+import { verifyUnsubscribeToken } from "@/lib/email/unsubscribe-helper";
 import { sendAdminUnsubscribeNotification } from "@/lib/email";
 
 export async function GET(request: Request) {

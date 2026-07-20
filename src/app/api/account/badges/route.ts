@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/moderation/rate-limit";
 import { getServerAuthSession } from "@/lib/auth";
-import { fetchUserBadgeStats, getBadges } from "@/lib/badges";
+import { fetchUserBadgeStats, getBadges } from "@/lib/domain/badges";
 
 export async function GET() {
   try {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
-import { checkCommentTone } from "@/lib/contact-guard";
+import { checkCommentTone } from "@/lib/moderation/contact-guard";
 import { sendInvitationEmail } from "@/lib/email";
 import { InviteSchema } from "@/lib/validations";
 

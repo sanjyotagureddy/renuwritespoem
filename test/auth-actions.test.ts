@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { signUpAction, resendVerificationAction, forgotPasswordAction, resetPasswordAction } from "../src/app/actions/auth-actions";
 
 // Mock rateLimit to prevent test failures
-vi.mock("@/lib/rate-limit", () => {
+vi.mock("@/lib/moderation/rate-limit", () => {
   return {
     rateLimit: vi.fn().mockResolvedValue({ limited: false, remaining: 99, resetTime: 0 }),
   };
@@ -278,7 +278,7 @@ describe("auth server actions", () => {
 
   describe("Rate limiting protection", () => {
     it("should reject signUpAction when rate limited", async () => {
-      const { rateLimit } = await import("@/lib/rate-limit");
+      const { rateLimit } = await import("@/lib/moderation/rate-limit");
       vi.mocked(rateLimit).mockResolvedValueOnce({ limited: true, remaining: 0, resetTime: Date.now() });
 
       const formData = new FormData();

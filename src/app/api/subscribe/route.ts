@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
 import { SubscriberSchema } from "@/lib/validations";
 import { sendSubscriberVerificationEmail } from "@/lib/email";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/moderation/rate-limit";
 import crypto from "crypto";
 
 export async function POST(request: Request) {

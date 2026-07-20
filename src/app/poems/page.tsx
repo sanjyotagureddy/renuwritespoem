@@ -7,10 +7,10 @@ import {
   poemLanguageLabel,
   poemLanguageToHtmlLang,
   type PoemLanguage,
-} from "@/lib/poem-language";
+} from "@/lib/domain/poem-language";
 import PageSizeSelect from "@/components/poems/page-size-select";
 import SearchBar from "@/components/poems/search-bar";
-import { getPoems } from "@/lib/poems-data";
+import { getPoems } from "@/lib/domain/poems-data";
 
 type PoemsPageProps = {
   searchParams: Promise<{

@@ -3,7 +3,7 @@ import { POST as printCardHandler } from "../src/app/api/poems/[slug]/print-card
 import { NextRequest } from "next/server";
 
 // Mock rateLimit
-vi.mock("@/lib/rate-limit", () => ({
+vi.mock("@/lib/moderation/rate-limit", () => ({
   rateLimit: vi.fn().mockResolvedValue({ limited: false, remaining: 7, resetTime: 0 }),
 }));
 
@@ -17,7 +17,7 @@ vi.mock("@/lib/seo", () => ({
 }));
 
 // Mock cache
-vi.mock("@/lib/cache", () => ({
+vi.mock("@/lib/db/cache", () => ({
   invalidateCache: vi.fn().mockResolvedValue(undefined),
 }));
 

@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 import AboutPage from "../src/app/about/page";
 
 // Mock rateLimit
-vi.mock("@/lib/rate-limit", () => ({
+vi.mock("@/lib/moderation/rate-limit", () => ({
   rateLimit: vi.fn().mockResolvedValue({ limited: false, remaining: 99, resetTime: 0 }),
 }));
 

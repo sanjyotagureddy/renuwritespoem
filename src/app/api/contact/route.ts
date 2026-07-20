@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { validateContactMessageTone } from "@/lib/contact-guard";
+import { validateContactMessageTone } from "@/lib/moderation/contact-guard";
 import { sendContactMessage } from "@/lib/email";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/moderation/rate-limit";
 import { getPrisma } from "@/lib/db";
 import { ContactSchema } from "@/lib/validations";
 

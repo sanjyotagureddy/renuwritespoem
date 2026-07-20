@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { poemLanguageToHtmlLang, poemLanguageLabel, poemLanguageFontClass } from "../src/lib/poem-language";
+import { poemLanguageToHtmlLang, poemLanguageLabel, poemLanguageFontClass } from "../src/lib/domain/poem-language";
 
 describe("poem-language helpers", () => {
   it("should map poem languages to html tags", () => {

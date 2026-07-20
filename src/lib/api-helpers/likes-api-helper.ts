@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/moderation/rate-limit";
 
 export type LikeType = "poem" | "book" | "audio";
 export type CommentLikeType = "poemComment" | "bookComment" | "audioComment";

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { put, del } from "@vercel/blob";
 import { getPrisma } from "@/lib/db";
-import { invalidateCache } from "@/lib/cache";
+import { invalidateCache } from "@/lib/db/cache";
 import { requireAdmin } from "./shared-actions";
 import { slugify } from "@/lib/utils";
 import { DeleteBookSchema, ToggleBookFeaturedSchema, UpdateBookStatusSchema } from "@/lib/validations";

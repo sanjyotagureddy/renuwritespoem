@@ -1,4 +1,4 @@
-import { getPrisma } from "./db";
+import { getPrisma } from "../db";
 import { PoemLanguage } from "./poem-language";
 
 export interface GetPoemsArgs {

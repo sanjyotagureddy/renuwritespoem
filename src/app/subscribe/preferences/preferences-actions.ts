@@ -1,7 +1,7 @@
 "use server";
 
 import { getPrisma } from "@/lib/db";
-import { verifyUnsubscribeToken } from "@/lib/unsubscribe-helper";
+import { verifyUnsubscribeToken } from "@/lib/email/unsubscribe-helper";
 
 export async function updateSubscriberPreferences({
   email,

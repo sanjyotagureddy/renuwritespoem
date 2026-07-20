@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateContactMessageTone, checkCommentTone } from "../src/lib/contact-guard";
+import { validateContactMessageTone, checkCommentTone } from "../src/lib/moderation/contact-guard";
 
 describe("contact-guard tone validation", () => {
   describe("validateContactMessageTone", () => {
