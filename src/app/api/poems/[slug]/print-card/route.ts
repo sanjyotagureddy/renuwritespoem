@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import { PDFDocument, rgb, PDFFont } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
+import { PrismaPromise } from "@prisma/client";
 import { getPrisma } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
 import { checkCommentTone } from "@/lib/contact-guard";
@@ -328,7 +329,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const ipHash = forwardedFor ? forwardedFor.split(",")[0] : "127.0.0.1";
 
     try {
-      const dbClient = prisma as unknown as { printCard?: { create: (args: unknown) => unknown } };
+      const dbClient = prisma as unknown as { printCard?: { create: (args: unknown) => PrismaPromise<unknown> } };
       if (typeof dbClient.printCard?.create === "function") {
         await prisma.$transaction([
           prisma.poem.update({
