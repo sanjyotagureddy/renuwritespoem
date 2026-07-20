@@ -2,7 +2,7 @@ import "regenerator-runtime/runtime";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument, rgb, PDFFont } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { getPrisma } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
 
   // 3. Parse Dedication & Theme Options
-  let body: any = {};
+  let body: Record<string, string> = {};
 
   try {
     body = await request.json();
@@ -54,7 +54,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const fromName = (body.fromName || "").trim().slice(0, 40);
   const message = (body.message || "").trim().slice(0, 150);
   const theme = (body.theme || "classic").toLowerCase();
-  const orientation = (body.orientation || "landscape").toLowerCase();
 
   // 4. Content Tone Guard on Dedication Message
   if (message) {
@@ -82,7 +81,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const pdfDoc = await PDFDocument.create();
     pdfDoc.registerFontkit(fontkit);
 
-    const fontPlayfairRegular = await pdfDoc.embedFont(playfairRegularBytes);
+    await pdfDoc.embedFont(playfairRegularBytes);
     const fontPlayfairBold = await pdfDoc.embedFont(playfairBoldBytes);
     const fontInterRegular = await pdfDoc.embedFont(interRegularBytes);
     const fontInterBold = await pdfDoc.embedFont(interBoldBytes);
@@ -95,7 +94,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const titleFont = isDevanagariPoem ? fontDevanagariBold : fontPlayfairBold;
 
     // helper to pick font for dedication fields (handles mixed Hindi/English names)
-    const getFontForText = (text: string, defaultFont: any, bold = false) => {
+    const getFontForText = (text: string, defaultFont: PDFFont, bold = false): PDFFont => {
       if (/[\u0900-\u097F]/.test(text)) {
         return bold ? fontDevanagariBold : fontDevanagariRegular;
       }
@@ -329,13 +328,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const ipHash = forwardedFor ? forwardedFor.split(",")[0] : "127.0.0.1";
 
     try {
-      if ("printCard" in prisma && typeof (prisma as any).printCard?.create === "function") {
+      const dbClient = prisma as unknown as { printCard?: { create: (args: unknown) => unknown } };
+      if (typeof dbClient.printCard?.create === "function") {
         await prisma.$transaction([
           prisma.poem.update({
             where: { id: poem.id },
             data: { downloadCount: { increment: 1 } },
           }),
-          (prisma as any).printCard.create({
+          dbClient.printCard.create({
             data: {
               poemId: poem.id,
               dedicatedTo: dedicatedTo || null,

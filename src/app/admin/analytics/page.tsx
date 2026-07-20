@@ -230,8 +230,9 @@ export default async function AnalyticsDashboard(props: {
   }));
 
   // Query total printable cards generated
-  const totalCardsGenerated = "printCard" in prisma && typeof (prisma as any).printCard?.count === "function"
-    ? await (prisma as any).printCard.count()
+  const dbClient = prisma as unknown as { printCard?: { count: () => Promise<number> } };
+  const totalCardsGenerated = typeof dbClient.printCard?.count === "function"
+    ? await dbClient.printCard.count()
     : 0;
 
   const topPoems = topPoemsRaw.map((p) => ({

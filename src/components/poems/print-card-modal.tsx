@@ -106,8 +106,8 @@ export default function PrintCardModal({ slug, poemTitle, content = "" }: PrintC
       link.remove();
 
       setIsOpen(false);
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to generate image card.");
+    } catch (err: unknown) {
+      setErrorMsg((err as Error).message || "Failed to generate image card.");
     } finally {
       setIsGenerating(false);
     }
@@ -147,8 +147,8 @@ export default function PrintCardModal({ slug, poemTitle, content = "" }: PrintC
       window.URL.revokeObjectURL(url);
 
       setIsOpen(false);
-    } catch (err: any) {
-      setErrorMsg(err.message || "Something went wrong generating the PDF.");
+    } catch (err: unknown) {
+      setErrorMsg((err as Error).message || "Something went wrong generating the PDF.");
     } finally {
       setIsGenerating(false);
     }
