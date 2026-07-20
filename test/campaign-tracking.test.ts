@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { injectTracking } from "../src/app/admin/actions/campaign-actions";
+import { CampaignService } from "../src/services/campaign-service";
 import { GET as trackOpenHandler } from "../src/app/api/campaigns/track/open/[deliveryId]/pixel.gif/route";
 import { GET as trackClickHandler } from "../src/app/api/campaigns/track/click/route";
 import { NextRequest } from "next/server";
@@ -45,7 +45,7 @@ describe("Newsletter Campaign Analytics & Tracking", () => {
   describe("HTML Tracking Injector", () => {
     it("should append a transparent tracking pixel image at the end of the email", async () => {
       const originalHtml = "<p>Welcome to my sanctuary of poetry.</p>";
-      const result = await injectTracking(originalHtml, "delivery-123");
+      const result = await CampaignService.injectTracking(originalHtml, "delivery-123");
       
       expect(result).toContain("<p>Welcome to my sanctuary of poetry.</p>");
       expect(result).toContain(
@@ -55,7 +55,7 @@ describe("Newsletter Campaign Analytics & Tracking", () => {
 
     it("should rewrite standard outbound links to use the click redirect tracking wrapper", async () => {
       const originalHtml = '<p>Check out my new book <a href="https://renuwritespoem.com/books/my-book">My Book</a>.</p>';
-      const result = await injectTracking(originalHtml, "delivery-123");
+      const result = await CampaignService.injectTracking(originalHtml, "delivery-123");
       
       expect(result).toContain(
         'href="https://renuwritespoem.com/api/campaigns/track/click?d=delivery-123&url=https%3A%2F%2Frenuwritespoem.com%2Fbooks%2Fmy-book"'
@@ -69,7 +69,7 @@ describe("Newsletter Campaign Analytics & Tracking", () => {
         <a href="mailto:renu@example.com">Email me</a>
         <a href="tel:+911234567890">Call me</a>
       `;
-      const result = await injectTracking(originalHtml, "delivery-123");
+      const result = await CampaignService.injectTracking(originalHtml, "delivery-123");
 
       expect(result).toContain('href="https://renuwritespoem.com/unsubscribe"');
       expect(result).toContain('href="https://renuwritespoem.com/subscribe/preferences"');

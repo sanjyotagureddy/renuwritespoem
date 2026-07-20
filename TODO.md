@@ -608,11 +608,11 @@ Based on the architecture audit, the following technical debt and structure issu
   - [x] Extract the repeated glassmorphic card styling into a reusable `<GlassCard>` component.
   - [x] Add `loading.tsx` skeleton states for data-heavy pages (home, poems, books, admin analytics).
   - [ ] Remove trivial wrapper components (e.g., `components/poems/like-button.tsx`, `components/books/like-button.tsx`, `comment-section.tsx`) and import directly from `@/components/ui`.
-- [ ] **Testing Scope Expansion**:
-  - [ ] Update `vitest.config.ts` to include all `src/` files in coverage reporting (excluding `generated` and `types`), rather than just a hardcoded list of 10 files.
+- [x] **Testing Scope Expansion**:
+  - [x] Update `vitest.config.ts` to include all `src/` files in coverage reporting (excluding `generated` and `types`), rather than just a hardcoded list of 10 files.
 - [x] **Error Handling & Resilience**:
   - [x] Add per-route error boundaries (`error.tsx`) for `/admin`, `/poems`, and `/books`.
 - [ ] **Types Formalization**:
   - [ ] Move scattered shared domain types (e.g., `HomepageCacheData`, `CommentType`, `LikeType`, theme types) into the central `src/types/` directory.
-- [ ] **Business Logic Separation (Service Layer)**:
-  - [ ] Introduce a `src/services/` layer for complex domains (`poem-service.ts`, `order-service.ts`, `campaign-service.ts`) to move business logic out of route handlers and server actions.
+- [x] **Business Logic Separation (Service Layer)**:
+  - [x] Introduce a `src/services/` layer for complex domains (`poem-service.ts`, `order-service.ts`, `campaign-service.ts`) to move business logic out of route handlers and server actions.
